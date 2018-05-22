@@ -12,7 +12,6 @@ object AddressBook {
     }
 
     fun saveAddressBook(ctx: Context){
-        val tempaddresses = addresses
-        tempaddresses?.let {JSONSerializer.saveJSON(ctx, tempaddresses)}
+        addresses?.let {JSONSerializer.saveJSON(ctx, it)}
     }
 }

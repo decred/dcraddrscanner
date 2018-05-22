@@ -19,7 +19,7 @@ class AddressObject {
         amount = jsonObject.getDouble(JSON_AMOUNT)
         valid = jsonObject.getBoolean(JSON_VALID)
     }
-    constructor(address:String){
-
+    constructor(constructoraddress:String){
+        address = constructoraddress
     }
 }
