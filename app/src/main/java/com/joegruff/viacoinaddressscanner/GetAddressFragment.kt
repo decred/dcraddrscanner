@@ -2,6 +2,7 @@ package com.joegruff.viacoinaddressscanner
 
 import android.content.ClipboardManager
 import android.content.Context.CLIPBOARD_SERVICE
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -19,8 +20,9 @@ class GetAddressFragment:android.support.v4.app.Fragment() {
         val pasteButton = v.findViewById<Button>(R.id.get_address_view_paste_button)
         pasteButton.setOnClickListener {
 
-            activity?.let {val clipboard = it.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+            activity?.let { val clipboard = it.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
                 GetInfoFromWeb(clipboard.primaryClip.getItemAt(0).text.toString()).execute()
+                it.startActivity(Intent(it,ViewAddressActivity::class.java))
             }
 
 

@@ -25,7 +25,8 @@ class GetInfoFromWeb(address: String) : AsyncTask<Void, Void, String>() {
 
     override fun onPostExecute(result: String?) {
         result?.let {
-
+            val address = AddressObject(add)
+            address.amount = result.toDouble()
         }
         super.onPostExecute(result)
     }

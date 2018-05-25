@@ -17,7 +17,7 @@ abstract class ReusableFragmentActivity : FragmentActivity() {
         var fragment: Fragment? = fm.findFragmentById(R.id.fragmentContainer)
         if (fragment == null) {
             fragment = createFragment()
-            fm.beginTransaction().add(R.id.fragmentContainer, fragment).commit()
+            fm.beginTransaction().replace(R.id.fragmentContainer, fragment).commit()
         }
 
     }

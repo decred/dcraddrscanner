@@ -3,7 +3,7 @@ package com.joegruff.viacoinaddressscanner
 import android.app.Activity
 import android.arch.lifecycle.ViewModel
 
-class AddressBook() : ViewModel() {
+object AddressBook {
     var addresses: ArrayList<AddressObject>? = null
     var currentAddress: AddressObject? = null
 

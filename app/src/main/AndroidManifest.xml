@@ -20,6 +20,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".GetAddressActivity"/>
+        <activity android:name=".ViewAddressActivity"/>
     </application>
     <uses-permission android:name="android.permission.INTERNET" />
 
