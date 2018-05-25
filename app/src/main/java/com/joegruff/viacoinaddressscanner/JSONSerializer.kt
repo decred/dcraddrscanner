@@ -13,14 +13,12 @@ object JSONSerializer {
         if (file.exists()) {
             val inputStream = file.inputStream()
             val jsonArray = inputStream.bufferedReader().use { it.readText() }
-            var arrayList = ArrayList<AddressObject>()
-            if (jsonArray != null) {
-                val array = JSONTokener(jsonArray).nextValue() as JSONArray
-                for (i in 0..(array.length() - 1)) {
-                    arrayList.add(AddressObject(array.getJSONObject(i)))
-                }
-                return arrayList
+            val arrayList = ArrayList<AddressObject>()
+            val array = JSONTokener(jsonArray).nextValue() as JSONArray
+            for (i in 0..(array.length() - 1)) {
+                arrayList.add(AddressObject(array.getJSONObject(i)))
             }
+            return arrayList
 
         }
         return null
@@ -32,7 +30,7 @@ object JSONSerializer {
             jsonArray.put(c.toString())
         }
         val file = getFile(ctx)
-        if (!file.exists()){
+        if (!file.exists()) {
             file.createNewFile()
         }
         file.outputStream().bufferedWriter().use { it.newLine() }

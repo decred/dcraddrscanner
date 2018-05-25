@@ -10,13 +10,15 @@ class AddressObject {
 
     var address = ""
     var title = ""
-    var amount = .0
+    //this is temporary
+    var amount = ""
     var valid = false
 
     constructor(jsonObject: JSONObject){
         address = jsonObject.getString(JSON_ADDRESS)
         title = jsonObject.getString(JSON_TITLE)
-        amount = jsonObject.getDouble(JSON_AMOUNT)
+        //temp
+        amount = jsonObject.getString(JSON_AMOUNT)
         valid = jsonObject.getBoolean(JSON_VALID)
     }
     constructor(constructoraddress:String){

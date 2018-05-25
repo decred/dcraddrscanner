@@ -4,7 +4,6 @@ import android.content.ClipboardManager
 import android.content.Context.CLIPBOARD_SERVICE
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -21,8 +20,10 @@ class GetAddressFragment:android.support.v4.app.Fragment() {
         pasteButton.setOnClickListener {
 
             activity?.let { val clipboard = it.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
-                GetInfoFromWeb(clipboard.primaryClip.getItemAt(0).text.toString()).execute()
-                it.startActivity(Intent(it,ViewAddressActivity::class.java))
+                val address = clipboard.primaryClip.getItemAt(0).text.toString()
+                val intent = Intent(it,ViewAddressActivity::class.java)
+                intent.putExtra(ViewAddressFragment.INTENT_DATA,address)
+                it.startActivity(intent)
             }
 
 

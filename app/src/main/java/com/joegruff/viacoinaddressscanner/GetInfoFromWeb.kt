@@ -6,10 +6,11 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.URL
 
-class GetInfoFromWeb(address: String) : AsyncTask<Void, Void, String>() {
+class GetInfoFromWeb(delegate:AsyncObserver,address: String) : AsyncTask<Void, Void, String>() {
 
     val API_URL = "https://explorer.viacoin.org/api/addr/"
     val add = address
+    val del = delegate
 
     override fun doInBackground(vararg params: Void?): String {
         Log.d("asynctask", "doin in background")
@@ -18,15 +19,16 @@ class GetInfoFromWeb(address: String) : AsyncTask<Void, Void, String>() {
         val urlConnection = url.openConnection()
         val bufferedReader = BufferedReader(InputStreamReader(urlConnection.getInputStream()))
         val line = bufferedReader.use { it.readText() }
-        Log.d("sdf", line)
         bufferedReader.close()
         return line
     }
 
     override fun onPostExecute(result: String?) {
         result?.let {
+            Log.d("sdf", "on post execute"+result)
             val address = AddressObject(add)
-            address.amount = result.toDouble()
+            address.amount = result
+            del.processfinished(result)
         }
         super.onPostExecute(result)
     }
