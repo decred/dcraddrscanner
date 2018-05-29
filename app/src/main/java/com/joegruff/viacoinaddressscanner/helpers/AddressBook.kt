@@ -6,7 +6,6 @@ import android.support.v4.app.FragmentActivity
 object AddressBook {
     val addresses = ArrayList<AddressObject>()
     var gotAddressesAlready = false
-    var currentAddress = ""
 
     fun fillAddressBook(act: Activity) {
         if (gotAddressesAlready)
@@ -22,13 +21,15 @@ object AddressBook {
         JSONSerializer.saveJSON(act?.applicationContext, addresses)
     }
 
-    fun addAddressAndIsNewAddress(addressObject: AddressObject): Boolean {
+    fun newObjectFromAddress(address : String): AddressObject? {
         for (a in addresses) {
-            if (a.address == addressObject.address)
-                return false
+            if (a.address == address)
+                return getAddress(address)
         }
-        addresses.add(addressObject)
-        return true
+        val newObject = AddressObject()
+        newObject.address = address
+        addresses.add(newObject)
+        return newObject
     }
 
     fun updateAddress(addressObject: AddressObject){
@@ -43,7 +44,7 @@ object AddressBook {
     fun removeAddress(address: String) {
 
         for (a in addresses)
-            if (a.address.equals(address)) {
+            if (a.address == address) {
                 addresses.remove(a)
             }
 

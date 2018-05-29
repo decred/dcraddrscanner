@@ -39,28 +39,39 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
     var addressbutton: Button? = null
     var imageview: ImageView? = null
     var labeledittext: EditText? = null
-    var addressObject = AddressObject()
-
+    var addressObject: AddressObject? = null
+    var address = ""
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
-        addressObject.address = arguments?.getSerializable(INTENT_DATA) as String
+        address = arguments?.getSerializable(INTENT_DATA) as String
         val v = inflater.inflate(R.layout.view_address_view, container, false)
 
-        GetInfoFromWeb(this, addressObject.address).execute()
-        AddressBook.currentAddress = addressObject.address
+
 
         imageview = v.findViewById(R.id.view_address_view_qr_code)
         infoview = v.findViewById(R.id.view_address_view_info)
         addressbutton = v.findViewById(R.id.view_address_view_address_button)
         labeledittext = v.findViewById(R.id.view_address_view_label)
 
+        AddressBook.getAddress(address)?.let {
+            addressObject = it
+            setupeditlabel()
+            setinfoview()
+            setupqrcode()
+            setupaddressbutton()
+        }
+
+        GetInfoFromWeb(this, address).execute()
+
         return v
     }
 
     override fun onPause() {
-        AddressBook.updateAddress(addressObject)
-        AddressBook.saveAddressBook(activity)
+        addressObject?.let {
+            AddressBook.updateAddress(it)
+            AddressBook.saveAddressBook(activity)
+        }
         super.onPause()
     }
 
@@ -73,81 +84,86 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
         if (token is JSONObject) {
             val addressString = token.getString("addrStr")
             val amountString = token.getString("balance")
-            setupeditlabel()
-            addresstoimage(addressString)
-            if (AddressBook.currentAddress == addressString) {
-                addressbutton?.setText(addressString)
-                setinfoview(amountString)
-                if (AddressBook.addAddressAndIsNewAddress(addressObject)) {
-                    activity?.let { AddressBook.saveAddressBook(it) }
-                } else {
-                    AddressBook.getAddress(addressObject.address)?.let {
-                        addressObject = it
-                        labeledittext?.setText(it.title)
+
+            if (address == addressString) {
+                if (addressObject == null) {
+                    addressObject = AddressBook.newObjectFromAddress(addressString)
+                    addressObject?.amount = amountString.toDouble()
+                    activity?.let {
+                        AddressBook.saveAddressBook(it)
+                        setupeditlabel()
+                        setupqrcode()
+                        setupaddressbutton()
+
                     }
                 }
-                addressObject.amount = amountString.toDouble()
-
-            }
-        }
-
-
-    }
-
-    fun setinfoview(amount : String) {
-        var string = getString(R.string.view_address_fragment_balance)
-        string += amount
-        infoview?.setText(string)
-    }
-
-    fun setupeditlabel() {
-        labeledittext?.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(p0: Editable?) {
+                setinfoview()
             }
 
-            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-            }
-
-            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-                addressObject.title = p0.toString()
-            }
-
-        })
-    }
-
-    fun addresstoimage(address: String) {
-        try {
-            val bitmap = textToQRBitmap(address)
-            imageview?.setImageBitmap(bitmap)
-        } catch (e: WriterException) {
-            e.printStackTrace()
         }
     }
 
-        @Throws(WriterException::class)
-        fun textToQRBitmap(Value: String): Bitmap? {
-            val bitMatrix: BitMatrix
-            try {
-                bitMatrix = MultiFormatWriter().encode(Value, BarcodeFormat.QR_CODE, 500, 500, null)
-            } catch (Illegalargumentexception: IllegalArgumentException) {
-                return null
-            }
 
-            val matrixWidth = bitMatrix.width
-            val matrixHeight = bitMatrix.height
-            val pixels = IntArray(matrixWidth * matrixHeight)
 
-            for (y in 0 until matrixHeight) {
-                val offset = y * matrixWidth
-                for (x in 0 until matrixWidth) {
-                    pixels[offset + x] = if (bitMatrix.get(x, y)) Color.BLACK else Color.WHITE
-                }
-            }
-            val bitmap = Bitmap.createBitmap(matrixWidth, matrixHeight, Bitmap.Config.RGB_565)
-            bitmap.setPixels(pixels, 0, 500, 0, 0, matrixWidth, matrixHeight)
-            return bitmap
+
+fun setinfoview() {
+    var string = getString(R.string.view_address_fragment_balance)
+    string += addressObject?.amount
+    infoview?.setText(string)
+}
+
+fun setupeditlabel() {
+    labeledittext?.addTextChangedListener(object : TextWatcher {
+        override fun afterTextChanged(p0: Editable?) {
+        }
+
+        override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+        }
+
+        override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+            addressObject?.title = p0.toString()
+        }
+
+    })
+}
+
+fun setupaddressbutton() {
+    addressbutton?.setText(addressObject?.address)
+}
+
+fun setupqrcode() {
+    try {
+        val bitmap = textToQRBitmap(addressObject!!.address)
+        imageview?.setImageBitmap(bitmap)
+    } catch (e: WriterException) {
+        e.printStackTrace()
+    }
+}
+
+@Throws(WriterException::class)
+fun textToQRBitmap(Value: String): Bitmap? {
+    val bitMatrix: BitMatrix
+    try {
+        bitMatrix = MultiFormatWriter().encode(Value, BarcodeFormat.QR_CODE, 500, 500, null)
+    } catch (Illegalargumentexception: IllegalArgumentException) {
+        return null
+    }
+
+    val matrixWidth = bitMatrix.width
+    val matrixHeight = bitMatrix.height
+    val pixels = IntArray(matrixWidth * matrixHeight)
+
+    for (y in 0 until matrixHeight) {
+        val offset = y * matrixWidth
+        for (x in 0 until matrixWidth) {
+            pixels[offset + x] = if (bitMatrix.get(x, y)) Color.BLACK else Color.WHITE
         }
     }
+    val bitmap = Bitmap.createBitmap(matrixWidth, matrixHeight, Bitmap.Config.RGB_565)
+    bitmap.setPixels(pixels, 0, 500, 0, 0, matrixWidth, matrixHeight)
+    return bitmap
+}
+}
 
 
 interface AsyncObserver {

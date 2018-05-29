@@ -11,7 +11,6 @@ class GetInfoFromWeb(delegate: AsyncObserver, address: String) : AsyncTask<Void,
 
     //this is the inspire api
     val API_URL = "https://explorer.viacoin.org/api/addr/"
-    val INVALID_ADDRESS = "invalid address"
     val add = address
     val del = delegate
 
@@ -31,10 +30,11 @@ class GetInfoFromWeb(delegate: AsyncObserver, address: String) : AsyncTask<Void,
 
     //send back to address view fragment
     override fun onPostExecute(result: String?) {
-        result?.let {
-            Log.d("sdf", "on post execute"+result)
+        try {
+            del.processfinished(result)
+        } catch (e : Exception){
+            e.printStackTrace()
         }
-        del.processfinished(result)
         super.onPostExecute(result)
     }
 }
