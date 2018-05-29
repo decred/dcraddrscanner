@@ -10,13 +10,23 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.Toast
 import com.joegruff.viacoinaddressscanner.activities.ViewAddressActivity
+import com.joegruff.viacoinaddressscanner.barcodeReader.BarcodeCaptureActivity
+
+
 
 class GetAddressFragment : android.support.v4.app.Fragment() {
+
+    private val RC_BARCODE_CAPTURE = 9001
+    private val TAG = "BarcodeMain"
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val v = inflater.inflate(R.layout.get_address_view, container, false)
         val scanButton = v.findViewById<Button>(R.id.get_address_view_scan_button)
         scanButton.setOnClickListener {
+            val intent = Intent(activity, BarcodeCaptureActivity::class.java)
+            intent.putExtra(BarcodeCaptureActivity.AutoFocus, true)
+            intent.putExtra(BarcodeCaptureActivity.UseFlash, false)
 
+            startActivityForResult(intent, RC_BARCODE_CAPTURE)
         }
         val pasteButton = v.findViewById<Button>(R.id.get_address_view_paste_button)
         pasteButton.setOnClickListener {

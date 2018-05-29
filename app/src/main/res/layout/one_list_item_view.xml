@@ -9,5 +9,5 @@
     <TextView
         android:id="@+id/one_list_item_view_text_view"
         android:layout_width="match_parent"
-        android:layout_height="30dp"/>
+        android:layout_height="60dp"/>
 </FrameLayout>

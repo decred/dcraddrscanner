@@ -22,7 +22,8 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 
 class MainActivity : AppCompatActivity() {
-var adapter : MyAdapter? = null
+    var adapter : MyAdapter? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,6 +39,8 @@ var adapter : MyAdapter? = null
             intent.putExtra(ViewAddressFragment.INTENT_DATA, address)
             startActivity(intent)
         }
+
+
         fab.setOnClickListener { view ->
             val i = Intent(this, GetAddressActivity::class.java)
             this.startActivity(i)
