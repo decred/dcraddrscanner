@@ -8,10 +8,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.Toast
+import com.joegruff.viacoinaddressscanner.activities.ViewAddressActivity
 
-class GetAddressFragment:android.support.v4.app.Fragment() {
+class GetAddressFragment : android.support.v4.app.Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val v = inflater.inflate(R.layout.get_address_view,container,false)
+        val v = inflater.inflate(R.layout.get_address_view, container, false)
         val scanButton = v.findViewById<Button>(R.id.get_address_view_scan_button)
         scanButton.setOnClickListener {
 
@@ -19,11 +21,15 @@ class GetAddressFragment:android.support.v4.app.Fragment() {
         val pasteButton = v.findViewById<Button>(R.id.get_address_view_paste_button)
         pasteButton.setOnClickListener {
 
-            activity?.let { val clipboard = it.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
-                val address = clipboard.primaryClip.getItemAt(0).text.toString()
-                val intent = Intent(it,ViewAddressActivity::class.java)
-                intent.putExtra(ViewAddressFragment.INTENT_DATA,address)
-                it.startActivity(intent)
+            activity?.let { it1 ->
+                val clipboard = it1.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager?
+                if (clipboard?.primaryClip?.getItemAt(0) != null) {
+                    val address = clipboard.primaryClip.getItemAt(0).text.toString()
+                    val intent = Intent(it1, ViewAddressActivity::class.java)
+                    intent.putExtra(ViewAddressFragment.INTENT_DATA, address)
+                    it1.startActivity(intent)
+                } else
+                    Toast.makeText(it1, R.string.get_address_fragment_no_clipboard_data, Toast.LENGTH_SHORT).show()
             }
 
 

@@ -1,8 +1,9 @@
-package com.joegruff.viacoinaddressscanner
+package com.joegruff.viacoinaddressscanner.helpers
 
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentActivity
+import com.joegruff.viacoinaddressscanner.R
 
 
 abstract class ReusableFragmentActivity : FragmentActivity() {

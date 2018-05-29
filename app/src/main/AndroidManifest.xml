@@ -19,8 +19,8 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity android:name=".GetAddressActivity"/>
-        <activity android:name=".ViewAddressActivity"/>
+        <activity android:name=".activities.GetAddressActivity"/>
+        <activity android:name=".activities.ViewAddressActivity"/>
     </application>
     <uses-permission android:name="android.permission.INTERNET" />
 

@@ -3,4 +3,7 @@
     <string name="action_settings">Settings</string>
     <string name="get_address_view_scan_button">Scan QR</string>
     <string name="get_address_view_paste">Paste from clipboard</string>
+    <string name="get_address_fragment_no_clipboard_data">nothing to paste</string>
+    <string name="view_address_fragment_invalid_address">address is invalid</string>
+    <string name="view_address_fragment_edit_text">Add label</string>
 </resources>
