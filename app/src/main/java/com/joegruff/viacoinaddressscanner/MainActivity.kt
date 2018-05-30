@@ -6,11 +6,13 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.AttributeSet
 import android.util.Log
 import android.view.*
 import android.widget.ArrayAdapter
+import android.widget.FrameLayout
 import android.widget.ListView
 import android.widget.TextView
 import com.joegruff.viacoinaddressscanner.activities.GetAddressActivity
@@ -22,7 +24,9 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 
 class MainActivity : AppCompatActivity() {
-    var adapter : MyAdapter? = null
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var viewAdapter: RecyclerView.Adapter<*>
+    private lateinit var viewManager: RecyclerView.LayoutManager
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,14 +35,31 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
         AddressBook.fillAddressBook(this)
 
-        adapter = MyAdapter(this, R.layout.one_list_item_view, AddressBook.addresses)
-        list_view.adapter = adapter
-        list_view.setOnItemClickListener {parent, view, position, id ->
+
+        viewManager = LinearLayoutManager(this)
+        viewAdapter = MyAdapter(AddressBook.addresses)
+
+        recyclerView = findViewById<RecyclerView>(R.id.recycle_view).apply {
+            // use this setting to improve performance if you know that changes
+            // in content do not change the layout size of the RecyclerView
+            setHasFixedSize(true)
+
+            // use a linear layout manager
+            layoutManager = viewManager
+
+            // specify an viewAdapter (see also next example)
+            adapter = viewAdapter
+
+        }
+
+
+
+        /*recycle_view.setOnItemClickListener {parent, view, position, id ->
             val address = AddressBook.addresses[position].address
             val intent = Intent(this, ViewAddressActivity::class.java)
             intent.putExtra(ViewAddressFragment.INTENT_DATA, address)
             startActivity(intent)
-        }
+        }*/
 
 
         fab.setOnClickListener { view ->
@@ -48,7 +69,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onResume() {
-        adapter?.notifyDataSetChanged()
+        //adapter?.notifyDataSetChanged()
         Log.d("num", "num of addresses " + AddressBook.addresses.size)
         super.onResume()
     }
@@ -70,33 +91,27 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    class MyAdapter(context:Context, resID: Int, objects : ArrayList<AddressObject>) : ArrayAdapter<AddressObject>(context, resID, objects) {
-        val ctx = context
-        val id = resID
-        val inflater = ctx.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+    class MyAdapter(private val myDataset: ArrayList<AddressObject>) : RecyclerView.Adapter<MyAdapter.viewholder>() {
 
-        override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
-            var holder = viewholder()
-            var v = convertView
-            if (v == null) {
-                v = inflater.inflate(R.layout.one_list_item_view,parent,false)
-                holder.textView = v.findViewById(R.id.one_list_item_view_text_view)
-                v.setTag(holder)
-            } else {
-                holder = v.getTag() as viewholder
-            }
-            var string = AddressBook.addresses[position].title
-            if (string == ""){
-                string = AddressBook.addresses[position].address
-            }
-            holder.textView?.setText(string)
-            Log.d("position","da position " + position + " " + AddressBook.addresses[position].address)
-
-            return v!!
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): viewholder {
+            val mainView = LayoutInflater.from(parent.context).inflate(R.layout.one_list_item_view,parent,false) as FrameLayout
+            return viewholder(mainView)
         }
 
-        class viewholder {
-            var textView: TextView? = null
+        override fun getItemCount(): Int {
+            return myDataset.size
+        }
+
+        override fun onBindViewHolder(holder: viewholder, position: Int) {
+            var string = myDataset[position].title
+            if (string == "") {
+                string = myDataset[position].address
+            }
+            holder.textView.setText(string)
+        }
+
+        class viewholder(itemview: FrameLayout) : RecyclerView.ViewHolder(itemview) {
+            val textView = itemView.findViewById<TextView>(R.id.one_list_item_view_text_view)
         }
     }
 }

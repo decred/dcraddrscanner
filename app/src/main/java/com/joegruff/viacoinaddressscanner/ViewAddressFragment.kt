@@ -94,7 +94,6 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
                         setupeditlabel()
                         setupqrcode()
                         setupaddressbutton()
-
                     }
                 }
                 setinfoview()
