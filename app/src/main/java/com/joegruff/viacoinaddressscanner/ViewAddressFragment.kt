@@ -112,6 +112,7 @@ fun setinfoview() {
 }
 
 fun setupeditlabel() {
+    labeledittext?.setText(addressObject?.title)
     labeledittext?.addTextChangedListener(object : TextWatcher {
         override fun afterTextChanged(p0: Editable?) {
         }
