@@ -4,7 +4,6 @@ import android.content.Context
 import android.util.Log
 import org.json.JSONArray
 import org.json.JSONTokener
-import java.io.BufferedWriter
 import java.io.File
 
 object JSONSerializer {

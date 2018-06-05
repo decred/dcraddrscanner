@@ -1,32 +1,33 @@
 package com.joegruff.viacoinaddressscanner
 
-import android.app.Activity
-import android.content.ActivityNotFoundException
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.graphics.*
 import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.support.design.widget.BottomSheetDialog
+import android.support.design.widget.Snackbar
+import android.support.v4.content.ContextCompat
+import android.support.v4.content.res.ResourcesCompat
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.util.AttributeSet
+import android.support.v7.widget.helper.ItemTouchHelper
 import android.util.Log
 import android.view.*
-import android.widget.*
+import android.widget.Button
+import android.widget.ProgressBar
+import android.widget.TextView
+import android.widget.Toast
 import com.joegruff.viacoinaddressscanner.activities.ViewAddressActivity
 import com.joegruff.viacoinaddressscanner.barcodeReader.BarcodeCaptureActivity
 import com.joegruff.viacoinaddressscanner.helpers.AddressBook
 import com.joegruff.viacoinaddressscanner.helpers.AddressObject
-
+import com.joegruff.viacoinaddressscanner.helpers.AsyncObserver
+import com.joegruff.viacoinaddressscanner.helpers.MyConstraintLayout
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.content_main.*
-import android.graphics.drawable.Drawable
-import android.support.v4.content.ContextCompat
-import android.support.v4.content.res.ResourcesCompat
-import android.support.v7.widget.helper.ItemTouchHelper
 
 
 class MainActivity : AppCompatActivity() {
@@ -65,6 +66,8 @@ class MainActivity : AppCompatActivity() {
         val swipeHandler = object : SwipeToDeleteCallback(this) {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val adapter = recyclerView.adapter as MyAdapter
+                adapter.onItemRemove(viewHolder,recyclerView)
+                //adapter.asktoremove(viewHolder.adapterPosition)
                 //adapter.removeAt(viewHolder.adapterPosition)
                 Log.d("dfdf", "swiped to delete")
             }
@@ -103,6 +106,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onPause() {
+        AddressBook.saveAddressBook(this)
+        super.onPause()
+    }
 
     override fun onResume() {
         //adapter?.notifyDataSetChanged()
@@ -129,6 +136,8 @@ class MainActivity : AppCompatActivity() {
 
     class MyAdapter(private val ctx: Context, private val myDataset: ArrayList<AddressObject>) : RecyclerView.Adapter<MyAdapter.viewholder>() {
 
+        val addressesToDelete = ArrayList<AddressObject>()
+
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): viewholder {
             val mainView = LayoutInflater.from(parent.context).inflate(R.layout.one_list_item_view, parent, false)
             return viewholder(mainView)
@@ -150,10 +159,35 @@ class MainActivity : AppCompatActivity() {
                 intent.putExtra(ViewAddressFragment.INTENT_DATA, address)
                 ctx.startActivity(intent)
             }
+            myDataset[position].delegate = holder.balanceLayout
         }
 
-        class viewholder(itemview: View) : RecyclerView.ViewHolder(itemview) {
-            val textView = itemView.findViewById<TextView>(R.id.one_list_item_view_text_view)
+
+        fun onItemRemove(viewHolder: RecyclerView.ViewHolder, recyclerView: RecyclerView) {
+            val adapterPosition = viewHolder.adapterPosition
+            Log.d("asdsadf", "adapter position "+ adapterPosition)
+            val addressObject = myDataset.get(adapterPosition)
+            val snackbar = Snackbar
+                    .make(recyclerView, "PHOTO REMOVED", Snackbar.LENGTH_LONG)
+                    .setAction("UNDO", {view->
+                            //val mAdapterPosition = viewHolder.adapterPosition
+                            myDataset.add(adapterPosition, addressObject)
+                            notifyItemInserted(adapterPosition)
+                            recyclerView.scrollToPosition(adapterPosition)
+                            addressesToDelete.remove(addressObject)
+
+                    })
+            snackbar.show()
+            myDataset.removeAt(adapterPosition)
+            notifyItemRemoved(adapterPosition)
+            addressesToDelete.add(addressObject)
+        }
+
+
+
+        class viewholder(itemview: View) : RecyclerView.ViewHolder(itemview){
+            val textView = itemview.findViewById<TextView>(R.id.one_list_item_view_text_view)
+            val balanceLayout = itemview.findViewById<MyConstraintLayout>(R.id.balance_swirl_layout)
         }
     }
 
@@ -186,7 +220,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    abstract class SwipeToDeleteCallback(context: Context) : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+    abstract class SwipeToDeleteCallback(val context: Context) : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
 
         private val deleteIcon = ContextCompat.getDrawable(context, R.drawable.ic_delete_white_24)!!
         private val intrinsicWidth = deleteIcon.intrinsicWidth
@@ -195,21 +229,13 @@ class MainActivity : AppCompatActivity() {
         private val backgroundColor = Color.parseColor("#f44336")
         private val clearPaint = Paint().apply { xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR) }
 
-/**
-        override fun getMovementFlags(recyclerView: RecyclerView?, viewHolder: RecyclerView.ViewHolder?): Int {
 
-             * To disable "swipe" for specific item return 0 here.
-             * For example:
-             * if (viewHolder?.itemViewType == YourAdapter.SOME_TYPE) return 0
-             * if (viewHolder?.adapterPosition == 0) return 0
 
-            if (viewHolder?.adapterPosition == 10) return 0
-            return super.getMovementFlags(recyclerView, viewHolder)
-        }*/
 
         override fun onMove(recyclerView: RecyclerView?, viewHolder: RecyclerView.ViewHolder?, target: RecyclerView.ViewHolder?): Boolean {
             return false
         }
+
 
         override fun onChildDraw(
                 c: Canvas?, recyclerView: RecyclerView?, viewHolder: RecyclerView.ViewHolder,
@@ -220,11 +246,15 @@ class MainActivity : AppCompatActivity() {
             val itemHeight = itemView.bottom - itemView.top
             val isCanceled = dX == 0f && !isCurrentlyActive
 
+
+
             if (isCanceled) {
                 clearCanvas(c, itemView.right + dX, itemView.top.toFloat(), itemView.right.toFloat(), itemView.bottom.toFloat())
                 super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
                 return
             }
+
+
 
             // Draw the red delete background
             background.color = backgroundColor

@@ -26,8 +26,7 @@ object AddressBook {
             if (a.address == address)
                 return getAddress(address)
         }
-        val newObject = AddressObject()
-        newObject.address = address
+        val newObject = AddressObject(address)
         addresses.add(newObject)
         return newObject
     }

@@ -18,7 +18,6 @@ package com.joegruff.viacoinaddressscanner.barcodeReader;
 import android.content.Context;
 import android.support.annotation.UiThread;
 
-
 import com.google.android.gms.vision.Detector;
 import com.google.android.gms.vision.Tracker;
 import com.google.android.gms.vision.barcode.Barcode;

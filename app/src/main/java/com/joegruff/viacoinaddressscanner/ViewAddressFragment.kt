@@ -19,6 +19,7 @@ import com.google.zxing.WriterException
 import com.google.zxing.common.BitMatrix
 import com.joegruff.viacoinaddressscanner.helpers.AddressBook
 import com.joegruff.viacoinaddressscanner.helpers.AddressObject
+import com.joegruff.viacoinaddressscanner.helpers.AsyncObserver
 import com.joegruff.viacoinaddressscanner.helpers.GetInfoFromWeb
 import org.json.JSONObject
 import org.json.JSONTokener
@@ -54,15 +55,16 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
         addressbutton = v.findViewById(R.id.view_address_view_address_button)
         labeledittext = v.findViewById(R.id.view_address_view_label)
 
-        AddressBook.getAddress(address)?.let {
-            addressObject = it
+        addressObject = AddressBook.getAddress(address)
+
+        if (addressObject != null){
             setupeditlabel()
             setinfoview()
             setupqrcode()
             setupaddressbutton()
-        }
+        } else {
 
-        GetInfoFromWeb(this, address).execute()
+        }
 
         return v
     }
@@ -73,6 +75,10 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
             AddressBook.saveAddressBook(activity)
         }
         super.onPause()
+    }
+
+    override fun processbegan() {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun processfinished(output: String?) {
@@ -165,7 +171,3 @@ fun textToQRBitmap(Value: String): Bitmap? {
 }
 }
 
-
-interface AsyncObserver {
-    fun processfinished(output: String?)
-}
