@@ -152,14 +152,20 @@ class MainActivity : AppCompatActivity() {
             if (string == "") {
                 string = myDataset[position].address
             }
-            holder.textView.setText(string)
+            holder.textView.text = string
+            holder.balanceTextview.text = myDataset[position].amount.toString()
+            if (myDataset[position].isUpdating) {
+                holder.progressBar.alpha = 0.7f
+            } else {
+                holder.progressBar.alpha = 0f
+            }
             holder.itemView.setOnClickListener {
                 val address = myDataset[position].address
                 val intent = Intent(ctx, ViewAddressActivity::class.java)
                 intent.putExtra(ViewAddressFragment.INTENT_DATA, address)
                 ctx.startActivity(intent)
             }
-            myDataset[position].delegate = holder.balanceLayout
+            myDataset[position].delegate = holder.delegateHolder
         }
 
 
@@ -187,7 +193,10 @@ class MainActivity : AppCompatActivity() {
 
         class viewholder(itemview: View) : RecyclerView.ViewHolder(itemview){
             val textView = itemview.findViewById<TextView>(R.id.one_list_item_view_text_view)
-            val balanceLayout = itemview.findViewById<MyConstraintLayout>(R.id.balance_swirl_layout)
+            val balanceTextview = itemview.findViewById<TextView>(R.id.balance_swirl_balance)
+            val progressBar = itemview.findViewById<ProgressBar>(R.id.balance_swirl_progress_bar)
+            val changeView = itemview.findViewById<TextView>(R.id.balance_swirl_change)
+            val delegateHolder = itemview.findViewById<MyConstraintLayout>(R.id.balance_swirl_layout)
         }
     }
 

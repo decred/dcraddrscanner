@@ -71,7 +71,14 @@ class AddressObject : AsyncObserver {
                         } catch (e:Exception){
 
                         }
-                    Handler().postDelayed({ GetInfoFromWeb(this, address).execute() }, 60000)
+                    if (!updatePosted) {
+                        Handler().postDelayed({
+                            GetInfoFromWeb(this, address).execute()
+                            try {this.updatePosted = false} catch (e:Exception){Log.d("postingblock", "was no object left")}
+                            Log.d("update was posted ","return value " + updatePosted.toString())
+                        }, 60000)
+                        updatePosted = true
+                    }
                     isValid = true
                 }
 
