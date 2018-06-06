@@ -67,8 +67,7 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
     }
 
     override fun onPause() {
-        if (addressObject!!.hasBeenInitiated){
-
+        if (addressObject!!.isValid){
             AddressBook.updateAddress(addressObject!!)
             AddressBook.saveAddressBook(activity)
         }

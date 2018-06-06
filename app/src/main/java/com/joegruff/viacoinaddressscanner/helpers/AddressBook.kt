@@ -24,10 +24,10 @@ object AddressBook {
     fun newObjectFromAddress(address : String): AddressObject? {
         for (a in addresses) {
             if (a.address == address)
-                return getAddress(address)
+                return a
         }
         val newObject = AddressObject(address)
-        addresses.add(newObject)
+        //addresses.add(newObject)
         return newObject
     }
 
