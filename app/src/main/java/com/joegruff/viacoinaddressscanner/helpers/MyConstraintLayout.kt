@@ -32,11 +32,12 @@ class MyConstraintLayout : RelativeLayout, AsyncObserver {
 
             if (token is JSONObject) {
                 val amountString = token.getString("balance")
-                balance_swirl_progress_bar.alpha = 0f
+
                 balance_swirl_balance.setText(amountString)
                 Log.d("constraintlayout ", "process finished" + output)
             }
         }
+        balance_swirl_progress_bar.alpha = 0f
 
     }
 }

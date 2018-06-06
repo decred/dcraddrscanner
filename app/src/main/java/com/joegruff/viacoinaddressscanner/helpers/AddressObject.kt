@@ -19,12 +19,14 @@ class AddressObject : AsyncObserver {
     var updatePosted = false
     var isValid = false
     var delegate : AsyncObserver? = null
+    var hasBeenInitiated = false
 
 
     constructor(jsonObject: JSONObject) {
         address = jsonObject.getString(JSON_ADDRESS)
         title = jsonObject.getString(JSON_TITLE)
         amount = jsonObject.getDouble(JSON_AMOUNT)
+        hasBeenInitiated = true
         isValid = true
         oneminuteupdate(address)
     }
@@ -57,7 +59,11 @@ class AddressObject : AsyncObserver {
     }
 
     override fun processfinished(output: String?) {
+        try {
+            delegate?.processfinished(output)
+        } catch (e:Exception){
 
+        }
         if (output != null) {
             val token = JSONTokener(output).nextValue()
             if (token is JSONObject) {
@@ -66,11 +72,7 @@ class AddressObject : AsyncObserver {
                 if (address == addressString) {
                         amount = amountString.toDouble()
                         Log.d("addressobject", "process finished "+ output)
-                        try {
-                            delegate?.processfinished(output)
-                        } catch (e:Exception){
 
-                        }
                     if (!updatePosted) {
                         Handler().postDelayed({
                             GetInfoFromWeb(this, address).execute()

@@ -112,7 +112,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onResume() {
-        //adapter?.notifyDataSetChanged()
+        viewAdapter.notifyDataSetChanged()
         Log.d("num", "num of addresses " + AddressBook.addresses.size)
         super.onResume()
     }
