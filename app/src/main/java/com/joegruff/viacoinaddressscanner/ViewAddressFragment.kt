@@ -10,10 +10,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ImageView
-import android.widget.TextView
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.MultiFormatWriter
 import com.google.zxing.WriterException
@@ -116,7 +112,7 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
             }
             balance_swirl_balance.text = it.amount.toString()
             balance_swirl_layout.setOnClickListener { v ->
-                it.oneminuteupdate(address)
+                it.oneminuteupdate()
             }
 
         }

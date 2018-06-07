@@ -11,6 +11,8 @@ class AddressObject : AsyncObserver {
     val JSON_ADDRESS: String = "address"
     val JSON_TITLE = "title"
     val JSON_AMOUNT = "amount"
+    val JSON_TIMESTAMP = "timestamp"
+    val JSON_OLD_AMOUNT = "oldamount"
 
     var address = ""
     var title = ""
@@ -18,6 +20,8 @@ class AddressObject : AsyncObserver {
     var isUpdating = false
     var updatePosted = false
     var isValid = false
+    var oldestAmount = 0.0
+    var oldestTimestamp = 0.0
     var delegate : AsyncObserver? = null
     var hasBeenInitiated = false
 
@@ -26,13 +30,16 @@ class AddressObject : AsyncObserver {
         address = jsonObject.getString(JSON_ADDRESS)
         title = jsonObject.getString(JSON_TITLE)
         amount = jsonObject.getDouble(JSON_AMOUNT)
+        oldestAmount = jsonObject.getDouble(JSON_OLD_AMOUNT)
+        oldestTimestamp = jsonObject.getDouble(JSON_TIMESTAMP)
         hasBeenInitiated = true
         isValid = true
-        oneminuteupdate(address)
+        oneminuteupdate()
     }
 
     constructor(add : String){
-        oneminuteupdate(add)
+        address = add
+        oneminuteupdate()
     }
 
     fun toJSON(): JSONObject {
@@ -40,6 +47,8 @@ class AddressObject : AsyncObserver {
         jsonObject.put(JSON_ADDRESS, address)
         jsonObject.put(JSON_TITLE, title)
         jsonObject.put(JSON_AMOUNT, amount)
+        jsonObject.put(JSON_OLD_AMOUNT, oldestAmount)
+        jsonObject.put(JSON_TIMESTAMP, oldestTimestamp)
         return jsonObject
     }
 
@@ -51,10 +60,10 @@ class AddressObject : AsyncObserver {
         }
 
     }
-    fun oneminuteupdate(add:String){
+    fun oneminuteupdate(){
         if (!isUpdating) {
             isUpdating = true
-            GetInfoFromWeb(this, add).execute()
+            GetInfoFromWeb(this, address).execute()
         }
     }
 
@@ -72,7 +81,9 @@ class AddressObject : AsyncObserver {
                 if (address == addressString) {
                         amount = amountString.toDouble()
                         Log.d("addressobject", "process finished "+ output)
-
+                    if (!isValid){
+                        isValid = true
+                    }
                     if (!updatePosted) {
                         Handler().postDelayed({
                             GetInfoFromWeb(this, address).execute()
@@ -81,7 +92,7 @@ class AddressObject : AsyncObserver {
                         }, 60000)
                         updatePosted = true
                     }
-                    isValid = true
+
                 }
 
             }

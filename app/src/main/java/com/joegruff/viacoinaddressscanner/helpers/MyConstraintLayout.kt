@@ -1,15 +1,9 @@
 package com.joegruff.viacoinaddressscanner.helpers
 
 import android.content.Context
-import android.support.constraint.ConstraintLayout
 import android.util.AttributeSet
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.widget.ProgressBar
 import android.widget.RelativeLayout
-import android.widget.TextView
-import com.joegruff.viacoinaddressscanner.R
 import kotlinx.android.synthetic.main.balance_swirl.view.*
 import org.json.JSONObject
 import org.json.JSONTokener
