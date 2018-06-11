@@ -13,6 +13,10 @@ class MyConstraintLayout : RelativeLayout, AsyncObserver {
     constructor(context: Context, attrs: AttributeSet) : super(context,attrs)
     constructor(context: Context) : super(context)
 
+    var abbreviatedValues = false
+
+
+
 
     override fun processbegan() {
         balance_swirl_progress_bar.alpha = 0.7f
@@ -33,5 +37,26 @@ class MyConstraintLayout : RelativeLayout, AsyncObserver {
         }
         balance_swirl_progress_bar.alpha = 0f
 
+    }
+    fun amountfromstring(amountString:String) : String {
+        if (abbreviatedValues){
+            var x = amountString.toFloat()
+            var i = 0
+            if (x >= 10){
+                while (x >= 10) {
+                    x = x / 10
+                    i+=1
+                }
+            } else if (x < 0) {
+                while (x < 0) {
+                    x = x * 10
+                    i -= 1
+                }
+            }
+
+
+
+        }
+        return amountString
     }
 }
