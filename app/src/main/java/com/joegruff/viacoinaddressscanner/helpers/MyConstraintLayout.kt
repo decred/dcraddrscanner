@@ -42,10 +42,11 @@ class MyConstraintLayout : RelativeLayout, AsyncObserver {
         if (abbreviatedValues){
             var x = amountString.toFloat()
             var i = 0
+            var subfix = ""
             if (x >= 10){
                 while (x >= 10) {
                     x = x / 10
-                    i+=1
+                    i += 1
                 }
             } else if (x < 0) {
                 while (x < 0) {
