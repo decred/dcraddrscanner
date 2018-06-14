@@ -10,7 +10,7 @@ import org.json.JSONTokener
 import java.util.*
 import kotlin.concurrent.schedule
 
-class AddressObject : AsyncObserver{
+class AddressObject : AsyncObserver {
     val JSON_ADDRESS: String = "address"
     val JSON_TITLE = "title"
     val JSON_AMOUNT = "amount"
@@ -24,9 +24,8 @@ class AddressObject : AsyncObserver{
     var isValid = false
     var oldestAmount = 0.0
     var oldestTimestamp = 0.0
-    var delegate : AsyncObserver? = null
+    var delegate: AsyncObserver? = null
     var hasBeenInitiated = false
-    val handler = android.os.Handler()
 
 
     constructor(jsonObject: JSONObject) {
@@ -40,7 +39,7 @@ class AddressObject : AsyncObserver{
         oneminuteupdate()
     }
 
-    constructor(add : String){
+    constructor(add: String) {
         address = add
         oneminuteupdate()
     }
@@ -60,12 +59,23 @@ class AddressObject : AsyncObserver{
         isUpdating = true
         try {
             delegate?.processbegan()
-        } catch (e:Exception){
+        } catch (e: Exception) {
 
         }
 
     }
-    fun oneminuteupdate(){
+
+    fun oneminuteupdate() {
+        update()
+        Handler().postDelayed({
+            oneminuteupdate()
+        }, 60000)
+
+
+    }
+
+    fun update(){
+        Log.d("update","isupdating = "+isUpdating)
         if (!isUpdating) {
             isUpdating = true
             GetInfoFromWeb(this, address).execute()
@@ -75,7 +85,7 @@ class AddressObject : AsyncObserver{
     override fun processfinished(output: String?) {
         try {
             delegate?.processfinished(output)
-        } catch (e:Exception){
+        } catch (e: Exception) {
 
         }
         if (output != null) {
@@ -84,26 +94,16 @@ class AddressObject : AsyncObserver{
                 val addressString = token.getString("addrStr")
                 val amountString = token.getString("balance")
                 if (address == addressString) {
-                        amount = amountString.toDouble()
-                        Log.d("addressobject", "process finished "+ output)
-                    if (!isValid){
+                    amount = amountString.toDouble()
+                    Log.d("addressobject", "process finished " + output)
+                    if (!isValid) {
                         isValid = true
-                    }
 
-                    Timer().schedule(6000) {
-                        GetInfoFromWeb(this, address)
-                    }
-
-                    if (!handler.hasMessages(777)) {
-                        handler.postDelayed({
-                            Runnable {
-
-                            }
-                        }, 60000)
                     }
                 }
             }
         }
+        //Handler().postDelayed({isUpdating = false},5000)
         isUpdating = false
     }
 }

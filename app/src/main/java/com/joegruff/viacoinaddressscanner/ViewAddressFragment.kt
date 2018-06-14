@@ -106,12 +106,9 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
 
     fun setinfoview() {
         addressObject?.let {
-            if (!it.isUpdating) {
-                balance_swirl_progress_bar.alpha = 0f
-            }
             balance_swirl_balance.text = it.amount.toString()
             balance_swirl_layout.setOnClickListener { v ->
-                it.oneminuteupdate()
+                it.update()
             }
 
         }
