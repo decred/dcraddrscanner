@@ -153,7 +153,8 @@ class MainActivity : AppCompatActivity() {
                 string = myDataset[position].address
             }
             holder.textView.text = string
-            holder.balanceTextview.text = myDataset[position].amount.toString()
+            holder.delegateHolder.abbreviatedValues = true
+            holder.delegateHolder.setAmount(myDataset[position].amount.toString())
             if (myDataset[position].isUpdating) {
                 holder.progressBar.alpha = 0.7f
             } else {

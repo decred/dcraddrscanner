@@ -75,7 +75,6 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
     }
 
     override fun processfinished(output: String?) {
-        Log.d("asdsadf", "output was null")
         balance_swirl_layout.processfinished(output)
         if (output == null) {
             view_address_view_address_button.setText(R.string.view_address_fragment_invalid_address)

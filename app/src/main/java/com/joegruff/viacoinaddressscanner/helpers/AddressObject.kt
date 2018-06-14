@@ -2,12 +2,15 @@ package com.joegruff.viacoinaddressscanner.helpers
 
 import android.location.Address
 import android.os.Handler
+import android.os.Message
 import android.util.Log
 import com.joegruff.viacoinaddressscanner.R
 import org.json.JSONObject
 import org.json.JSONTokener
+import java.util.*
+import kotlin.concurrent.schedule
 
-class AddressObject : AsyncObserver {
+class AddressObject : AsyncObserver{
     val JSON_ADDRESS: String = "address"
     val JSON_TITLE = "title"
     val JSON_AMOUNT = "amount"
@@ -18,12 +21,12 @@ class AddressObject : AsyncObserver {
     var title = ""
     var amount = 0.0
     var isUpdating = false
-    var updatePosted = false
     var isValid = false
     var oldestAmount = 0.0
     var oldestTimestamp = 0.0
     var delegate : AsyncObserver? = null
     var hasBeenInitiated = false
+    val handler = android.os.Handler()
 
 
     constructor(jsonObject: JSONObject) {
@@ -52,7 +55,9 @@ class AddressObject : AsyncObserver {
         return jsonObject
     }
 
+
     override fun processbegan() {
+        isUpdating = true
         try {
             delegate?.processbegan()
         } catch (e:Exception){
@@ -84,17 +89,19 @@ class AddressObject : AsyncObserver {
                     if (!isValid){
                         isValid = true
                     }
-                    if (!updatePosted) {
-                        Handler().postDelayed({
-                            GetInfoFromWeb(this, address).execute()
-                            try {this.updatePosted = false} catch (e:Exception){Log.d("postingblock", "was no object left")}
-                            Log.d("update was posted ","return value " + updatePosted.toString())
-                        }, 60000)
-                        updatePosted = true
+
+                    Timer().schedule(6000) {
+                        GetInfoFromWeb(this, address)
                     }
 
-                }
+                    if (!handler.hasMessages(777)) {
+                        handler.postDelayed({
+                            Runnable {
 
+                            }
+                        }, 60000)
+                    }
+                }
             }
         }
         isUpdating = false
