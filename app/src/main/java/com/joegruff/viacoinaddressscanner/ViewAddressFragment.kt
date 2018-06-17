@@ -34,6 +34,7 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
 
     var addressObject: AddressObject? = null
     var address = ""
+    var delegate : AsyncObserver? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
@@ -57,9 +58,12 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
         } else {
             addressObject = AddressBook.newObjectFromAddress(address)
         }
-        addressObject?.delegate = this
-
         super.onViewCreated(view, savedInstanceState)
+    }
+
+    override fun onResume() {
+        addressObject?.delegate = this
+        super.onResume()
     }
 
     override fun onPause() {
@@ -71,11 +75,19 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
     }
 
     override fun processbegan() {
-        balance_swirl_layout.processbegan()
+        try {
+            delegate?.processbegan()
+        } catch (e:Exception){
+
+        }
     }
 
     override fun processfinished(output: String?) {
-        balance_swirl_layout.processfinished(output)
+        try {
+            delegate?.processfinished(output)
+        } catch (e:Exception){
+
+        }
         if (output == null) {
             view_address_view_address_button.setText(R.string.view_address_fragment_invalid_address)
             return
@@ -107,15 +119,12 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
     fun setinfoview() {
         addressObject?.let {
             balance_swirl_balance.text = it.amount.toString()
-            balance_swirl_layout.setOnClickListener { v ->
+            balance_swirl_balance.setOnClickListener { v ->
                 it.update()
             }
+            this.delegate = balance_swirl_layout
 
         }
-        if (!addressObject!!.isUpdating) {
-            balance_swirl_progress_bar.alpha = 0f
-        }
-
     }
 
     fun setupeditlabel() {

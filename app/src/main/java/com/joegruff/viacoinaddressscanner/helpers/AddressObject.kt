@@ -60,7 +60,7 @@ class AddressObject : AsyncObserver {
         try {
             delegate?.processbegan()
         } catch (e: Exception) {
-
+Log.d("addressobject","processbegin " + e.printStackTrace())
         }
 
     }
@@ -98,7 +98,6 @@ class AddressObject : AsyncObserver {
                     Log.d("addressobject", "process finished " + output)
                     if (!isValid) {
                         isValid = true
-
                     }
                 }
             }

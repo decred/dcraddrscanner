@@ -3,7 +3,10 @@ package com.joegruff.viacoinaddressscanner.helpers
 import android.content.Context
 import android.util.AttributeSet
 import android.util.Log
+import android.view.View
+import android.widget.ProgressBar
 import android.widget.RelativeLayout
+import com.joegruff.viacoinaddressscanner.R
 import kotlinx.android.synthetic.main.balance_swirl.view.*
 import org.json.JSONObject
 import org.json.JSONTokener
@@ -17,7 +20,10 @@ class MyConstraintLayout : RelativeLayout, AsyncObserver {
     var abbreviatedValues = false
 
     override fun processbegan() {
-        balance_swirl_progress_bar.alpha = 0.7f
+        Log.d("mycontraintlayout","process began")
+        this.clearAnimation()
+        balance_swirl_progress_bar.alpha = .7f
+        this.invalidate()
     }
 
     override fun processfinished(output: String?) {

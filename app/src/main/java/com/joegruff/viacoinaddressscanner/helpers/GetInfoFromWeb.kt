@@ -8,7 +8,7 @@ import java.io.InputStreamReader
 import java.net.SocketTimeoutException
 import java.net.URL
 
-class GetInfoFromWeb(val delegate: AddressObject, val add: String) : AsyncTask<Void, Void, String>() {
+class GetInfoFromWeb(val delegate: AsyncObserver, val add: String) : AsyncTask<Void, Void, String>() {
 
     //this is the inspire api
     val API_URL = "https://explorer.viacoin.org/api/addr/"
@@ -18,9 +18,8 @@ class GetInfoFromWeb(val delegate: AddressObject, val add: String) : AsyncTask<V
 
 
         Log.d("async", "Doin in background")
-
-        try {
         delegate.processbegan()
+        try {
             val url = URL(API_URL + add)
             val urlConnection = url.openConnection()
             urlConnection.connectTimeout = 5000
@@ -29,8 +28,6 @@ class GetInfoFromWeb(val delegate: AddressObject, val add: String) : AsyncTask<V
             bufferedReader.close()
             return line
         } catch (e:Exception){
-            return null
-        }catch (e:SocketTimeoutException){
             return null
         }
     }
