@@ -102,7 +102,6 @@ Log.d("addressobject","processbegin " + e.printStackTrace())
                 }
             }
         }
-        //Handler().postDelayed({isUpdating = false},5000)
         isUpdating = false
     }
 }

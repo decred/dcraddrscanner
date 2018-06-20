@@ -1,5 +1,6 @@
 package com.joegruff.viacoinaddressscanner
 
+import android.app.Activity
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
@@ -85,8 +86,7 @@ class MainActivity : AppCompatActivity() {
                 val intent = Intent(this, BarcodeCaptureActivity::class.java)
                 intent.putExtra(BarcodeCaptureActivity.AutoFocus, true)
                 intent.putExtra(BarcodeCaptureActivity.UseFlash, false)
-
-                startActivityForResult(intent, RC_BARCODE_CAPTURE)
+                this.startActivityForResult(intent, RC_BARCODE_CAPTURE)
                 dialogview.dismiss()
             }
             pastebutton?.setOnClickListener {
@@ -95,7 +95,7 @@ class MainActivity : AppCompatActivity() {
                     val address = clipboard.primaryClip.getItemAt(0).text.toString()
                     val intent = Intent(this, ViewAddressActivity::class.java)
                     intent.putExtra(ViewAddressFragment.INTENT_DATA, address)
-                    startActivity(intent)
+                    this.startActivity(intent)
                 } else
                     Toast.makeText(this, R.string.get_address_fragment_no_clipboard_data, Toast.LENGTH_SHORT).show()
 
@@ -103,6 +103,14 @@ class MainActivity : AppCompatActivity() {
             }
             dialogview.show()
 
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == RC_BARCODE_CAPTURE && resultCode == Activity.RESULT_OK){
+            val intent = Intent(applicationContext, ViewAddressActivity::class.java)
+            intent.putExtra(ViewAddressFragment.INTENT_DATA, data?.getStringExtra(ViewAddressFragment.INTENT_DATA))
+            this.startActivity(intent)
         }
     }
 

@@ -33,7 +33,7 @@
             android:value="barcode" />
 
         <activity android:name=".barcodeReader.BarcodeCaptureActivity"
-                  android:label="Read Barcode"/>
+                  android:label="Read QR Code"/>
 
     </application>
 
