@@ -23,6 +23,7 @@ import kotlinx.android.synthetic.main.balance_swirl.*
 import kotlinx.android.synthetic.main.view_address_view.*
 import org.json.JSONObject
 import org.json.JSONTokener
+import java.text.DecimalFormat
 
 class ViewAddressFragment : Fragment(), AsyncObserver {
     companion object {
@@ -128,7 +129,8 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
 
     fun setinfoview() {
         addressObject?.let {
-            balance_swirl_balance.text = it.amount.toString()
+            val f = DecimalFormat("#.################")
+            balance_swirl_balance.text = f.format(it.amount).toString()
             balance_swirl_balance.setOnClickListener { v ->
                 it.update()
             }
