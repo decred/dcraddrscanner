@@ -1,15 +1,19 @@
 package com.joegruff.viacoinaddressscanner
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.Bundle
 import android.support.v4.app.Fragment
+import android.support.v7.app.AppCompatActivity
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.MultiFormatWriter
 import com.google.zxing.WriterException
@@ -19,6 +23,7 @@ import kotlinx.android.synthetic.main.balance_swirl.*
 import kotlinx.android.synthetic.main.view_address_view.*
 import org.json.JSONObject
 import org.json.JSONTokener
+import java.text.DecimalFormat
 
 class ViewAddressFragment : Fragment(), AsyncObserver {
     companion object {
@@ -92,6 +97,12 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
             view_address_view_address_button.setText(R.string.view_address_fragment_invalid_address)
             return
         }
+        if (output == NO_CONNECTION){
+            if (!addressObject!!.hasBeenInitiated){
+                view_address_view_address_button.setText(R.string.view_address_fragment_no_connection)
+                return
+            }
+        }
         val token = JSONTokener(output).nextValue()
         if (token is JSONObject) {
             val addressString = token.getString("addrStr")
@@ -118,7 +129,8 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
 
     fun setinfoview() {
         addressObject?.let {
-            balance_swirl_balance.text = it.amount.toString()
+            val f = DecimalFormat("#.################")
+            balance_swirl_balance.text = f.format(it.amount).toString()
             balance_swirl_balance.setOnClickListener { v ->
                 it.update()
             }
@@ -145,6 +157,12 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
 
     fun setupaddressbutton() {
         view_address_view_address_button.setText(addressObject?.address)
+        view_address_view_address_button.setOnClickListener {
+            val clipboard = activity?.getSystemService(AppCompatActivity.CLIPBOARD_SERVICE) as ClipboardManager?
+            val clip = ClipData.newPlainText("address",addressObject?.address)
+            clipboard?.primaryClip = clip
+            Toast.makeText(activity,R.string.view_address_fragment_copied_clipdata,Toast.LENGTH_SHORT).show()
+        }
     }
 
     fun setupqrcode() {

@@ -178,8 +178,8 @@ class MainActivity : AppCompatActivity() {
             Log.d("asdsadf", "adapter position "+ adapterPosition)
             val addressObject = myDataset.get(adapterPosition)
             val snackbar = Snackbar
-                    .make(recyclerView, "PHOTO REMOVED", Snackbar.LENGTH_LONG)
-                    .setAction("UNDO", {view->
+                    .make(recyclerView, R.string.main_view_deleted_address, Snackbar.LENGTH_LONG)
+                    .setAction(R.string.main_view_undo_delete, {view->
                             //val mAdapterPosition = viewHolder.adapterPosition
                             myDataset.add(adapterPosition, addressObject)
                             notifyItemInserted(adapterPosition)

@@ -5,13 +5,15 @@ import android.os.Handler
 import android.util.Log
 import java.io.BufferedReader
 import java.io.InputStreamReader
-import java.net.SocketTimeoutException
-import java.net.URL
+import java.net.*
+
+const val NO_CONNECTION = "no_connection"
 
 class GetInfoFromWeb(val delegate: AsyncObserver, val add: String) : AsyncTask<Void, Void, String>() {
 
     //this is the inspire api
     val API_URL = "https://explorer.viacoin.org/api/addr/"
+
 
     //get data about address
     override fun doInBackground(vararg params: Void?): String? {
@@ -28,7 +30,14 @@ class GetInfoFromWeb(val delegate: AsyncObserver, val add: String) : AsyncTask<V
             bufferedReader.close()
             return line
         } catch (e:Exception){
-            return null
+            var value : String? = null
+            when (e) {
+                is ConnectException, is UnknownHostException, is SocketTimeoutException ->
+                    value = NO_CONNECTION
+                else -> {
+                }
+            }
+            return value
         }
     }
 
