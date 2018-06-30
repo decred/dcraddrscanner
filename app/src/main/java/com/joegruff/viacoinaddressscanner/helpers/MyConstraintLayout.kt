@@ -33,7 +33,7 @@ class MyConstraintLayout : RelativeLayout, AsyncObserver {
             val token = JSONTokener(output).nextValue()
 
             if (token is JSONObject) {
-                val amountString = token.getString("balance")
+                val amountString = token.getString(JSON_AMOUNT)
                 balance_swirl_balance.setText(amountfromstring(amountString))
             }
         }

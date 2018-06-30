@@ -103,26 +103,17 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
                 return
             }
         }
-        val token = JSONTokener(output).nextValue()
-        if (token is JSONObject) {
-            val addressString = token.getString("addrStr")
-            val amountString = token.getString("balance")
-
-            if (address == addressString) {
-
-                if (!addressObject!!.hasBeenInitiated) {
-                    addressObject?.amount = amountString.toDouble()
-                    addressObject?.hasBeenInitiated = true
-                    activity?.let {
-                        AddressBook.saveAddressBook(it)
-                        setupeditlabel()
-                        setupqrcode()
-                        setupaddressbutton()
-                        setinfoview()
-                    }
+        if (addressObject!!.isValid) {
+            if (!addressObject!!.hasBeenInitiated) {
+                addressObject?.hasBeenInitiated = true
+                activity?.let {
+                    AddressBook.saveAddressBook(it)
+                    setupeditlabel()
+                    setupqrcode()
+                    setupaddressbutton()
+                    setinfoview()
                 }
             }
-
         }
     }
 

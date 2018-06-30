@@ -10,12 +10,14 @@ import org.json.JSONTokener
 import java.util.*
 import kotlin.concurrent.schedule
 
+const val JSON_AMOUNT = "amount"
+const val JSON_ADDRESS: String = "address"
+const val JSON_TITLE = "title"
+const val JSON_TIMESTAMP = "timestamp"
+const val JSON_OLD_AMOUNT = "oldamount"
+
 class AddressObject : AsyncObserver {
-    val JSON_ADDRESS: String = "address"
-    val JSON_TITLE = "title"
-    val JSON_AMOUNT = "amount"
-    val JSON_TIMESTAMP = "timestamp"
-    val JSON_OLD_AMOUNT = "oldamount"
+
 
     var address = ""
     var title = ""
@@ -60,7 +62,7 @@ class AddressObject : AsyncObserver {
         try {
             delegate?.processbegan()
         } catch (e: Exception) {
-Log.d("addressobject","processbegin " + e.printStackTrace())
+            Log.d("addressobject", "processbegin " + e.printStackTrace())
         }
 
     }
@@ -74,8 +76,8 @@ Log.d("addressobject","processbegin " + e.printStackTrace())
 
     }
 
-    fun update(){
-        Log.d("update","isupdating = "+isUpdating)
+    fun update() {
+        Log.d("update", "isupdating = " + isUpdating)
         if (!isUpdating) {
             isUpdating = true
             GetInfoFromWeb(this, address).execute()
@@ -83,11 +85,10 @@ Log.d("addressobject","processbegin " + e.printStackTrace())
     }
 
     override fun processfinished(output: String?) {
-        try {
-            delegate?.processfinished(output)
-        } catch (e: Exception) {
 
-        }
+        var sendToDelegates = output
+
+
         if (output != null) {
             val token = JSONTokener(output).nextValue()
             if (token is JSONObject) {
@@ -96,6 +97,7 @@ Log.d("addressobject","processbegin " + e.printStackTrace())
                 if (address == addressString) {
                     amount = amountString.toDouble()
                     Log.d("addressobject", "process finished " + output)
+                    sendToDelegates = toJSON().toString()
                     if (!isValid) {
                         isValid = true
                     }
@@ -103,5 +105,13 @@ Log.d("addressobject","processbegin " + e.printStackTrace())
             }
         }
         isUpdating = false
+
+        try {
+            delegate?.processfinished(sendToDelegates)
+        } catch (e: Exception) {
+
+        }
+
+
     }
 }

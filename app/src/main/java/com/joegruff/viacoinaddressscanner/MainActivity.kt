@@ -172,7 +172,7 @@ class MainActivity : AppCompatActivity() {
             myDataset[position].delegate = holder.delegateHolder
         }
 
-
+//after a cell is swiped for delete
         fun onItemRemove(viewHolder: RecyclerView.ViewHolder, recyclerView: RecyclerView) {
             val adapterPosition = viewHolder.adapterPosition
             Log.d("asdsadf", "adapter position "+ adapterPosition)
