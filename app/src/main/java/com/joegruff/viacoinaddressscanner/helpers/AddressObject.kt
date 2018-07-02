@@ -21,11 +21,11 @@ class AddressObject : AsyncObserver {
 
     var address = ""
     var title = ""
-    var amount = 0.0
+    var amount = -1.0
     var isUpdating = false
     var isValid = false
     var oldestAmount = 0.0
-    var oldestTimestamp = 0.0
+    var oldestTimestamp = Date().time.toDouble()
     var delegate: AsyncObserver? = null
     var hasBeenInitiated = false
 
@@ -94,8 +94,27 @@ class AddressObject : AsyncObserver {
             if (token is JSONObject) {
                 val addressString = token.getString("addrStr")
                 val amountString = token.getString("balance")
+                val amountDoubleFromString = amountString.toDouble()
+                val elapsedHrsSinceChange = (Date().time.toDouble()-oldestTimestamp) * (1000*60*60)
+                Log.d("time", "elapsed hrs since change " + elapsedHrsSinceChange + " and oldest timestamp " + oldestTimestamp + " and current time " + Date().time.toDouble())
                 if (address == addressString) {
-                    amount = amountString.toDouble()
+
+                    if (amount < 0) {
+                        //dont imply a change if this is the initiation
+                        oldestTimestamp = Date().time.toDouble()
+                        oldestAmount = amountDoubleFromString
+                        amount = amountDoubleFromString
+                    } else if (amount != amountDoubleFromString ){
+                        //record change
+                        oldestTimestamp = Date().time.toDouble()
+                        oldestAmount = amount
+                        amount = amountDoubleFromString
+                    } else if (elapsedHrsSinceChange > 24){
+                        //forget older changes
+                        oldestAmount = amount
+                    }
+
+
                     Log.d("addressobject", "process finished " + output)
                     sendToDelegates = toJSON().toString()
                     if (!isValid) {
