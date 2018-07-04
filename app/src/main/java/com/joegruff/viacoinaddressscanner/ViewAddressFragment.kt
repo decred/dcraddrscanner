@@ -120,8 +120,7 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
 
     fun setinfoview() {
         addressObject?.let {
-            val f = DecimalFormat("#.################")
-            balance_swirl_balance.text = f.format(it.amount).toString()
+            balance_swirl_layout.setAmounts(it.amount.toString(),it.oldestAmount.toString())
             balance_swirl_balance.setOnClickListener { v ->
                 it.update()
             }
