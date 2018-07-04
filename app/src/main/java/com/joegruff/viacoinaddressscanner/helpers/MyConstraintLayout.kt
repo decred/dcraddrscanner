@@ -1,6 +1,7 @@
 package com.joegruff.viacoinaddressscanner.helpers
 
 import android.content.Context
+import android.content.res.Resources
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
@@ -34,15 +35,26 @@ class MyConstraintLayout : RelativeLayout, AsyncObserver {
 
             if (token is JSONObject) {
                 val amountString = token.getString(JSON_AMOUNT)
-                balance_swirl_balance.setText(amountfromstring(amountString))
+                val oldBalance = token.getString(JSON_OLD_AMOUNT)
+                setAmounts(amountString, oldBalance)
             }
         }
         balance_swirl_progress_bar.alpha = 0f
 
     }
 
-    fun setAmount(s : String){
-        balance_swirl_balance.text = amountfromstring(s)
+    fun setAmounts(balance : String, oldBalance : String){
+        val difference = balance.toDouble() - oldBalance.toDouble()
+        var text = ""
+        if (difference > 0.0) {
+            balance_swirl_change.setTextColor(resources.getColor(R.color.Green))
+            text = "+" + amountfromstring(difference.toString())
+        } else if (difference < 0.0){
+            balance_swirl_change.setTextColor(resources.getColor(R.color.Red))
+            text = "-" + amountfromstring(difference.toString())
+        }
+        balance_swirl_balance.text = amountfromstring(balance)
+        balance_swirl_change.text = text
     }
 
     fun amountfromstring(amountString:String) : String {

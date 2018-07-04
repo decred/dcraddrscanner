@@ -93,7 +93,8 @@ class AddressObject : AsyncObserver {
             val token = JSONTokener(output).nextValue()
             if (token is JSONObject) {
                 val addressString = token.getString("addrStr")
-                val amountString = token.getString("balance")
+                //val amountString = token.getString("balance")
+                val amountString = "04"
                 val amountDoubleFromString = amountString.toDouble()
                 val elapsedHrsSinceChange = (Date().time.toDouble()-oldestTimestamp) * (1000*60*60)
                 Log.d("time", "elapsed hrs since change " + elapsedHrsSinceChange + " and oldest timestamp " + oldestTimestamp + " and current time " + Date().time.toDouble())

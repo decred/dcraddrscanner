@@ -21,12 +21,15 @@
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:textAlignment="center"
+        android:textSize="20sp"
         app:layout_constraintTop_toTopOf="parent"/>
 
     <TextView
         android:id="@+id/balance_swirl_change"
         android:layout_width="match_parent"
-        android:layout_height="10dp"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:textSize="10sp"
         android:layout_below="@id/balance_swirl_balance"/>
 
 </com.joegruff.viacoinaddressscanner.helpers.MyConstraintLayout>

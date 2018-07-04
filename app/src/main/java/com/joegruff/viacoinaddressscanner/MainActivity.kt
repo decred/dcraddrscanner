@@ -162,7 +162,7 @@ class MainActivity : AppCompatActivity() {
             }
             holder.textView.text = string
             holder.delegateHolder.abbreviatedValues = true
-            holder.delegateHolder.setAmount(myDataset[position].amount.toString())
+            holder.delegateHolder.setAmounts(myDataset[position].amount.toString(), myDataset[position].oldestAmount.toString())
             holder.itemView.setOnClickListener {
                 val address = myDataset[position].address
                 val intent = Intent(ctx, ViewAddressActivity::class.java)
