@@ -95,6 +95,7 @@ class AddressObject : AsyncObserver {
                 val addressString = token.getString("addrStr")
                 val amountString = token.getString("balance")
                 val amountDoubleFromString = amountString.toDouble()
+                //val amountDoubleFromString = 1.0
                 val elapsedHrsSinceChange = (Date().time.toDouble()-oldestTimestamp)/(1000*60*60)
                 Log.d("time", "elapsed hrs since change " + elapsedHrsSinceChange + " and oldest timestamp " + oldestTimestamp + " and current time " + Date().time.toDouble())
                 if (address == addressString) {

@@ -33,8 +33,10 @@ object AddressBook {
         return newObject
     }
 
-    fun updateAddress(addressObject: AddressObject) {
-        Log.d("addressbook", "is itvalid " + addressObject.isValid)
+    fun updateAddress(addressObject: AddressObject?) {
+        if (addressObject==null) {
+            return
+        }
         for (a in addresses) {
 
             if (a.address == addressObject.address) {
