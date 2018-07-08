@@ -53,7 +53,7 @@
         app:layout_constraintTop_toTopOf="parent"/>
 
     <LinearLayout
-        android:layout_width="205dp"
+        android:layout_width="248dp"
         android:layout_height="109dp"
         android:layout_marginBottom="8dp"
         android:layout_marginEnd="16dp"
@@ -89,7 +89,8 @@
             tools:layout_editor_absoluteY="371dp">
 
             <include
-                layout="@layout/balance_swirl"/>
+                layout="@layout/balance_swirl"
+                android:layout_width="1dp"/>
 
         </FrameLayout>
     </LinearLayout>

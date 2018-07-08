@@ -46,10 +46,7 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
         address = arguments?.getSerializable(INTENT_DATA) as String
         val v = inflater.inflate(R.layout.view_address_view, container, false)
 
-
         addressObject = AddressBook.getAddress(address)
-
-
 
         return v
     }
@@ -72,9 +69,11 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
     }
 
     override fun onPause() {
-        if (addressObject!!.isValid){
-            AddressBook.updateAddress(addressObject!!)
-            AddressBook.saveAddressBook(activity)
+        addressObject?.let {
+            if (it.isValid) {
+                AddressBook.updateAddress(it)
+                AddressBook.saveAddressBook(activity)
+            }
         }
         super.onPause()
     }

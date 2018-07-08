@@ -28,7 +28,7 @@
 
     <FrameLayout
         android:id="@+id/one_list_item_swirl_frame"
-        android:layout_width="wrap_content"
+        android:layout_width="74dp"
         android:layout_height="51dp"
         android:layout_marginBottom="8dp"
         android:layout_marginEnd="24dp"
@@ -41,7 +41,7 @@
 
         <include
             layout="@layout/balance_swirl"
-            android:layout_width="61dp"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"/>
     </FrameLayout>
 </android.support.constraint.ConstraintLayout>

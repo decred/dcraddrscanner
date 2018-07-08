@@ -61,7 +61,7 @@ class MyConstraintLayout : RelativeLayout, AsyncObserver {
         if (abbreviatedValues){
             return AddressBook.abbreviatedAmountfromstring(amountString)
         }
-        val f = DecimalFormat("#.################")
+        val f = DecimalFormat("#.########")
         return f.format(amountString.toDouble()).toString()
     }
 }
