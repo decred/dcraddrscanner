@@ -1,5 +1,6 @@
 package com.joegruff.viacoinaddressscanner
 
+import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.graphics.Bitmap
@@ -37,11 +38,15 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
         }
     }
 
+
+
     var addressObject: AddressObject? = null
     var address = ""
     var delegate : AsyncObserver? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+
+        AddressBook.fillAddressBook(activity!!)
 
         address = arguments?.getSerializable(INTENT_DATA) as String
         val v = inflater.inflate(R.layout.view_address_view, container, false)
