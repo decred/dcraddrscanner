@@ -15,6 +15,7 @@ const val JSON_ADDRESS: String = "address"
 const val JSON_TITLE = "title"
 const val JSON_TIMESTAMP = "timestamp"
 const val JSON_OLD_AMOUNT = "oldamount"
+const val JSON_BEING_WATCHED = "beingwatched"
 
 class AddressObject : AsyncObserver {
 
@@ -24,6 +25,7 @@ class AddressObject : AsyncObserver {
     var amount = -1.0
     var isUpdating = false
     var isValid = false
+    var isBeingWatched = false
     var oldestAmount = 0.0
     var oldestTimestamp = Date().time.toDouble()
     var delegate: AsyncObserver? = null
@@ -36,6 +38,7 @@ class AddressObject : AsyncObserver {
         amount = jsonObject.getDouble(JSON_AMOUNT)
         oldestAmount = jsonObject.getDouble(JSON_OLD_AMOUNT)
         oldestTimestamp = jsonObject.getDouble(JSON_TIMESTAMP)
+        isBeingWatched = jsonObject.getBoolean(JSON_BEING_WATCHED)
         hasBeenInitiated = true
         isValid = true
         oneminuteupdate()
@@ -53,6 +56,7 @@ class AddressObject : AsyncObserver {
         jsonObject.put(JSON_AMOUNT, amount)
         jsonObject.put(JSON_OLD_AMOUNT, oldestAmount)
         jsonObject.put(JSON_TIMESTAMP, oldestTimestamp)
+        jsonObject.put(JSON_BEING_WATCHED, isBeingWatched)
         return jsonObject
     }
 

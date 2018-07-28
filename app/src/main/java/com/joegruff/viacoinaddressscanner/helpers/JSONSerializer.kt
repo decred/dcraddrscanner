@@ -43,7 +43,7 @@ object JSONSerializer {
     }
 
     fun getFile(ctx: Context): File {
-        val file = File(ctx.filesDir.absolutePath + File.pathSeparator + "address.json")
+        val file = File(ctx.filesDir.absolutePath + File.pathSeparator + "viaaddresses.json")
         return file
     }
 }

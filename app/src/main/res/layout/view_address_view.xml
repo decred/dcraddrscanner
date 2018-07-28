@@ -94,4 +94,15 @@
         </FrameLayout>
     </LinearLayout>
 
+    <Button
+        android:id="@+id/addorRemoveFromWatchlist"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_marginEnd="28dp"
+        android:layout_marginRight="28dp"
+        android:layout_marginTop="24dp"
+        android:background="@android:drawable/btn_star_big_off"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
 </android.support.constraint.ConstraintLayout>
