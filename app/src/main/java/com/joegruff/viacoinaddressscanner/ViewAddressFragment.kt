@@ -1,6 +1,5 @@
 package com.joegruff.viacoinaddressscanner
 
-import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.graphics.Bitmap
@@ -10,7 +9,6 @@ import android.support.v4.app.Fragment
 import android.support.v7.app.AppCompatActivity
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,9 +20,6 @@ import com.google.zxing.common.BitMatrix
 import com.joegruff.viacoinaddressscanner.helpers.*
 import kotlinx.android.synthetic.main.balance_swirl.*
 import kotlinx.android.synthetic.main.view_address_view.*
-import org.json.JSONObject
-import org.json.JSONTokener
-import java.text.DecimalFormat
 
 class ViewAddressFragment : Fragment(), AsyncObserver {
     companion object {
@@ -61,7 +56,7 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
             setupeditlabel()
             setupqrcode()
             setupaddressbutton()
-            setinfoview()
+            setupinfoview()
         } else {
             addressObject = AddressBook.newObjectFromAddress(address)
         }
@@ -115,20 +110,26 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
                     setupeditlabel()
                     setupqrcode()
                     setupaddressbutton()
-                    setinfoview()
+                    setupinfoview()
                 }
             }
         }
     }
 
 
-    fun setinfoview() {
+    fun setupinfoview() {
         addressObject?.let {
             balance_swirl_layout.setAmounts(it.amount.toString(),it.oldestAmount.toString())
             balance_swirl_balance.setOnClickListener { v ->
                 it.update()
             }
             this.delegate = balance_swirl_layout
+
+        }
+    }
+
+    fun setupwatchstar(){
+        addressObject?.let {
 
         }
     }

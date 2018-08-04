@@ -36,17 +36,18 @@
 
     <EditText
         android:id="@+id/view_address_view_label"
-        android:layout_width="wrap_content"
+        android:layout_width="176dp"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="53dp"
+        android:layout_marginEnd="8dp"
         android:layout_marginLeft="57dp"
-        android:layout_marginRight="53dp"
+        android:layout_marginRight="8dp"
         android:layout_marginStart="57dp"
         android:layout_marginTop="32dp"
         android:ems="10"
         android:hint="@string/view_address_fragment_edit_text"
         android:inputType="textPersonName"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/addorRemoveFromWatchlist"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toEndOf="@+id/view_address_view_qr_code"
         app:layout_constraintTop_toTopOf="parent"/>
 
@@ -90,5 +91,16 @@
 
         </FrameLayout>
     </LinearLayout>
+
+    <Button
+        android:id="@+id/addorRemoveFromWatchlist"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_marginEnd="28dp"
+        android:layout_marginRight="28dp"
+        android:layout_marginTop="32dp"
+        android:background="@android:drawable/btn_star_big_off"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
 
 </android.support.constraint.ConstraintLayout>
