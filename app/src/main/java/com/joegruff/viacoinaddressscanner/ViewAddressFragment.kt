@@ -20,6 +20,7 @@ import com.google.zxing.common.BitMatrix
 import com.joegruff.viacoinaddressscanner.helpers.*
 import kotlinx.android.synthetic.main.balance_swirl.*
 import kotlinx.android.synthetic.main.view_address_view.*
+import java.util.function.Predicate
 
 class ViewAddressFragment : Fragment(), AsyncObserver {
     companion object {
@@ -57,6 +58,7 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
             setupqrcode()
             setupaddressbutton()
             setupinfoview()
+            setupwatchstar()
         } else {
             addressObject = AddressBook.newObjectFromAddress(address)
         }
@@ -130,10 +132,20 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
 
     fun setupwatchstar(){
         addressObject?.let {
+            checkstar(it)
+            addorRemoveFromWatchlist.setOnClickListener {theview->
+                it.isBeingWatched = !it.isBeingWatched
+                checkstar(it)
+            }
 
         }
-    }
 
+    }
+    fun checkstar(ad : AddressObject) {
+        var id = 0
+        id = if (ad.isBeingWatched) android.R.drawable.btn_star_big_on else android.R.drawable.btn_star_big_off
+        addorRemoveFromWatchlist.background = activity?.resources?.getDrawable(id)
+    }
     fun setupeditlabel() {
         view_address_view_label.setText(addressObject?.title)
         view_address_view_label.addTextChangedListener(object : TextWatcher {
