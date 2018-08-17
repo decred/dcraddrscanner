@@ -28,7 +28,7 @@ class AddressObject : AsyncObserver {
     var isBeingWatched = false
     var oldestAmount = 0.0
     var oldestTimestamp = Date().time.toDouble()
-    var delegate: AsyncObserver? = null
+    var delegates: MutableList<AsyncObserver>? = null
     var hasBeenInitiated = false
 
 
@@ -41,12 +41,12 @@ class AddressObject : AsyncObserver {
         isBeingWatched = jsonObject.getBoolean(JSON_BEING_WATCHED)
         hasBeenInitiated = true
         isValid = true
-        oneminuteupdate()
+        fiveminuteupdate()
     }
 
     constructor(add: String) {
         address = add
-        oneminuteupdate()
+        fiveminuteupdate()
     }
 
     fun toJSON(): JSONObject {
@@ -64,18 +64,18 @@ class AddressObject : AsyncObserver {
     override fun processbegan() {
         isUpdating = true
         try {
-            delegate?.processbegan()
+            delegates?.forEach {processbegan()}
         } catch (e: Exception) {
             Log.d("addressobject", "processbegin " + e.printStackTrace())
         }
 
     }
 
-    fun oneminuteupdate() {
+    fun fiveminuteupdate() {
         update()
         Handler().postDelayed({
-            oneminuteupdate()
-        }, 60000)
+            fiveminuteupdate()
+        }, 60000 * 5)
 
 
     }
@@ -132,11 +132,13 @@ class AddressObject : AsyncObserver {
         isUpdating = false
 
         try {
-            delegate?.processfinished(sendToDelegates)
+            delegates?.forEach{processfinished(sendToDelegates)}
         } catch (e: Exception) {
 
         }
 
 
     }
+
+
 }

@@ -43,7 +43,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
-        AddressBook.fillAddressBook(this)
+        AddressBook.fillAddressBook(this,null)
 
 
         viewManager = LinearLayoutManager(this)
@@ -169,7 +169,7 @@ class MainActivity : AppCompatActivity() {
                 intent.putExtra(ViewAddressFragment.INTENT_DATA, address)
                 ctx.startActivity(intent)
             }
-            myDataset[position].delegate = holder.delegateHolder
+            myDataset[position].delegates?.set(0, holder.delegateHolder)
         }
 
 //after a cell is swiped for delete

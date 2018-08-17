@@ -1,6 +1,7 @@
 package com.joegruff.viacoinaddressscanner.helpers
 
 import android.app.Activity
+import android.content.Context
 import android.support.v4.app.FragmentActivity
 import android.util.Log
 import java.text.DecimalFormat
@@ -9,14 +10,20 @@ object AddressBook {
     val addresses = ArrayList<AddressObject>()
     var gotAddressesAlready = false
 
-    fun fillAddressBook(act: Activity) {
+    fun fillAddressBook(act: Activity?, ctx: Context?) {
         if (gotAddressesAlready)
             return
-        else
+        else if (act != null)
             JSONSerializer.getAddresses(act.applicationContext)?.let {
                 addresses += it.asIterable()
                 gotAddressesAlready = true
             }
+        else if (ctx != null) {
+            JSONSerializer.getAddresses(ctx)?.let {
+                addresses += it.asIterable()
+                gotAddressesAlready = true
+            }
+        }
     }
 
     fun saveAddressBook(act: FragmentActivity?) {

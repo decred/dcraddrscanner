@@ -42,7 +42,7 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
-        AddressBook.fillAddressBook(activity!!)
+        AddressBook.fillAddressBook(activity!!, null)
 
         address = arguments?.getSerializable(INTENT_DATA) as String
         val v = inflater.inflate(R.layout.view_address_view, container, false)
@@ -66,7 +66,7 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
     }
 
     override fun onResume() {
-        addressObject?.delegate = this
+        addressObject?.delegates?.set(0,this)
         super.onResume()
     }
 
