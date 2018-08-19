@@ -169,7 +169,7 @@ class MainActivity : AppCompatActivity() {
                 intent.putExtra(ViewAddressFragment.INTENT_DATA, address)
                 ctx.startActivity(intent)
             }
-            myDataset[position].delegates?.set(0, holder.delegateHolder)
+            myDataset[position].delegates.set(0, holder.delegateHolder)
         }
 
 //after a cell is swiped for delete

@@ -28,9 +28,10 @@ class AddressObject : AsyncObserver {
     var isBeingWatched = false
     var oldestAmount = 0.0
     var oldestTimestamp = Date().time.toDouble()
-    var delegates: MutableList<AsyncObserver>? = null
     var hasBeenInitiated = false
 
+    //fist delegate is ui and second is for alarmmanager
+    var delegates = mutableListOf<AsyncObserver?>(null,null)
 
     constructor(jsonObject: JSONObject) {
         address = jsonObject.getString(JSON_ADDRESS)
@@ -64,7 +65,12 @@ class AddressObject : AsyncObserver {
     override fun processbegan() {
         isUpdating = true
         try {
-            delegates?.forEach {processbegan()}
+            Log.d("addressobject", "processbegin and num delegates " + delegates?.size)
+
+            delegates.forEach {if (it !=null) {
+                it.processbegan()
+            }}
+
         } catch (e: Exception) {
             Log.d("addressobject", "processbegin " + e.printStackTrace())
         }
@@ -132,8 +138,12 @@ class AddressObject : AsyncObserver {
         isUpdating = false
 
         try {
-            delegates?.forEach{processfinished(sendToDelegates)}
-        } catch (e: Exception) {
+            delegates.forEach {
+                if (it != null) {
+                    it.processfinished(sendToDelegates)
+                }
+            }
+        } catch (e: Exception){
 
         }
 
