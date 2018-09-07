@@ -43,7 +43,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
-        AddressBook.fillAddressBook(this,null)
+        AddressBook.fillAddressBook(this)
 
 
         viewManager = LinearLayoutManager(this)

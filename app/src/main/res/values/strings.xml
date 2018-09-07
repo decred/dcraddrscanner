@@ -23,4 +23,6 @@
     <string name="barcode_success">Barcode read successfully</string>
     <string name="barcode_failure">No barcode captured</string>
     <string name="barcode_error">"Error reading barcode: %1$s"</string>
+    <string name="changed_amounts_many">Some amounts have changed.</string>
+    <string name="changed_amounts_one">The address %1$s has changed by %2$s</string>
 </resources>

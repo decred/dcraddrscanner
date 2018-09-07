@@ -10,20 +10,26 @@ object AddressBook {
     val addresses = ArrayList<AddressObject>()
     var gotAddressesAlready = false
 
-    fun fillAddressBook(act: Activity?, ctx: Context?) {
-        if (gotAddressesAlready)
+    fun fillAddressBook(act: Activity?) {
+        if (gotAddressesAlready) {
             return
-        else if (act != null)
-            JSONSerializer.getAddresses(act.applicationContext)?.let {
-                addresses += it.asIterable()
-                gotAddressesAlready = true
-            }
-        else if (ctx != null) {
-            JSONSerializer.getAddresses(ctx)?.let {
-                addresses += it.asIterable()
-                gotAddressesAlready = true
-            }
         }
+        if (act != null) {
+            addresses += JSONSerializer.getAddresses(act.applicationContext)!!.asIterable()
+            gotAddressesAlready = true
+        }
+
+    }
+
+    fun fillAddressBook(ctx: Context?) {
+        if (gotAddressesAlready) {
+            return
+        }
+        if (ctx != null) {
+            addresses += JSONSerializer.getAddresses(ctx)!!.asIterable()
+            gotAddressesAlready = true
+        }
+
     }
 
     fun saveAddressBook(act: FragmentActivity?) {
@@ -41,7 +47,7 @@ object AddressBook {
     }
 
     fun updateAddress(addressObject: AddressObject?) {
-        if (addressObject==null) {
+        if (addressObject == null) {
             return
         }
         for (a in addresses) {

@@ -42,7 +42,7 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
-        AddressBook.fillAddressBook(activity!!, null)
+        AddressBook.fillAddressBook(activity)
 
         address = arguments?.getSerializable(INTENT_DATA) as String
         val v = inflater.inflate(R.layout.view_address_view, container, false)
