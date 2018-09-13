@@ -65,14 +65,13 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver(){
         val difference = balance.toDouble() - oldBalance.toDouble()
         var text = ""
         if (difference > 0.0) {
-            balance_swirl_change.setTextColor(resources.getColor(R.color.Green))
+            //balance_swirl_change.setTextColor(resources.getColor(R.color.Green))
             text = "+" + amountfromstring(difference.toString())
         } else if (difference < 0.0){
-            balance_swirl_change.setTextColor(resources.getColor(R.color.Red))
+            //balance_swirl_change.setTextColor(resources.getColor(R.color.Red))
             text = "-" + amountfromstring(difference.toString())
         }
-        balance_swirl_balance.text = amountfromstring(balance)
-        balance_swirl_change.text = text
+        return text
     }
 
     fun amountfromstring(amountString:String) : String {
