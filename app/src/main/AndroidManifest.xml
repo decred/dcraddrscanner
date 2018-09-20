@@ -35,6 +35,10 @@
         <activity android:name=".barcodeReader.BarcodeCaptureActivity"
                   android:label="Read QR Code"/>
 
+        <receiver android:name=".helpers.MyBroadcastReceiver"/>
+
+
+
     </application>
 
 

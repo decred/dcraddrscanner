@@ -65,14 +65,14 @@ class AddressObject : AsyncObserver {
     override fun processbegan() {
         isUpdating = true
         try {
-            Log.d("addressobject", "processbegin and num delegates " + delegates?.size)
+            //Log.d("addressobject", "processbegin and num delegates " + delegates?.size)
 
             delegates.forEach {if (it !=null) {
                 it.processbegan()
             }}
 
         } catch (e: Exception) {
-            Log.d("addressobject", "processbegin " + e.printStackTrace())
+            //Log.d("addressobject", "processbegin " + e.printStackTrace())
         }
 
     }
@@ -87,7 +87,7 @@ class AddressObject : AsyncObserver {
     }
 
     fun update() {
-        Log.d("update", "isupdating = " + isUpdating)
+        //Log.d("update", "isupdating = " + isUpdating)
         if (!isUpdating) {
             isUpdating = true
             GetInfoFromWeb(this, address).execute()
@@ -107,7 +107,7 @@ class AddressObject : AsyncObserver {
                 val amountDoubleFromString = amountString.toDouble()
                 //val amountDoubleFromString = 1.0
                 val elapsedHrsSinceChange = (Date().time.toDouble()-oldestTimestamp)/(1000*60*60)
-                Log.d("time", "elapsed hrs since change " + elapsedHrsSinceChange + " and oldest timestamp " + oldestTimestamp + " and current time " + Date().time.toDouble())
+                //Log.d("time", "elapsed hrs since change " + elapsedHrsSinceChange + " and oldest timestamp " + oldestTimestamp + " and current time " + Date().time.toDouble())
                 if (address == addressString) {
 
                     if (amount < 0) {
@@ -117,17 +117,19 @@ class AddressObject : AsyncObserver {
                         amount = amountDoubleFromString
                     } else if (amount != amountDoubleFromString ){
                         //record change
-                        oldestTimestamp = Date().time.toDouble()
                         oldestAmount = amount
                         amount = amountDoubleFromString
                     } else if (elapsedHrsSinceChange > 24){
-                        Log.d("24hrspassed","forgot oldestamount")
+                        Log.d("24hrspassed","forgot oldestamount because : " + elapsedHrsSinceChange + " hours have passed")
                         //forget older changes
+                        oldestTimestamp = Date().time.toDouble()
                         oldestAmount = amount
                     }
 
 
-                    Log.d("addressobject", "process finished " + output)
+
+
+                    //Log.d("addressobject", "process finished " + output)
                     sendToDelegates = toJSON().toString()
                     if (!isValid) {
                         isValid = true

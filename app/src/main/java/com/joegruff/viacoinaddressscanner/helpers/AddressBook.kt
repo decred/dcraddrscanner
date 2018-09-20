@@ -87,13 +87,13 @@ object AddressBook {
             while (x >= 10) {
                 x = x / 10
                 i += 1
-                Log.d("this ix i", "this is i " + i + " and x " + x)
+                //Log.d("this ix i", "this is i " + i + " and x " + x)
             }
         } else if (x < 1 && x > 0) {
             while (x < 1) {
                 x = x * 10
                 i -= 1
-                Log.d("this ix i", "this is i " + i + " and x " + x)
+                //Log.d("this ix i", "this is i " + i + " and x " + x)
             }
         }
 

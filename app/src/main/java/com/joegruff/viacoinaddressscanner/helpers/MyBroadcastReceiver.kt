@@ -1,29 +1,44 @@
 package com.joegruff.viacoinaddressscanner.helpers
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.res.Resources
+import android.os.Build
 import android.os.Handler
 import android.provider.Settings.Global.getString
+import android.support.v4.app.NotificationCompat
+import com.joegruff.viacoinaddressscanner.MainActivity
 import com.joegruff.viacoinaddressscanner.R
-import org.json.JSONArray
+import com.joegruff.viacoinaddressscanner.ViewAddressFragment
+import com.joegruff.viacoinaddressscanner.activities.ViewAddressActivity
 import org.json.JSONObject
 import org.json.JSONTokener
-import java.io.StringReader
-import java.text.DecimalFormat
+import android.app.PendingIntent
+import android.support.v4.app.NotificationManagerCompat
+import android.util.Log
 
-class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver(){
+
+const val CHANNEL_ID = "com.joegruff.viacoinaddressscanner.notification_channel"
+const val NOTIFICATION_ID = 1337
+
+class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
 
     var changedaddresses = ArrayList<String>()
 
     override fun onReceive(context: Context?, intent: Intent?) {
+        if (context != null)
+            createNotificationChannel(context)
+
         AddressBook.fillAddressBook(context)
 
+
         //check for starred addresses
-        for (starredAddress in AddressBook.addresses.filter {it.isBeingWatched}) {
+        for (starredAddress in AddressBook.addresses.filter { it.isBeingWatched }) {
             starredAddress.delegates[1] = this
-        GetInfoFromWeb(starredAddress ,starredAddress.address)
+            GetInfoFromWeb(starredAddress, starredAddress.address)
+            Log.d("mybroadcastreceiver", "alarmfired")
         }
 
 
@@ -31,6 +46,8 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver(){
         Handler().postDelayed({
             var message = ""
             var formattedAmountString = ""
+            var intent: Intent = Intent()
+
             if (changedaddresses.size < 1) {
                 return@postDelayed
             } else if (changedaddresses.size < 2) {
@@ -45,36 +62,76 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver(){
                     amountString = token.getString(JSON_AMOUNT)
                     oldBalance = token.getString(JSON_OLD_AMOUNT)
                     formattedAmountString = setAmounts(amountString, oldBalance)
+                } else {
+                    return@postDelayed
                 }
 
-                if (context != null)
+                if (context != null) {
                     message = context.getString(R.string.changed_amounts_one, address, formattedAmountString)
+                    intent = Intent(context, ViewAddressActivity::class.java)
+                    intent.putExtra(ViewAddressFragment.INTENT_DATA, address)
+                }
+
             } else {
-                if (context != null)
-                message = context.getString(R.string.changed_amounts_many)
+                if (context != null) {
+                    message = context.getString(R.string.changed_amounts_many)
+                    intent = Intent(context, MainActivity::class.java)
+                }
+            }
+
+            if (context != null) {
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                val pendingIntent = PendingIntent.getActivity(context, 0, intent, 0)
+
+                val mBuilder = NotificationCompat.Builder(context, CHANNEL_ID)
+                        .setSmallIcon(R.drawable.small_coin_icon)
+                        .setContentTitle(context.getString(R.string.changed_amounts_notification_title))
+                        .setContentText(message)
+                        .setContentIntent(pendingIntent)
+                        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+
+                val notificationManager = NotificationManagerCompat.from(context)
+                notificationManager.notify(NOTIFICATION_ID, mBuilder.build())
+
+
             }
 
         }, 5000)
 
 
-
-
     }
 
-    fun setAmounts(balance : String, oldBalance : String) : String{
+    private fun createNotificationChannel(ctx: Context) {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = ctx.getString(R.string.channel_name)
+            val description = ctx.getString(R.string.channel_description)
+            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val channel = NotificationChannel(CHANNEL_ID, name, importance)
+            channel.description = description
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            val notificationManager = ctx.getSystemService(NotificationManager::class.java)
+            notificationManager.createNotificationChannel(channel)
+        }
+    }
+
+
+    fun setAmounts(balance: String, oldBalance: String): String {
         val difference = balance.toDouble() - oldBalance.toDouble()
         var text = ""
         if (difference > 0.0) {
             //balance_swirl_change.setTextColor(resources.getColor(R.color.Green))
             text = "+" + amountfromstring(difference.toString())
-        } else if (difference < 0.0){
+        } else if (difference < 0.0) {
             //balance_swirl_change.setTextColor(resources.getColor(R.color.Red))
             text = "-" + amountfromstring(difference.toString())
         }
         return text
     }
 
-    fun amountfromstring(amountString:String) : String {
+    fun amountfromstring(amountString: String): String {
         return AddressBook.abbreviatedAmountfromstring(amountString)
     }
 

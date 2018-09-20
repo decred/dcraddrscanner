@@ -28,7 +28,7 @@ object JSONSerializer {
         val jsonArray = JSONArray()
         for (c in arrayList) {
             jsonArray.put(c.toJSON())
-            Log.d("sadf", c.toJSON().toString())
+            //Log.d("sadf", c.toJSON().toString())
         }
         ctx?.let {
             val file = getFile(it)

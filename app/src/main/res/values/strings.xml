@@ -25,4 +25,7 @@
     <string name="barcode_error">"Error reading barcode: %1$s"</string>
     <string name="changed_amounts_many">Some amounts have changed.</string>
     <string name="changed_amounts_one">The address %1$s has changed by %2$s</string>
+    <string name="changed_amounts_notification_title">Viacoin balance change</string>
+    <string name="channel_name">Viacoin Notifications</string>
+    <string name="channel_description">Viacoin balance change notification channel</string>
 </resources>

@@ -19,7 +19,7 @@ class GetInfoFromWeb(val delegate: AsyncObserver, val add: String) : AsyncTask<V
     override fun doInBackground(vararg params: Void?): String? {
 
 
-        Log.d("async", "Doin in background")
+        //Log.d("async", "Doin in background")
         delegate.processbegan()
         try {
             val url = URL(API_URL + add)

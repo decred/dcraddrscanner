@@ -21,7 +21,7 @@ class MyConstraintLayout : RelativeLayout, AsyncObserver {
     var abbreviatedValues = false
 
     override fun processbegan() {
-        Log.d("mycontraintlayout","process began")
+       // Log.d("mycontraintlayout","process began")
         this.clearAnimation()
         balance_swirl_progress_bar.alpha = .7f
         this.invalidate()
