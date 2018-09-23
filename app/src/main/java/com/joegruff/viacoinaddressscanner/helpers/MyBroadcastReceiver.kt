@@ -34,16 +34,21 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
         AddressBook.fillAddressBook(context)
 
 
+
+
         //check for starred addresses
         for (starredAddress in AddressBook.addresses.filter { it.isBeingWatched }) {
             starredAddress.delegates[1] = this
-            GetInfoFromWeb(starredAddress, starredAddress.address)
-            Log.d("mybroadcastreceiver", "alarmfired")
+            GetInfoFromWeb(starredAddress, starredAddress.address).execute()
+            Log.d("mybroadcastreceiver", "onreceive fired " + starredAddress.address)
         }
+
+
 
 
         //give it five seconds to find changed addresses, report results as alert if something changed
         Handler().postDelayed({
+
             var message = ""
             var formattedAmountString = ""
             var intent: Intent = Intent()
@@ -136,14 +141,16 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
     }
 
     override fun processbegan() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        Log.d("mybroadcastreceiver", "process began")
+        return
     }
 
     override fun processfinished(output: String?) {
         //catch all changed starred addresses
         if (output != null && output != NO_CONNECTION) {
-            val token = JSONTokener(output).nextValue()
-            changedaddresses.add(token as String)
+            //val token = JSONTokener(output).nextValue()
+            changedaddresses.add(output)
+
         }
     }
 }
