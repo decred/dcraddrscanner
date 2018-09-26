@@ -36,6 +36,11 @@ object AddressBook {
         JSONSerializer.saveJSON(act?.applicationContext, addresses)
     }
 
+    fun saveAddressBook(ctx: Context?) {
+        JSONSerializer.saveJSON(ctx, addresses)
+    }
+
+
     fun newObjectFromAddress(address: String): AddressObject? {
         for (a in addresses) {
             if (a.address == address)

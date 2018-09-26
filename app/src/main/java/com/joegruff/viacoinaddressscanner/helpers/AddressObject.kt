@@ -126,9 +126,6 @@ class AddressObject : AsyncObserver {
                         oldestAmount = amount
                     }
 
-
-
-
                     //Log.d("addressobject", "process finished " + output)
                     sendToDelegates = toJSON().toString()
                     if (!isValid) {
@@ -143,6 +140,8 @@ class AddressObject : AsyncObserver {
             delegates.forEach {
                 if (it != null) {
                     it.processfinished(sendToDelegates)
+                    //dont trigger notifications if application is active
+                    return@forEach
                 }
             }
         } catch (e: Exception){

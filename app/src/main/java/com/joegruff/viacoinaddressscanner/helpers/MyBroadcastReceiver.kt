@@ -119,6 +119,8 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
             // or other notification behaviors after this
             val notificationManager = ctx.getSystemService(NotificationManager::class.java)
             notificationManager.createNotificationChannel(channel)
+
+            AddressBook.saveAddressBook(ctx)
         }
     }
 
@@ -148,8 +150,14 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
     override fun processfinished(output: String?) {
         //catch all changed starred addresses
         if (output != null && output != NO_CONNECTION) {
-            //val token = JSONTokener(output).nextValue()
-            changedaddresses.add(output)
+            val token = JSONTokener(output).nextValue()
+            if (token is JSONObject) {
+                val amountString = token.getString(JSON_AMOUNT)
+                val oldBalance = token.getString(JSON_OLD_AMOUNT)
+
+                if (!amountString.equals(oldBalance))
+                changedaddresses.add(output)
+            }
 
         }
     }
