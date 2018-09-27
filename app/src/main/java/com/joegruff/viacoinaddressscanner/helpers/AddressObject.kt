@@ -119,6 +119,7 @@ class AddressObject : AsyncObserver {
                         //record change
                         oldestAmount = amount
                         amount = amountDoubleFromString
+                        oldestTimestamp = Date().time.toDouble()
                     } else if (elapsedHrsSinceChange > 24){
                         Log.d("24hrspassed","forgot oldestamount because : " + elapsedHrsSinceChange + " hours have passed")
                         //forget older changes

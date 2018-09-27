@@ -18,6 +18,7 @@ import org.json.JSONTokener
 import android.app.PendingIntent
 import android.support.v4.app.NotificationManagerCompat
 import android.util.Log
+import java.util.*
 
 
 const val CHANNEL_ID = "com.joegruff.viacoinaddressscanner.notification_channel"
@@ -34,16 +35,12 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
         AddressBook.fillAddressBook(context)
 
 
-
-
         //check for starred addresses
         for (starredAddress in AddressBook.addresses.filter { it.isBeingWatched }) {
             starredAddress.delegates[1] = this
             GetInfoFromWeb(starredAddress, starredAddress.address).execute()
             Log.d("mybroadcastreceiver", "onreceive fired " + starredAddress.address)
         }
-
-
 
 
         //give it five seconds to find changed addresses, report results as alert if something changed
@@ -57,19 +54,16 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
                 return@postDelayed
             } else if (changedaddresses.size < 2) {
 
-                val token = JSONTokener(changedaddresses[0]).nextValue()
+                val token = JSONTokener(changedaddresses[0]).nextValue() as JSONObject
                 var address = ""
                 var amountString = ""
                 var oldBalance = ""
 
-                if (token is JSONObject) {
-                    address = token.getString(JSON_ADDRESS)
-                    amountString = token.getString(JSON_AMOUNT)
-                    oldBalance = token.getString(JSON_OLD_AMOUNT)
-                    formattedAmountString = setAmounts(amountString, oldBalance)
-                } else {
-                    return@postDelayed
-                }
+                address = token.getString(JSON_ADDRESS)
+                amountString = token.getString(JSON_AMOUNT)
+                oldBalance = token.getString(JSON_OLD_AMOUNT)
+                formattedAmountString = setAmounts(amountString, oldBalance)
+
 
                 if (context != null) {
                     message = context.getString(R.string.changed_amounts_one, address, formattedAmountString)
@@ -119,8 +113,6 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
             // or other notification behaviors after this
             val notificationManager = ctx.getSystemService(NotificationManager::class.java)
             notificationManager.createNotificationChannel(channel)
-
-            AddressBook.saveAddressBook(ctx)
         }
     }
 
@@ -154,9 +146,10 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
             if (token is JSONObject) {
                 val amountString = token.getString(JSON_AMOUNT)
                 val oldBalance = token.getString(JSON_OLD_AMOUNT)
+                val timestamp = token.getDouble(JSON_TIMESTAMP)
 
-                if (!amountString.equals(oldBalance))
-                changedaddresses.add(output)
+                if (!amountString.equals(oldBalance) && Date().time - timestamp < 1000 * 10)
+                    changedaddresses.add(output)
             }
 
         }
