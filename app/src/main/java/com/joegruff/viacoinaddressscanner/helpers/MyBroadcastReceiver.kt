@@ -55,18 +55,20 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
             } else if (changedaddresses.size < 2) {
 
                 val token = JSONTokener(changedaddresses[0]).nextValue() as JSONObject
-                var address = ""
-                var amountString = ""
-                var oldBalance = ""
 
-                address = token.getString(JSON_ADDRESS)
-                amountString = token.getString(JSON_AMOUNT)
-                oldBalance = token.getString(JSON_OLD_AMOUNT)
+
+                var title = token.getString(JSON_TITLE)
+                val address = token.getString(JSON_ADDRESS)
+                if (title.equals(""))
+                    title = address
+                val amountString = token.getString(JSON_AMOUNT)
+                val oldBalance = token.getString(JSON_OLD_AMOUNT)
+
                 formattedAmountString = setAmounts(amountString, oldBalance)
 
 
                 if (context != null) {
-                    message = context.getString(R.string.changed_amounts_one, address, formattedAmountString)
+                    message = context.getString(R.string.changed_amounts_one, title, formattedAmountString)
                     intent = Intent(context, ViewAddressActivity::class.java)
                     intent.putExtra(ViewAddressFragment.INTENT_DATA, address)
                 }
@@ -141,6 +143,7 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
 
     override fun processfinished(output: String?) {
         //catch all changed starred addresses
+        Log.d("mybroadcastreceiver", "prococess finished " + output + " size is " + changedaddresses.size)
         if (output != null && output != NO_CONNECTION) {
             val token = JSONTokener(output).nextValue()
             if (token is JSONObject) {
