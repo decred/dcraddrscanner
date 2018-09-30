@@ -32,7 +32,12 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
         if (context != null)
             createNotificationChannel(context)
 
-        AddressBook.fillAddressBook(context)
+
+        if (!AddressBook.gotAddressesAlready) {
+            AddressBook.fillAddressBook(context)
+        } else {
+            return
+        }
 
 
         //check for starred addresses
@@ -48,7 +53,7 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
 
             var message = ""
             var formattedAmountString = ""
-            var intent: Intent = Intent()
+            var notificationIntent = Intent()
 
             if (changedaddresses.size < 1) {
                 return@postDelayed
@@ -69,20 +74,20 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
 
                 if (context != null) {
                     message = context.getString(R.string.changed_amounts_one, title, formattedAmountString)
-                    intent = Intent(context, ViewAddressActivity::class.java)
-                    intent.putExtra(ViewAddressFragment.INTENT_DATA, address)
+                    notificationIntent = Intent(context, ViewAddressActivity::class.java)
+                    notificationIntent.putExtra(ViewAddressFragment.INTENT_DATA, address)
                 }
 
             } else {
                 if (context != null) {
                     message = context.getString(R.string.changed_amounts_many)
-                    intent = Intent(context, MainActivity::class.java)
+                    notificationIntent = Intent(context, MainActivity::class.java)
                 }
             }
 
             if (context != null) {
-                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                val pendingIntent = PendingIntent.getActivity(context, 0, intent, 0)
+                notificationIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                val pendingIntent = PendingIntent.getActivity(context, 0, notificationIntent, 0)
 
                 val mBuilder = NotificationCompat.Builder(context, CHANNEL_ID)
                         .setSmallIcon(R.drawable.small_coin_icon)
