@@ -7,7 +7,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Handler
-import android.provider.Settings.Global.getString
 import android.support.v4.app.NotificationCompat
 import com.joegruff.viacoinaddressscanner.MainActivity
 import com.joegruff.viacoinaddressscanner.R
@@ -34,8 +33,9 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
 
 
         if (!AddressBook.gotAddressesAlready) {
-            AddressBook.fillAddressBook(context)
-        } else {
+            AddressBook.fillAddressBook(context, false)
+        }else {
+            Log.d("mybroadcastreceiver", "returned cause got addressesalready")
             return
         }
 
@@ -51,7 +51,7 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
         //give it five seconds to find changed addresses, report results as alert if something changed
         Handler().postDelayed({
 
-            var message = ""
+            var message = changedaddresses.size.toString()
             var formattedAmountString = ""
             var notificationIntent = Intent()
 
@@ -80,7 +80,14 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
 
             } else {
                 if (context != null) {
-                    message = context.getString(R.string.changed_amounts_many)
+
+                    //message = context.getString(R.string.changed_amounts_many)
+
+                    changedaddresses.forEach {
+                        val token = JSONTokener(it) as JSONObject
+                        val address = token.getString(JSON_ADDRESS)
+                        message = message + ":" + address.substring(0,7)
+                    }
                     notificationIntent = Intent(context, MainActivity::class.java)
                 }
             }
@@ -148,15 +155,15 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
 
     override fun processfinished(output: String?) {
         //catch all changed starred addresses
-        Log.d("mybroadcastreceiver", "prococess finished " + output + " size is " + changedaddresses.size)
+
         if (output != null && output != NO_CONNECTION) {
             val token = JSONTokener(output).nextValue()
             if (token is JSONObject) {
-                val amountString = token.getString(JSON_AMOUNT)
+                val amount = token.getDouble(JSON_AMOUNT)
                 val oldBalance = token.getString(JSON_OLD_AMOUNT)
                 val timestamp = token.getDouble(JSON_TIMESTAMP)
-
-                if (!amountString.equals(oldBalance) && Date().time - timestamp < 1000 * 10)
+                Log.d("mybroadcastreceiver", "prococess finished " + output + " size is " + changedaddresses.size + " old balance " + oldBalance + " new balance " + amount)
+                if (!amount.equals(oldBalance) && Date().time - timestamp < 1000 * 10)
                     changedaddresses.add(output)
             }
 

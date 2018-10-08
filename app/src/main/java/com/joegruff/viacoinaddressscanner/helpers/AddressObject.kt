@@ -11,7 +11,7 @@ import java.util.*
 import kotlin.concurrent.schedule
 
 const val JSON_AMOUNT = "amount"
-const val JSON_ADDRESS: String = "address"
+const val JSON_ADDRESS = "address"
 const val JSON_TITLE = "title"
 const val JSON_TIMESTAMP = "timestamp"
 const val JSON_OLD_AMOUNT = "oldamount"
@@ -29,11 +29,12 @@ class AddressObject : AsyncObserver {
     var oldestAmount = 0.0
     var oldestTimestamp = Date().time.toDouble()
     var hasBeenInitiated = false
+    var shouldStartUpdating = true
 
     //fist delegate is ui and second is for alarmmanager
     var delegates = mutableListOf<AsyncObserver?>(null,null)
 
-    constructor(jsonObject: JSONObject) {
+    constructor(jsonObject: JSONObject, startUpdates: Boolean) {
         address = jsonObject.getString(JSON_ADDRESS)
         title = jsonObject.getString(JSON_TITLE)
         amount = jsonObject.getDouble(JSON_AMOUNT)
@@ -78,7 +79,9 @@ class AddressObject : AsyncObserver {
     }
 
     fun fiveminuteupdate() {
-        update()
+        if (shouldStartUpdating)
+            update()
+
         Handler().postDelayed({
             fiveminuteupdate()
         }, 60000 * 5)

@@ -15,18 +15,18 @@ object AddressBook {
             return
         }
         if (act != null) {
-            addresses += JSONSerializer.getAddresses(act.applicationContext)!!.asIterable()
+            JSONSerializer.getAddresses(act.applicationContext)?.let {addresses += it.asIterable()}
             gotAddressesAlready = true
         }
 
     }
 
-    fun fillAddressBook(ctx: Context?) {
+    fun fillAddressBook(ctx: Context?, startUpdatingNow: Boolean = true) {
         if (gotAddressesAlready) {
             return
         }
         if (ctx != null) {
-            addresses += JSONSerializer.getAddresses(ctx)!!.asIterable()
+            JSONSerializer.getAddresses(ctx)?.let {addresses += it.asIterable()}
             gotAddressesAlready = true
         }
 
