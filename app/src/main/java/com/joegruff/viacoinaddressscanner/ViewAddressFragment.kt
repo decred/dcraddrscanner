@@ -20,7 +20,6 @@ import com.google.zxing.common.BitMatrix
 import com.joegruff.viacoinaddressscanner.helpers.*
 import kotlinx.android.synthetic.main.balance_swirl.*
 import kotlinx.android.synthetic.main.view_address_view.*
-import java.util.function.Predicate
 
 class ViewAddressFragment : Fragment(), AsyncObserver {
     companion object {

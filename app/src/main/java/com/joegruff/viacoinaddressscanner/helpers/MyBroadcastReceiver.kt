@@ -11,12 +11,13 @@ import android.support.v4.app.NotificationCompat
 import com.joegruff.viacoinaddressscanner.MainActivity
 import com.joegruff.viacoinaddressscanner.R
 import com.joegruff.viacoinaddressscanner.ViewAddressFragment
-import com.joegruff.viacoinaddressscanner.activities.ViewAddressActivity
 import org.json.JSONObject
 import org.json.JSONTokener
 import android.app.PendingIntent
+import android.app.TaskStackBuilder
 import android.support.v4.app.NotificationManagerCompat
 import android.util.Log
+import com.joegruff.viacoinaddressscanner.activities.ViewAddressActivity
 import java.util.*
 
 
@@ -53,14 +54,13 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
 
             var message = changedaddresses.size.toString()
             var formattedAmountString = ""
-            var notificationIntent = Intent()
+            var myPendingIntent :PendingIntent? = null
 
             if (changedaddresses.size < 1) {
                 return@postDelayed
             } else if (changedaddresses.size < 2) {
 
                 val token = JSONTokener(changedaddresses[0]).nextValue() as JSONObject
-
 
                 var title = token.getString(JSON_TITLE)
                 val address = token.getString(JSON_ADDRESS)
@@ -74,33 +74,39 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
 
                 if (context != null) {
                     message = context.getString(R.string.changed_amounts_one, title, formattedAmountString)
-                    notificationIntent = Intent(context, ViewAddressActivity::class.java)
-                    notificationIntent.putExtra(ViewAddressFragment.INTENT_DATA, address)
+                    val myNotificationIntent = Intent(context, ViewAddressActivity::class.java)
+                    myNotificationIntent.putExtra(ViewAddressFragment.INTENT_DATA,address)
+                    myPendingIntent = TaskStackBuilder.create(context).run {
+                        addNextIntentWithParentStack(myNotificationIntent)
+                        getPendingIntent(0,PendingIntent.FLAG_UPDATE_CURRENT)
+                    }
+
+
                 }
 
             } else {
                 if (context != null) {
+                    val myNotificationIntent = Intent(context, MainActivity::class.java)
+                    myNotificationIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    myPendingIntent = PendingIntent.getActivity(context, 0, myNotificationIntent, 0)
+                    message = context.getString(R.string.changed_amounts_many)
 
-                    //message = context.getString(R.string.changed_amounts_many)
-
-                    changedaddresses.forEach {
-                        val token = JSONTokener(it) as JSONObject
+                    /*changedaddresses.forEach {
+                        val token = JSONTokener(it).nextValue() as JSONObject
                         val address = token.getString(JSON_ADDRESS)
                         message = message + ":" + address.substring(0,7)
-                    }
-                    notificationIntent = Intent(context, MainActivity::class.java)
+                    }*/
                 }
             }
 
             if (context != null) {
-                notificationIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                val pendingIntent = PendingIntent.getActivity(context, 0, notificationIntent, 0)
+
 
                 val mBuilder = NotificationCompat.Builder(context, CHANNEL_ID)
                         .setSmallIcon(R.drawable.small_coin_icon)
                         .setContentTitle(context.getString(R.string.changed_amounts_notification_title))
                         .setContentText(message)
-                        .setContentIntent(pendingIntent)
+                        .setContentIntent(myPendingIntent)
                         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
 
                 val notificationManager = NotificationManagerCompat.from(context)
@@ -163,7 +169,7 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
                 val oldBalance = token.getString(JSON_OLD_AMOUNT)
                 val timestamp = token.getDouble(JSON_TIMESTAMP)
                 Log.d("mybroadcastreceiver", "prococess finished " + output + " size is " + changedaddresses.size + " old balance " + oldBalance + " new balance " + amount)
-                if (!amount.equals(oldBalance) && Date().time - timestamp < 1000 * 10)
+                //if (!amount.equals(oldBalance) && Date().time - timestamp < 1000 * 10)
                     changedaddresses.add(output)
             }
 

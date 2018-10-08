@@ -65,6 +65,8 @@ class MainActivity : AppCompatActivity() {
 
         }
 
+
+
         recyclerView.addItemDecoration(SimpleDividerItemDecoration(this))
 
         val swipeHandler = object : SwipeToDeleteCallback(this) {

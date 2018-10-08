@@ -26,7 +26,7 @@ object AddressBook {
             return
         }
         if (ctx != null) {
-            JSONSerializer.getAddresses(ctx)?.let {addresses += it.asIterable()}
+            JSONSerializer.getAddresses(ctx, startUpdatingNow)?.let {addresses += it.asIterable()}
             gotAddressesAlready = true
         }
 

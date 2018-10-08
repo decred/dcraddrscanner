@@ -43,6 +43,7 @@ class AddressObject : AsyncObserver {
         isBeingWatched = jsonObject.getBoolean(JSON_BEING_WATCHED)
         hasBeenInitiated = true
         isValid = true
+        shouldStartUpdating = startUpdates
         fiveminuteupdate()
     }
 
@@ -84,7 +85,7 @@ class AddressObject : AsyncObserver {
 
         Handler().postDelayed({
             fiveminuteupdate()
-        }, 60000 * 5)
+        }, 60000 * 4 + (0..10000).random().toLong())
 
 
     }
@@ -155,5 +156,6 @@ class AddressObject : AsyncObserver {
 
     }
 
+    fun IntRange.random() = Random().nextInt((endInclusive + 1) - start) + start
 
 }
