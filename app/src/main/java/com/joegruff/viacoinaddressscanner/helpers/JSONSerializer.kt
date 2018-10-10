@@ -8,7 +8,7 @@ import java.io.File
 
 object JSONSerializer {
 
-    fun getAddresses(ctx: Context, startUpdates: Boolean = true): ArrayList<AddressObject>? {
+    fun getAddresses(ctx: Context): ArrayList<AddressObject>? {
         val file = getFile(ctx)
         if (file.exists()) {
             val inputStream = file.inputStream()
@@ -16,7 +16,7 @@ object JSONSerializer {
             val arrayList = ArrayList<AddressObject>()
             val array = JSONTokener(jsonArray).nextValue() as JSONArray
             for (i in 0..(array.length() - 1)) {
-                arrayList.add(AddressObject(array.getJSONObject(i), startUpdates))
+                arrayList.add(AddressObject(array.getJSONObject(i)))
             }
             return arrayList
 

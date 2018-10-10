@@ -203,5 +203,13 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
         bitmap.setPixels(pixels, 0, 500, 0, 0, matrixWidth, matrixHeight)
         return bitmap
     }
+
+    override fun balanceSwirlNotNull(): Boolean {
+        val permaDelegate = delegate
+        if (permaDelegate!=null) {
+            return permaDelegate.balanceSwirlNotNull()
+        }
+        return false
+    }
 }
 

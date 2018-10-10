@@ -21,12 +21,18 @@ object AddressBook {
 
     }
 
-    fun fillAddressBook(ctx: Context?, startUpdatingNow: Boolean = true) {
+    fun updateAddresses(){
+        addresses.forEach {
+            it.update()
+        }
+    }
+
+    fun fillAddressBook(ctx: Context?) {
         if (gotAddressesAlready) {
             return
         }
         if (ctx != null) {
-            JSONSerializer.getAddresses(ctx, startUpdatingNow)?.let {addresses += it.asIterable()}
+            JSONSerializer.getAddresses(ctx)?.let {addresses += it.asIterable()}
             gotAddressesAlready = true
         }
 

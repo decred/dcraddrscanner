@@ -29,12 +29,11 @@ class AddressObject : AsyncObserver {
     var oldestAmount = 0.0
     var oldestTimestamp = Date().time.toDouble()
     var hasBeenInitiated = false
-    var shouldStartUpdating = true
 
     //fist delegate is ui and second is for alarmmanager
     var delegates = mutableListOf<AsyncObserver?>(null,null)
 
-    constructor(jsonObject: JSONObject, startUpdates: Boolean) {
+    constructor(jsonObject: JSONObject) {
         address = jsonObject.getString(JSON_ADDRESS)
         title = jsonObject.getString(JSON_TITLE)
         amount = jsonObject.getDouble(JSON_AMOUNT)
@@ -43,12 +42,12 @@ class AddressObject : AsyncObserver {
         isBeingWatched = jsonObject.getBoolean(JSON_BEING_WATCHED)
         hasBeenInitiated = true
         isValid = true
-        shouldStartUpdating = startUpdates
         fiveminuteupdate()
     }
 
     constructor(add: String) {
         address = add
+        update()
         fiveminuteupdate()
     }
 
@@ -71,7 +70,8 @@ class AddressObject : AsyncObserver {
 
             delegates.forEach {if (it !=null) {
                 it.processbegan()
-            }}
+            }
+            }
 
         } catch (e: Exception) {
             //Log.d("addressobject", "processbegin " + e.printStackTrace())
@@ -80,10 +80,8 @@ class AddressObject : AsyncObserver {
     }
 
     fun fiveminuteupdate() {
-        if (shouldStartUpdating)
-            update()
-
         Handler().postDelayed({
+            update()
             fiveminuteupdate()
         }, 60000 * 4 + (0..10000).random().toLong())
 
@@ -91,7 +89,14 @@ class AddressObject : AsyncObserver {
     }
 
     fun update() {
-        //Log.d("update", "isupdating = " + isUpdating)
+        try {
+            if (!delegates[0]!!.balanceSwirlNotNull()) {
+                return
+            }
+        }catch (e : java.lang.Exception) {
+
+        }
+
         if (!isUpdating) {
             isUpdating = true
             GetInfoFromWeb(this, address).execute()
@@ -145,8 +150,6 @@ class AddressObject : AsyncObserver {
             delegates.forEach {
                 if (it != null) {
                     it.processfinished(sendToDelegates)
-                    //dont trigger notifications if application is active
-                    return@forEach
                 }
             }
         } catch (e: Exception){
@@ -157,5 +160,10 @@ class AddressObject : AsyncObserver {
     }
 
     fun IntRange.random() = Random().nextInt((endInclusive + 1) - start) + start
+
+    override fun balanceSwirlNotNull(): Boolean {
+        //notusedhere
+        return true
+    }
 
 }

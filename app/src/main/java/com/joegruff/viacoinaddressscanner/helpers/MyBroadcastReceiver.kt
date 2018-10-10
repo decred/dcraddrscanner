@@ -34,7 +34,7 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
 
 
         if (!AddressBook.gotAddressesAlready) {
-            AddressBook.fillAddressBook(context, false)
+            AddressBook.fillAddressBook(context)
         }else {
             Log.d("mybroadcastreceiver", "returned cause got addressesalready")
             return
@@ -74,8 +74,9 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
 
                 if (context != null) {
                     message = context.getString(R.string.changed_amounts_one, title, formattedAmountString)
-                    val myNotificationIntent = Intent(context, ViewAddressActivity::class.java)
+                    val myNotificationIntent = Intent(context, ViewAddressActivity  ::class.java)
                     myNotificationIntent.putExtra(ViewAddressFragment.INTENT_DATA,address)
+                    myNotificationIntent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
                     myPendingIntent = TaskStackBuilder.create(context).run {
                         addNextIntentWithParentStack(myNotificationIntent)
                         getPendingIntent(0,PendingIntent.FLAG_UPDATE_CURRENT)
@@ -146,6 +147,8 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
         } else if (difference < 0.0) {
             //balance_swirl_change.setTextColor(resources.getColor(R.color.Red))
             text = "-" + amountfromstring(difference.toString())
+        } else {
+            text = "0"
         }
         return text
     }
@@ -169,10 +172,14 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
                 val oldBalance = token.getString(JSON_OLD_AMOUNT)
                 val timestamp = token.getDouble(JSON_TIMESTAMP)
                 Log.d("mybroadcastreceiver", "prococess finished " + output + " size is " + changedaddresses.size + " old balance " + oldBalance + " new balance " + amount)
-                //if (!amount.equals(oldBalance) && Date().time - timestamp < 1000 * 10)
+                if (!amount.equals(oldBalance) && Date().time - timestamp < 1000 * 10)
                     changedaddresses.add(output)
             }
 
         }
+    }
+
+    override fun balanceSwirlNotNull(): Boolean {
+        return false
     }
 }

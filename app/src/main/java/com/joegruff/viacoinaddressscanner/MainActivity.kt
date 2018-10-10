@@ -45,6 +45,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
         AddressBook.fillAddressBook(this)
+        AddressBook.updateAddresses()
 
         setrepeatingalarm()
 
@@ -302,8 +303,8 @@ class MainActivity : AppCompatActivity() {
 
         alarmMgr.setInexactRepeating(
                 AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                SystemClock.elapsedRealtime() + 1000 * 60 * 1,
-                1000 * 60 * 10,
+                SystemClock.elapsedRealtime() + 1000 * 60 * 30,
+                1000 * 60 * 30,
                 alarmIntent
         )
 
