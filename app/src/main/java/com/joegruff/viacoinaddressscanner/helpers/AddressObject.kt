@@ -11,7 +11,7 @@ import java.util.*
 import kotlin.concurrent.schedule
 
 const val JSON_AMOUNT = "amount"
-const val JSON_ADDRESS: String = "address"
+const val JSON_ADDRESS = "address"
 const val JSON_TITLE = "title"
 const val JSON_TIMESTAMP = "timestamp"
 const val JSON_OLD_AMOUNT = "oldamount"
@@ -47,6 +47,7 @@ class AddressObject : AsyncObserver {
 
     constructor(add: String) {
         address = add
+        update()
         fiveminuteupdate()
     }
 
@@ -69,7 +70,8 @@ class AddressObject : AsyncObserver {
 
             delegates.forEach {if (it !=null) {
                 it.processbegan()
-            }}
+            }
+            }
 
         } catch (e: Exception) {
             //Log.d("addressobject", "processbegin " + e.printStackTrace())
@@ -78,16 +80,23 @@ class AddressObject : AsyncObserver {
     }
 
     fun fiveminuteupdate() {
-        update()
         Handler().postDelayed({
+            update()
             fiveminuteupdate()
-        }, 60000 * 5)
+        }, 60000 * 4 + (0..10000).random().toLong())
 
 
     }
 
     fun update() {
-        //Log.d("update", "isupdating = " + isUpdating)
+        try {
+            if (!delegates[0]!!.balanceSwirlNotNull()) {
+                return
+            }
+        }catch (e : java.lang.Exception) {
+
+        }
+
         if (!isUpdating) {
             isUpdating = true
             GetInfoFromWeb(this, address).execute()
@@ -119,15 +128,13 @@ class AddressObject : AsyncObserver {
                         //record change
                         oldestAmount = amount
                         amount = amountDoubleFromString
+                        oldestTimestamp = Date().time.toDouble()
                     } else if (elapsedHrsSinceChange > 24){
                         Log.d("24hrspassed","forgot oldestamount because : " + elapsedHrsSinceChange + " hours have passed")
                         //forget older changes
                         oldestTimestamp = Date().time.toDouble()
                         oldestAmount = amount
                     }
-
-
-
 
                     //Log.d("addressobject", "process finished " + output)
                     sendToDelegates = toJSON().toString()
@@ -152,5 +159,11 @@ class AddressObject : AsyncObserver {
 
     }
 
+    fun IntRange.random() = Random().nextInt((endInclusive + 1) - start) + start
+
+    override fun balanceSwirlNotNull(): Boolean {
+        //notusedhere
+        return true
+    }
 
 }

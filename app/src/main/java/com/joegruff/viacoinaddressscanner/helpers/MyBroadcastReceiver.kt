@@ -7,17 +7,18 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Handler
-import android.provider.Settings.Global.getString
 import android.support.v4.app.NotificationCompat
 import com.joegruff.viacoinaddressscanner.MainActivity
 import com.joegruff.viacoinaddressscanner.R
 import com.joegruff.viacoinaddressscanner.ViewAddressFragment
-import com.joegruff.viacoinaddressscanner.activities.ViewAddressActivity
 import org.json.JSONObject
 import org.json.JSONTokener
 import android.app.PendingIntent
+import android.app.TaskStackBuilder
 import android.support.v4.app.NotificationManagerCompat
 import android.util.Log
+import com.joegruff.viacoinaddressscanner.activities.ViewAddressActivity
+import java.util.*
 
 
 const val CHANNEL_ID = "com.joegruff.viacoinaddressscanner.notification_channel"
@@ -31,9 +32,13 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
         if (context != null)
             createNotificationChannel(context)
 
-        AddressBook.fillAddressBook(context)
 
-
+        if (!AddressBook.gotAddressesAlready) {
+            AddressBook.fillAddressBook(context)
+        }else {
+            Log.d("mybroadcastreceiver", "returned cause got addressesalready")
+            return
+        }
 
 
         //check for starred addresses
@@ -44,55 +49,65 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
         }
 
 
-
-
         //give it five seconds to find changed addresses, report results as alert if something changed
         Handler().postDelayed({
 
-            var message = ""
+            var message = changedaddresses.size.toString()
             var formattedAmountString = ""
-            var intent: Intent = Intent()
+            var myPendingIntent :PendingIntent? = null
 
             if (changedaddresses.size < 1) {
                 return@postDelayed
             } else if (changedaddresses.size < 2) {
 
-                val token = JSONTokener(changedaddresses[0]).nextValue()
-                var address = ""
-                var amountString = ""
-                var oldBalance = ""
+                val token = JSONTokener(changedaddresses[0]).nextValue() as JSONObject
 
-                if (token is JSONObject) {
-                    address = token.getString(JSON_ADDRESS)
-                    amountString = token.getString(JSON_AMOUNT)
-                    oldBalance = token.getString(JSON_OLD_AMOUNT)
-                    formattedAmountString = setAmounts(amountString, oldBalance)
-                } else {
-                    return@postDelayed
-                }
+                var title = token.getString(JSON_TITLE)
+                val address = token.getString(JSON_ADDRESS)
+                if (title.equals(""))
+                    title = address
+                val amountString = token.getString(JSON_AMOUNT)
+                val oldBalance = token.getString(JSON_OLD_AMOUNT)
+
+                formattedAmountString = setAmounts(amountString, oldBalance)
+
 
                 if (context != null) {
-                    message = context.getString(R.string.changed_amounts_one, address, formattedAmountString)
-                    intent = Intent(context, ViewAddressActivity::class.java)
-                    intent.putExtra(ViewAddressFragment.INTENT_DATA, address)
+                    message = context.getString(R.string.changed_amounts_one, title, formattedAmountString)
+                    val myNotificationIntent = Intent(context, ViewAddressActivity  ::class.java)
+                    myNotificationIntent.putExtra(ViewAddressFragment.INTENT_DATA,address)
+                    myNotificationIntent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
+                    myPendingIntent = TaskStackBuilder.create(context).run {
+                        addNextIntentWithParentStack(myNotificationIntent)
+                        getPendingIntent(0,PendingIntent.FLAG_UPDATE_CURRENT)
+                    }
+
+
                 }
 
             } else {
                 if (context != null) {
+                    val myNotificationIntent = Intent(context, MainActivity::class.java)
+                    myNotificationIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    myPendingIntent = PendingIntent.getActivity(context, 0, myNotificationIntent, 0)
                     message = context.getString(R.string.changed_amounts_many)
-                    intent = Intent(context, MainActivity::class.java)
+
+                    /*changedaddresses.forEach {
+                        val token = JSONTokener(it).nextValue() as JSONObject
+                        val address = token.getString(JSON_ADDRESS)
+                        message = message + ":" + address.substring(0,7)
+                    }*/
                 }
             }
 
             if (context != null) {
-                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                val pendingIntent = PendingIntent.getActivity(context, 0, intent, 0)
+
 
                 val mBuilder = NotificationCompat.Builder(context, CHANNEL_ID)
                         .setSmallIcon(R.drawable.small_coin_icon)
                         .setContentTitle(context.getString(R.string.changed_amounts_notification_title))
                         .setContentText(message)
-                        .setContentIntent(pendingIntent)
+                        .setContentIntent(myPendingIntent)
                         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
 
                 val notificationManager = NotificationManagerCompat.from(context)
@@ -132,6 +147,8 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
         } else if (difference < 0.0) {
             //balance_swirl_change.setTextColor(resources.getColor(R.color.Red))
             text = "-" + amountfromstring(difference.toString())
+        } else {
+            text = "0"
         }
         return text
     }
@@ -147,10 +164,22 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
 
     override fun processfinished(output: String?) {
         //catch all changed starred addresses
+
         if (output != null && output != NO_CONNECTION) {
-            //val token = JSONTokener(output).nextValue()
-            changedaddresses.add(output)
+            val token = JSONTokener(output).nextValue()
+            if (token is JSONObject) {
+                val amount = token.getDouble(JSON_AMOUNT)
+                val oldBalance = token.getString(JSON_OLD_AMOUNT)
+                val timestamp = token.getDouble(JSON_TIMESTAMP)
+                Log.d("mybroadcastreceiver", "prococess finished " + output + " size is " + changedaddresses.size + " old balance " + oldBalance + " new balance " + amount)
+                if (!amount.equals(oldBalance) && Date().time - timestamp < 1000 * 10)
+                    changedaddresses.add(output)
+            }
 
         }
+    }
+
+    override fun balanceSwirlNotNull(): Boolean {
+        return false
     }
 }

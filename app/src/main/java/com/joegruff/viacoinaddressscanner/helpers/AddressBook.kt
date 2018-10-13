@@ -15,10 +15,16 @@ object AddressBook {
             return
         }
         if (act != null) {
-            addresses += JSONSerializer.getAddresses(act.applicationContext)!!.asIterable()
+            JSONSerializer.getAddresses(act.applicationContext)?.let {addresses += it.asIterable()}
             gotAddressesAlready = true
         }
 
+    }
+
+    fun updateAddresses(){
+        addresses.forEach {
+            it.update()
+        }
     }
 
     fun fillAddressBook(ctx: Context?) {
@@ -26,7 +32,7 @@ object AddressBook {
             return
         }
         if (ctx != null) {
-            addresses += JSONSerializer.getAddresses(ctx)!!.asIterable()
+            JSONSerializer.getAddresses(ctx)?.let {addresses += it.asIterable()}
             gotAddressesAlready = true
         }
 
@@ -35,6 +41,11 @@ object AddressBook {
     fun saveAddressBook(act: FragmentActivity?) {
         JSONSerializer.saveJSON(act?.applicationContext, addresses)
     }
+
+    fun saveAddressBook(ctx: Context?) {
+        JSONSerializer.saveJSON(ctx, addresses)
+    }
+
 
     fun newObjectFromAddress(address: String): AddressObject? {
         for (a in addresses) {

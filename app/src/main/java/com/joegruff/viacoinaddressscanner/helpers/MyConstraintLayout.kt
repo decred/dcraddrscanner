@@ -8,6 +8,7 @@ import android.view.View
 import android.widget.ProgressBar
 import android.widget.RelativeLayout
 import com.joegruff.viacoinaddressscanner.R
+import com.joegruff.viacoinaddressscanner.R.id.balance_swirl_layout
 import kotlinx.android.synthetic.main.balance_swirl.view.*
 import org.json.JSONObject
 import org.json.JSONTokener
@@ -43,6 +44,8 @@ class MyConstraintLayout : RelativeLayout, AsyncObserver {
 
     }
 
+
+
     fun setAmounts(balance : String, oldBalance : String){
         val difference = balance.toDouble() - oldBalance.toDouble()
         var text = ""
@@ -63,5 +66,9 @@ class MyConstraintLayout : RelativeLayout, AsyncObserver {
         }
         val f = DecimalFormat("#.########")
         return f.format(amountString.toDouble()).toString()
+    }
+
+    override fun balanceSwirlNotNull(): Boolean {
+        return balance_swirl_layout.isShown
     }
 }

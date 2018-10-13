@@ -20,7 +20,6 @@ import com.google.zxing.common.BitMatrix
 import com.joegruff.viacoinaddressscanner.helpers.*
 import kotlinx.android.synthetic.main.balance_swirl.*
 import kotlinx.android.synthetic.main.view_address_view.*
-import java.util.function.Predicate
 
 class ViewAddressFragment : Fragment(), AsyncObserver {
     companion object {
@@ -113,6 +112,7 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
                     setupqrcode()
                     setupaddressbutton()
                     setupinfoview()
+                    setupwatchstar()
                 }
             }
         }
@@ -203,6 +203,14 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
         val bitmap = Bitmap.createBitmap(matrixWidth, matrixHeight, Bitmap.Config.RGB_565)
         bitmap.setPixels(pixels, 0, 500, 0, 0, matrixWidth, matrixHeight)
         return bitmap
+    }
+
+    override fun balanceSwirlNotNull(): Boolean {
+        val permaDelegate = delegate
+        if (permaDelegate!=null) {
+            return permaDelegate.balanceSwirlNotNull()
+        }
+        return false
     }
 }
 
