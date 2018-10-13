@@ -112,6 +112,7 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
                     setupqrcode()
                     setupaddressbutton()
                     setupinfoview()
+                    setupwatchstar()
                 }
             }
         }

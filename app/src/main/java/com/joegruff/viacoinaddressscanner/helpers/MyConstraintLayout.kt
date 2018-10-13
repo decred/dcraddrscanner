@@ -44,6 +44,8 @@ class MyConstraintLayout : RelativeLayout, AsyncObserver {
 
     }
 
+
+
     fun setAmounts(balance : String, oldBalance : String){
         val difference = balance.toDouble() - oldBalance.toDouble()
         var text = ""
