@@ -68,7 +68,7 @@ class MainActivity : AppCompatActivity() {
 
 
 
-        recyclerView.addItemDecoration(SimpleDividerItemDecoration(this))
+        recyclerView.addItemDecoration(SimpleDividerItemDecoration())
 
         val swipeHandler = object : SwipeToDeleteCallback(this) {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
@@ -83,19 +83,19 @@ class MainActivity : AppCompatActivity() {
         itemTouchHelper.attachToRecyclerView(recyclerView)
 
 
-        fab.setOnClickListener { view ->
+        fab.setOnClickListener {
             val dialogview = BottomSheetDialog(this)
             dialogview.setContentView(R.layout.get_address_view)
             val qrbutton = dialogview.findViewById<Button>(R.id.get_address_view_scan_button)
             val pastebutton = dialogview.findViewById<Button>(R.id.get_address_view_paste_button)
-            qrbutton?.setOnClickListener {
+            qrbutton?.setOnClickListener { _ ->
                 val intent = Intent(this, BarcodeCaptureActivity::class.java)
                 intent.putExtra(BarcodeCaptureActivity.AutoFocus, true)
                 intent.putExtra(BarcodeCaptureActivity.UseFlash, false)
                 this.startActivityForResult(intent, RC_BARCODE_CAPTURE)
                 dialogview.dismiss()
             }
-            pastebutton?.setOnClickListener {
+            pastebutton?.setOnClickListener { _ ->
                 val clipboard = this.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager?
                 if (clipboard?.primaryClip?.getItemAt(0) != null) {
                     val address = clipboard.primaryClip.getItemAt(0).text.toString()
@@ -185,7 +185,7 @@ class MainActivity : AppCompatActivity() {
             val addressObject = myDataset.get(adapterPosition)
             val snackbar = Snackbar
                     .make(recyclerView, R.string.main_view_deleted_address, Snackbar.LENGTH_LONG)
-                    .setAction(R.string.main_view_undo_delete, { view ->
+                    .setAction(R.string.main_view_undo_delete, {
                         //val mAdapterPosition = viewHolder.adapterPosition
                         myDataset.add(adapterPosition, addressObject)
                         notifyItemInserted(adapterPosition)
@@ -209,7 +209,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    inner class SimpleDividerItemDecoration(context: Context) : RecyclerView.ItemDecoration() {
+    inner class SimpleDividerItemDecoration() : RecyclerView.ItemDecoration() {
         private var mDivider: Drawable?
 
         init {

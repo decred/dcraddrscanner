@@ -68,7 +68,5 @@ class MyConstraintLayout : RelativeLayout, AsyncObserver {
         return f.format(amountString.toDouble()).toString()
     }
 
-    override fun balanceSwirlNotNull(): Boolean {
-        return balance_swirl_layout.isShown
-    }
+    override fun balanceSwirlNotNull() = balance_swirl_layout.isShown
 }

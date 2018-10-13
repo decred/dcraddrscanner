@@ -122,7 +122,7 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
     fun setupinfoview() {
         addressObject?.let {
             balance_swirl_layout.setAmounts(it.amount.toString(),it.oldestAmount.toString())
-            balance_swirl_balance.setOnClickListener { v ->
+            balance_swirl_balance.setOnClickListener { _ ->
                 it.update()
             }
             this.delegate = balance_swirl_layout
@@ -133,7 +133,7 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
     fun setupwatchstar(){
         addressObject?.let {
             checkstar(it)
-            addorRemoveFromWatchlist.setOnClickListener {theview->
+            addorRemoveFromWatchlist.setOnClickListener { _ ->
                 it.isBeingWatched = !it.isBeingWatched
                 checkstar(it)
             }
@@ -142,8 +142,7 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
 
     }
     fun checkstar(ad : AddressObject) {
-        var id = 0
-        id = if (ad.isBeingWatched) android.R.drawable.btn_star_big_on else android.R.drawable.btn_star_big_off
+        val id = if (ad.isBeingWatched) android.R.drawable.btn_star_big_on else android.R.drawable.btn_star_big_off
         addorRemoveFromWatchlist.background = activity?.resources?.getDrawable(id)
     }
     fun setupeditlabel() {

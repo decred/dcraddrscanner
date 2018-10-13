@@ -53,7 +53,6 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
         Handler().postDelayed({
 
             var message = changedaddresses.size.toString()
-            var formattedAmountString = ""
             var myPendingIntent :PendingIntent? = null
 
             if (changedaddresses.size < 1) {
@@ -69,7 +68,7 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
                 val amountString = token.getString(JSON_AMOUNT)
                 val oldBalance = token.getString(JSON_OLD_AMOUNT)
 
-                formattedAmountString = setAmounts(amountString, oldBalance)
+                val formattedAmountString = setAmounts(amountString, oldBalance)
 
 
                 if (context != null) {
