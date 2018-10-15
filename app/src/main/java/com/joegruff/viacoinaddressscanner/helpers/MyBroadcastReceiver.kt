@@ -177,8 +177,4 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
 
         }
     }
-
-    override fun balanceSwirlNotNull(): Boolean {
-        return false
-    }
 }

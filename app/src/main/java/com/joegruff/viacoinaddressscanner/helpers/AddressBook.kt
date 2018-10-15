@@ -23,7 +23,7 @@ object AddressBook {
 
     fun updateAddresses(){
         addresses.forEach {
-            it.update()
+            it.update(false)
         }
     }
 

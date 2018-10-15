@@ -42,12 +42,13 @@ class AddressObject : AsyncObserver {
         isBeingWatched = jsonObject.getBoolean(JSON_BEING_WATCHED)
         hasBeenInitiated = true
         isValid = true
-        fiveminuteupdate()
     }
 
     constructor(add: String) {
         address = add
         update()
+    }
+    init {
         fiveminuteupdate()
     }
 
@@ -88,7 +89,9 @@ class AddressObject : AsyncObserver {
 
     }
 
-    fun update() {
+    fun update(checkIfShown : Boolean = true) {
+
+        if (checkIfShown)
         try {
             if (!delegates[0]!!.balanceSwirlNotNull()) {
                 return
@@ -160,10 +163,5 @@ class AddressObject : AsyncObserver {
     }
 
     fun IntRange.random() = Random().nextInt((endInclusive + 1) - start) + start
-
-    override fun balanceSwirlNotNull(): Boolean {
-        //notusedhere
-        return true
-    }
 
 }

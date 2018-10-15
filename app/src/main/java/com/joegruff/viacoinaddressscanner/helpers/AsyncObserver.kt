@@ -3,5 +3,5 @@ package com.joegruff.viacoinaddressscanner.helpers
 interface AsyncObserver {
     fun processfinished(output: String?)
     fun processbegan()
-    fun balanceSwirlNotNull() : Boolean
+    fun balanceSwirlNotNull() = false
 }
