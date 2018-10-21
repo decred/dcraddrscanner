@@ -36,7 +36,7 @@ class MyConstraintLayout : RelativeLayout, AsyncObserver {
 
             if (token is JSONObject) {
                 val amountString = token.getString(JSON_AMOUNT)
-                val oldBalance = token.getString(JSON_OLD_AMOUNT)
+                val oldBalance = token.getString(JSON_AMOUNT_OLD)
                 setAmounts(amountString, oldBalance)
             }
         }

@@ -69,6 +69,7 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
 
     override fun onResume() {
         addressObject.delegates.set(0,this)
+        if (shouldUpdate()) addressObject.update()
         super.onResume()
     }
 
@@ -99,7 +100,7 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
             return
         }
         if (output == NO_CONNECTION){
-            if (!addressObject.hasBeenInitiated){
+            if (!hasBeenInitiated){
                 view_address_view_address_button.setText(R.string.view_address_fragment_no_connection)
                 return
             }
@@ -121,14 +122,14 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
 
 
     fun setupinfoview() {
-        addressObject.let {
-            balance_swirl_layout.setAmounts(it.amount.toString(),it.oldestAmount.toString())
+
+            balance_swirl_layout.setAmounts(addressObject.amount.toString(),addressObject.amountOld.toString())
             balance_swirl_balance.setOnClickListener { _ ->
-                it.update()
+                addressObject.update()
             }
             this.delegate = balance_swirl_layout
 
-        }
+
     }
 
     fun setupwatchstar(){
@@ -209,7 +210,7 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
             return permaDelegate?.balanceSwirlNotNull() ?: false
     }
 
-    fun shouldUpdate() = Date().time - addressObject.oldestTimestamp > 1000 * 5
+    fun shouldUpdate() = Date().time - addressObject.timestampCheck > 1000 * 5
 
 }
 

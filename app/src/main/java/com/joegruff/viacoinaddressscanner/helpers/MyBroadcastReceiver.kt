@@ -59,7 +59,7 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
                 if (title.equals(""))
                     title = address
                 val amountString = token.getString(JSON_AMOUNT)
-                val oldBalance = token.getString(JSON_OLD_AMOUNT)
+                val oldBalance = token.getString(JSON_AMOUNT_OLD)
 
                 val formattedAmountString = setAmounts(amountString, oldBalance)
 
@@ -93,7 +93,6 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
             }
 
             if (context != null) {
-
 
                 val mBuilder = NotificationCompat.Builder(context, CHANNEL_ID)
                         .setSmallIcon(R.drawable.small_coin_icon)
@@ -163,8 +162,8 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
             val token = JSONTokener(output).nextValue()
             if (token is JSONObject) {
                 val amount = token.getDouble(JSON_AMOUNT)
-                val oldBalance = token.getString(JSON_OLD_AMOUNT)
-                val timestamp = token.getDouble(JSON_TIMESTAMP)
+                val oldBalance = token.getString(JSON_AMOUNT_OLD)
+                val timestamp = token.getDouble(JSON_TIMESTAMP_CHANGE)
                 Log.d("mybroadcastreceiver", "prococess finished " + output + " size is " + changedaddresses.size + " old balance " + oldBalance + " new balance " + amount)
                 if (!amount.equals(oldBalance) && Date().time - timestamp < 1000 * 10)
                     changedaddresses.add(output)
