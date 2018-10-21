@@ -20,6 +20,7 @@ import com.google.zxing.common.BitMatrix
 import com.joegruff.viacoinaddressscanner.helpers.*
 import kotlinx.android.synthetic.main.balance_swirl.*
 import kotlinx.android.synthetic.main.view_address_view.*
+import java.util.*
 
 class ViewAddressFragment : Fragment(), AsyncObserver {
     companion object {
@@ -35,9 +36,10 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
 
 
 
-    var addressObject: AddressObject? = null
+    lateinit var addressObject: AddressObject
     var address = ""
     var delegate : AsyncObserver? = null
+    var hasBeenInitiated = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
@@ -46,36 +48,35 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
         address = arguments?.getSerializable(INTENT_DATA) as String
         val v = inflater.inflate(R.layout.view_address_view, container, false)
 
-        addressObject = AddressBook.getAddress(address)
+        addressObject = AddressBook.getAddressObject(address)
 
         return v
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        if (addressObject != null) {
+        if (addressObject.isValid) {
             setupeditlabel()
             setupqrcode()
             setupaddressbutton()
             setupinfoview()
             setupwatchstar()
+            hasBeenInitiated = true
         } else {
-            addressObject = AddressBook.newObjectFromAddress(address)
+            addressObject = AddressBook.getAddressObject(address)
         }
         super.onViewCreated(view, savedInstanceState)
     }
 
     override fun onResume() {
-        addressObject?.delegates?.set(0,this)
+        addressObject.delegates.set(0,this)
         super.onResume()
     }
 
     override fun onPause() {
-        addressObject?.let {
-            if (it.isValid) {
-                AddressBook.updateAddress(it)
+            if (addressObject.isValid) {
+                AddressBook.updateAddress(addressObject)
                 AddressBook.saveAddressBook(activity)
             }
-        }
         super.onPause()
     }
 
@@ -98,14 +99,14 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
             return
         }
         if (output == NO_CONNECTION){
-            if (!addressObject!!.hasBeenInitiated){
+            if (!addressObject.hasBeenInitiated){
                 view_address_view_address_button.setText(R.string.view_address_fragment_no_connection)
                 return
             }
         }
-        if (addressObject!!.isValid) {
-            if (!addressObject!!.hasBeenInitiated) {
-                addressObject?.hasBeenInitiated = true
+        if (addressObject.isValid) {
+            if (!hasBeenInitiated) {
+                //addressObject.hasBeenInitiated = true
                 activity?.let {
                     AddressBook.saveAddressBook(it)
                     setupeditlabel()
@@ -120,7 +121,7 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
 
 
     fun setupinfoview() {
-        addressObject?.let {
+        addressObject.let {
             balance_swirl_layout.setAmounts(it.amount.toString(),it.oldestAmount.toString())
             balance_swirl_balance.setOnClickListener { _ ->
                 it.update()
@@ -131,12 +132,11 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
     }
 
     fun setupwatchstar(){
-        addressObject?.let {
-            checkstar(it)
+            checkstar(addressObject)
             addorRemoveFromWatchlist.setOnClickListener { _ ->
-                it.isBeingWatched = !it.isBeingWatched
-                checkstar(it)
-            }
+                addressObject.isBeingWatched = !addressObject.isBeingWatched
+                checkstar(addressObject)
+
 
         }
 
@@ -146,7 +146,7 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
         addorRemoveFromWatchlist.background = activity?.resources?.getDrawable(id)
     }
     fun setupeditlabel() {
-        view_address_view_label.setText(addressObject?.title)
+        view_address_view_label.setText(addressObject.title)
         view_address_view_label.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(p0: Editable?) {
             }
@@ -155,17 +155,17 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
             }
 
             override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-                addressObject?.title = p0.toString()
+                addressObject.title = p0.toString()
             }
 
         })
     }
 
     fun setupaddressbutton() {
-        view_address_view_address_button.setText(addressObject?.address)
+        view_address_view_address_button.setText(addressObject.address)
         view_address_view_address_button.setOnClickListener {
             val clipboard = activity?.getSystemService(AppCompatActivity.CLIPBOARD_SERVICE) as ClipboardManager?
-            val clip = ClipData.newPlainText("address",addressObject?.address)
+            val clip = ClipData.newPlainText("address",addressObject.address)
             clipboard?.primaryClip = clip
             Toast.makeText(activity,R.string.view_address_fragment_copied_clipdata,Toast.LENGTH_SHORT).show()
         }
@@ -173,7 +173,7 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
 
     fun setupqrcode() {
         try {
-            val bitmap = textToQRBitmap(addressObject!!.address)
+            val bitmap = textToQRBitmap(addressObject.address)
             view_address_view_qr_code.setImageBitmap(bitmap)
         } catch (e: WriterException) {
             e.printStackTrace()
@@ -206,10 +206,10 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
 
     override fun balanceSwirlNotNull(): Boolean {
         val permaDelegate = delegate
-        if (permaDelegate!=null) {
-            return permaDelegate.balanceSwirlNotNull()
-        }
-        return false
+            return permaDelegate?.balanceSwirlNotNull() ?: false
     }
+
+    fun shouldUpdate() = Date().time - addressObject.oldestTimestamp > 1000 * 5
+
 }
 

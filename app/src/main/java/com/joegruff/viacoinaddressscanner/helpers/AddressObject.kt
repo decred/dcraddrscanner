@@ -17,7 +17,7 @@ const val JSON_TIMESTAMP = "timestamp"
 const val JSON_OLD_AMOUNT = "oldamount"
 const val JSON_BEING_WATCHED = "beingwatched"
 
-class AddressObject : AsyncObserver {
+class AddressObject() : AsyncObserver {
 
 
     var address = ""
@@ -31,24 +31,23 @@ class AddressObject : AsyncObserver {
     var hasBeenInitiated = false
 
     //fist delegate is ui and second is for alarmmanager
-    var delegates = mutableListOf<AsyncObserver?>(null,null)
+    var delegates = mutableListOf<AsyncObserver?>(null, null)
 
-    constructor(jsonObject: JSONObject) {
+    constructor(jsonObject: JSONObject) : this() {
         address = jsonObject.getString(JSON_ADDRESS)
         title = jsonObject.getString(JSON_TITLE)
         amount = jsonObject.getDouble(JSON_AMOUNT)
         oldestAmount = jsonObject.getDouble(JSON_OLD_AMOUNT)
         oldestTimestamp = jsonObject.getDouble(JSON_TIMESTAMP)
         isBeingWatched = jsonObject.getBoolean(JSON_BEING_WATCHED)
-        hasBeenInitiated = true
+        //hasBeenInitiated = true
         isValid = true
+        fiveminuteupdate()
     }
 
-    constructor(add: String) {
+    constructor(add: String) : this() {
         address = add
         update()
-    }
-    init {
         fiveminuteupdate()
     }
 
@@ -69,15 +68,24 @@ class AddressObject : AsyncObserver {
         try {
             //Log.d("addressobject", "processbegin and num delegates " + delegates?.size)
 
-            delegates.forEach {if (it !=null) {
-                it.processbegan()
-            }
+            delegates.forEach {
+                if (it != null) {
+                    it.processbegan()
+                }
             }
 
         } catch (e: Exception) {
             //Log.d("addressobject", "processbegin " + e.printStackTrace())
         }
 
+    }
+
+    override fun balanceSwirlNotNull(): Boolean {
+        return try {
+            delegates[0]!!.balanceSwirlNotNull()
+        } catch (e: java.lang.Exception) {
+            false
+        }
     }
 
     fun fiveminuteupdate() {
@@ -89,16 +97,16 @@ class AddressObject : AsyncObserver {
 
     }
 
-    fun update(checkIfShown : Boolean = true) {
+    fun update(checkIfShown: Boolean = true) {
 
         if (checkIfShown)
-        try {
-            if (!delegates[0]!!.balanceSwirlNotNull()) {
-                return
-            }
-        }catch (e : java.lang.Exception) {
+            try {
+                if (!delegates[0]!!.balanceSwirlNotNull()) {
+                    return
+                }
+            } catch (e: java.lang.Exception) {
 
-        }
+            }
 
         if (!isUpdating) {
             isUpdating = true
@@ -117,8 +125,7 @@ class AddressObject : AsyncObserver {
                 val addressString = token.getString("addrStr")
                 val amountString = token.getString("balance")
                 val amountDoubleFromString = amountString.toDouble()
-                //val amountDoubleFromString = 1.0
-                val elapsedHrsSinceChange = (Date().time.toDouble()-oldestTimestamp)/(1000*60*60)
+                val elapsedHrsSinceChange = (Date().time.toDouble() - oldestTimestamp) / (1000 * 60 * 60)
                 //Log.d("time", "elapsed hrs since change " + elapsedHrsSinceChange + " and oldest timestamp " + oldestTimestamp + " and current time " + Date().time.toDouble())
                 if (address == addressString) {
 
@@ -127,13 +134,13 @@ class AddressObject : AsyncObserver {
                         oldestTimestamp = Date().time.toDouble()
                         oldestAmount = amountDoubleFromString
                         amount = amountDoubleFromString
-                    } else if (amount != amountDoubleFromString ){
+                    } else if (amount != amountDoubleFromString) {
                         //record change
                         oldestAmount = amount
                         amount = amountDoubleFromString
                         oldestTimestamp = Date().time.toDouble()
-                    } else if (elapsedHrsSinceChange > 24){
-                        Log.d("24hrspassed","forgot oldestamount because : " + elapsedHrsSinceChange + " hours have passed")
+                    } else if (elapsedHrsSinceChange > 24) {
+                        Log.d("24hrspassed", "forgot oldestamount because : " + elapsedHrsSinceChange + " hours have passed")
                         //forget older changes
                         oldestTimestamp = Date().time.toDouble()
                         oldestAmount = amount
@@ -155,7 +162,7 @@ class AddressObject : AsyncObserver {
                     it.processfinished(sendToDelegates)
                 }
             }
-        } catch (e: Exception){
+        } catch (e: Exception) {
 
         }
 

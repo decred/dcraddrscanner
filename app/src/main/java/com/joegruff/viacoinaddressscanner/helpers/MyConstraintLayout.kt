@@ -50,13 +50,13 @@ class MyConstraintLayout : RelativeLayout, AsyncObserver {
         val difference = balance.toDouble() - oldBalance.toDouble()
         val differenceText =
         when {
-            difference < 0.0 -> {
+            difference > 0.0 -> {
                 balance_swirl_change.setTextColor(resources.getColor(R.color.Green))
                 "+" + amountfromstring(difference.toString())
             }
             difference < 0.0 -> {
                 balance_swirl_change.setTextColor(resources.getColor(R.color.Red))
-                "-" + amountfromstring(difference.toString())
+                amountfromstring(difference.toString())
             }
             else -> ""
         }

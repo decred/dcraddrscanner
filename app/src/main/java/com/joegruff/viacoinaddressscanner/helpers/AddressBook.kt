@@ -47,7 +47,7 @@ object AddressBook {
     }
 
 
-    fun newObjectFromAddress(address: String): AddressObject? {
+    fun getAddressObject(address: String): AddressObject {
         for (a in addresses) {
             if (a.address == address)
                 return a
@@ -80,14 +80,6 @@ object AddressBook {
                 addresses.remove(a)
             }
 
-    }
-
-    fun getAddress(address: String): AddressObject? {
-        for (a in addresses) {
-            if (a.address == address)
-                return a
-        }
-        return null
     }
 
     fun abbreviatedAmountfromstring(amountString: String): String {

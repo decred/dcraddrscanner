@@ -38,6 +38,8 @@ class GetInfoFromWeb(val delegate: AsyncObserver, val add: String) : AsyncTask<V
                 }
             }
             return value
+        } finally {
+
         }
     }
 

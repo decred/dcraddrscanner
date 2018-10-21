@@ -32,17 +32,10 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
         if (context != null)
             createNotificationChannel(context)
 
+        AddressBook.fillAddressBook(context)
 
-        if (!AddressBook.gotAddressesAlready) {
-            AddressBook.fillAddressBook(context)
-        }else {
-            Log.d("mybroadcastreceiver", "returned cause got addressesalready")
-            return
-        }
-
-
-        //check for starred addresses
-        for (starredAddress in AddressBook.addresses.filter { it.isBeingWatched }) {
+        //check for starred addresses and wether the current address is being displayed on screen
+        for (starredAddress in AddressBook.addresses.filter { it.isBeingWatched }.filter { !balanceSwirlNotNull() }) {
             starredAddress.delegates[1] = this
             GetInfoFromWeb(starredAddress, starredAddress.address).execute()
             Log.d("mybroadcastreceiver", "onreceive fired " + starredAddress.address)
@@ -73,7 +66,7 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
 
                 if (context != null) {
                     message = context.getString(R.string.changed_amounts_one, title, formattedAmountString)
-                    val myNotificationIntent = Intent(context, ViewAddressActivity  ::class.java)
+                    val myNotificationIntent = Intent(context, ViewAddressActivity::class.java)
                     myNotificationIntent.putExtra(ViewAddressFragment.INTENT_DATA,address)
                     myNotificationIntent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
                     myPendingIntent = TaskStackBuilder.create(context).run {
@@ -139,17 +132,19 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
 
     fun setAmounts(balance: String, oldBalance: String): String {
         val difference = balance.toDouble() - oldBalance.toDouble()
-        var text = ""
-        if (difference > 0.0) {
-            //balance_swirl_change.setTextColor(resources.getColor(R.color.Green))
-            text = "+" + amountfromstring(difference.toString())
-        } else if (difference < 0.0) {
-            //balance_swirl_change.setTextColor(resources.getColor(R.color.Red))
-            text = "-" + amountfromstring(difference.toString())
-        } else {
-            text = "0"
-        }
-        return text
+
+        val differenceText =
+                when {
+                    difference > 0.0 -> {
+                        "+" + amountfromstring(difference.toString())
+                    }
+                    difference < 0.0 -> {
+                        amountfromstring(difference.toString())
+                    }
+                    else -> "0"
+                }
+
+        return differenceText
     }
 
     fun amountfromstring(amountString: String): String {
