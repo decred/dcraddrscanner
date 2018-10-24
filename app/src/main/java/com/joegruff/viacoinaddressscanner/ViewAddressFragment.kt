@@ -69,7 +69,7 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
 
     override fun onResume() {
         addressObject.delegates.set(0,this)
-        if (shouldUpdate()) addressObject.update()
+        if (shouldUpdate()) addressObject.update(false)
         super.onResume()
     }
 
@@ -210,7 +210,7 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
             return permaDelegate?.balanceSwirlNotNull() ?: false
     }
 
-    fun shouldUpdate() = Date().time - addressObject.timestampCheck > 1000 * 5
+    fun shouldUpdate() = Date().time - addressObject.timestampCheck > (1000 * 5)
 
 }
 

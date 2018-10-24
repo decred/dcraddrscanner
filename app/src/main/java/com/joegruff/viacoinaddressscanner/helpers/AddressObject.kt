@@ -35,6 +35,14 @@ class AddressObject() : AsyncObserver {
     var delegates = mutableListOf<AsyncObserver?>(null, null)
 
     constructor(jsonObject: JSONObject) : this() {
+        /*address = tryBlock(jsonObject, JSON_ADDRESS, address)
+        title = tryBlock(jsonObject, JSON_TITLE, title)
+        amount = tryBlock(jsonObject, JSON_AMOUNT, amount)
+        amountOld = tryBlock(jsonObject, JSON_AMOUNT_OLD, amountOld)
+        timestampChange = tryBlock(jsonObject, JSON_TIMESTAMP_CHANGE, timestampChange)
+        timestampCheck = tryBlock(jsonObject, JSON_TIMESTAMP_CHECK, timestampCheck)
+        isBeingWatched = tryBlock(jsonObject, JSON_BEING_WATCHED, isBeingWatched)
+        */
         address = if (jsonObject.has(JSON_ADDRESS)) jsonObject.getString(JSON_ADDRESS) else address
         title = if (jsonObject.has(JSON_TITLE)) jsonObject.getString(JSON_TITLE) else title
         amount = if (jsonObject.has(JSON_AMOUNT)) jsonObject.getDouble(JSON_AMOUNT) else amount
@@ -172,5 +180,18 @@ class AddressObject() : AsyncObserver {
     }
 
     fun IntRange.random() = Random().nextInt((endInclusive + 1) - start) + start
+
+    /*fun <T> tryBlock (jsonObject: JSONObject, name: String, defaultValue : T) : T {
+        return try {
+            if (T is String) {
+                jsonObject.getString(name)
+            } else {
+                defaultValue
+            }
+        }catch (e: JSONException) {
+             defaultValue
+
+
+    }*/
 
 }
