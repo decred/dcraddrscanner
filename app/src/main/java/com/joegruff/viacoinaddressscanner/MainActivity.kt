@@ -45,7 +45,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
         AddressBook.fillAddressBook(this)
-        AddressBook.updateAddresses()
+
 
         setrepeatingalarm()
 
@@ -128,6 +128,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         viewAdapter.notifyDataSetChanged()
         //Log.d("num", "num of addresses " + AddressBook.addresses.size)
+        AddressBook.updateAddresses()
         super.onResume()
     }
 

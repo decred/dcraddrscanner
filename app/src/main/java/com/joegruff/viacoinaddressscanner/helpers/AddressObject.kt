@@ -124,6 +124,11 @@ class AddressObject() : AsyncObserver {
         }
     }
 
+    fun updateIfFiveMinPast(){
+        if (Date().time - timestampCheck > (1000 * 60 * 5))
+            update(false)
+    }
+
     override fun processfinished(output: String?) {
 
         var sendToDelegates = output
