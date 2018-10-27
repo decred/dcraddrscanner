@@ -10,12 +10,15 @@ import android.content.Intent
 import android.graphics.*
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
+import android.os.AsyncTask
 import android.os.Bundle
+import android.os.Handler
 import android.os.SystemClock
 import android.support.design.widget.BottomSheetDialog
 import android.support.design.widget.Snackbar
 import android.support.v4.content.ContextCompat
 import android.support.v4.content.res.ResourcesCompat
+import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -30,12 +33,13 @@ import com.joegruff.viacoinaddressscanner.activities.ViewAddressActivity
 import com.joegruff.viacoinaddressscanner.barcodeReader.BarcodeCaptureActivity
 import com.joegruff.viacoinaddressscanner.helpers.*
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.content_main.*
 
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
-    private lateinit var viewAdapter: RecyclerView.Adapter<*>
-    private lateinit var viewManager: RecyclerView.LayoutManager
+    private lateinit var viewAdapter: MyAdapter
+    private lateinit var viewManager: LinearLayoutManager
     private val RC_BARCODE_CAPTURE = 9001
     private val TAG = "BarcodeMain"
 
@@ -47,6 +51,7 @@ class MainActivity : AppCompatActivity() {
         AddressBook.fillAddressBook(this)
 
 
+        pullToRefresh_layout.setOnRefreshListener(this)
         setrepeatingalarm()
 
 
@@ -98,10 +103,12 @@ class MainActivity : AppCompatActivity() {
             pastebutton?.setOnClickListener { _ ->
                 val clipboard = this.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager?
                 if (clipboard?.primaryClip?.getItemAt(0) != null) {
+
                     val address = clipboard.primaryClip.getItemAt(0).text.toString()
                     val intent = Intent(this, ViewAddressActivity::class.java)
                     intent.putExtra(ViewAddressFragment.INTENT_DATA, address)
                     this.startActivity(intent)
+
                 } else
                     Toast.makeText(this, R.string.get_address_fragment_no_clipboard_data, Toast.LENGTH_SHORT).show()
 
@@ -110,6 +117,18 @@ class MainActivity : AppCompatActivity() {
             dialogview.show()
 
         }
+
+
+    }
+
+    override fun onRefresh() {
+        Log.d(TAG, "refreshing")
+        Handler().postDelayed({
+                    pullToRefresh_layout.isRefreshing = false
+                }, 1000 * 1
+        )
+        AddressBook.updateAddresses(true)
+
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -129,6 +148,7 @@ class MainActivity : AppCompatActivity() {
         viewAdapter.notifyDataSetChanged()
         //Log.d("num", "num of addresses " + AddressBook.addresses.size)
         AddressBook.updateAddresses()
+        viewAdapter.haveTouchedAnAddress = false
         super.onResume()
     }
 
@@ -146,12 +166,15 @@ class MainActivity : AppCompatActivity() {
             R.id.action_settings -> true
             else -> super.onOptionsItemSelected(item)
         }
+
+
     }
 
 
     class MyAdapter(private val ctx: Context, private val myDataset: ArrayList<AddressObject>) : RecyclerView.Adapter<MyAdapter.viewholder>() {
 
         val addressesToDelete = ArrayList<AddressObject>()
+        var haveTouchedAnAddress = false
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): viewholder {
             val mainView = LayoutInflater.from(parent.context).inflate(R.layout.one_list_item_view, parent, false)
@@ -171,10 +194,14 @@ class MainActivity : AppCompatActivity() {
             holder.delegateHolder.abbreviatedValues = true
             holder.delegateHolder.setAmounts(myDataset[position].amount.toString(), myDataset[position].amountOld.toString())
             holder.itemView.setOnClickListener {
-                val address = myDataset[position].address
-                val intent = Intent(ctx, ViewAddressActivity::class.java)
-                intent.putExtra(ViewAddressFragment.INTENT_DATA, address)
-                ctx.startActivity(intent)
+
+                if (!haveTouchedAnAddress) {
+                    haveTouchedAnAddress = true
+                    val address = myDataset[position].address
+                    val intent = Intent(ctx, ViewAddressActivity::class.java)
+                    intent.putExtra(ViewAddressFragment.INTENT_DATA, address)
+                    ctx.startActivity(intent)
+                }
             }
             myDataset[position].delegates.set(0, holder.delegateHolder)
         }
@@ -186,14 +213,14 @@ class MainActivity : AppCompatActivity() {
             val addressObject = myDataset.get(adapterPosition)
             val snackbar = Snackbar
                     .make(recyclerView, R.string.main_view_deleted_address, Snackbar.LENGTH_LONG)
-                    .setAction(R.string.main_view_undo_delete, {
+                    .setAction(R.string.main_view_undo_delete) {
                         //val mAdapterPosition = viewHolder.adapterPosition
                         myDataset.add(adapterPosition, addressObject)
                         notifyItemInserted(adapterPosition)
                         recyclerView.scrollToPosition(adapterPosition)
                         addressesToDelete.remove(addressObject)
 
-                    })
+                    }
             snackbar.show()
             myDataset.removeAt(adapterPosition)
             notifyItemRemoved(adapterPosition)

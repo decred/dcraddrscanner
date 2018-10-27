@@ -35,14 +35,6 @@ class AddressObject() : AsyncObserver {
     var delegates = mutableListOf<AsyncObserver?>(null, null)
 
     constructor(jsonObject: JSONObject) : this() {
-        /*address = tryBlock(jsonObject, JSON_ADDRESS, address)
-        title = tryBlock(jsonObject, JSON_TITLE, title)
-        amount = tryBlock(jsonObject, JSON_AMOUNT, amount)
-        amountOld = tryBlock(jsonObject, JSON_AMOUNT_OLD, amountOld)
-        timestampChange = tryBlock(jsonObject, JSON_TIMESTAMP_CHANGE, timestampChange)
-        timestampCheck = tryBlock(jsonObject, JSON_TIMESTAMP_CHECK, timestampCheck)
-        isBeingWatched = tryBlock(jsonObject, JSON_BEING_WATCHED, isBeingWatched)
-        */
         address = if (jsonObject.has(JSON_ADDRESS)) jsonObject.getString(JSON_ADDRESS) else address
         title = if (jsonObject.has(JSON_TITLE)) jsonObject.getString(JSON_TITLE) else title
         amount = if (jsonObject.has(JSON_AMOUNT)) jsonObject.getDouble(JSON_AMOUNT) else amount
@@ -51,13 +43,11 @@ class AddressObject() : AsyncObserver {
         timestampCheck = if (jsonObject.has(JSON_TIMESTAMP_CHECK)) jsonObject.getDouble(JSON_TIMESTAMP_CHECK) else timestampCheck
         isBeingWatched = if (jsonObject.has(JSON_BEING_WATCHED)) jsonObject.getBoolean(JSON_BEING_WATCHED) else isBeingWatched
         isValid = true
-        fiveminuteupdate()
     }
 
     constructor(add: String) : this() {
         address = add
         update()
-        fiveminuteupdate()
     }
 
     fun toJSON(): JSONObject {
@@ -98,14 +88,6 @@ class AddressObject() : AsyncObserver {
         }
     }
 
-    fun fiveminuteupdate() {
-        Handler().postDelayed({
-            update()
-            fiveminuteupdate()
-        }, 60000 * 4 + (0..10000).random().toLong())
-
-
-    }
 
     fun update(checkIfShown: Boolean = true) {
 

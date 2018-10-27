@@ -21,9 +21,9 @@ object AddressBook {
 
     }
 
-    fun updateAddresses(){
+    fun updateAddresses( force : Boolean = false){
         addresses.forEach {
-            it.updateIfFiveMinPast()
+            if (force) it.update(false) else it.updateIfFiveMinPast()
         }
     }
 
