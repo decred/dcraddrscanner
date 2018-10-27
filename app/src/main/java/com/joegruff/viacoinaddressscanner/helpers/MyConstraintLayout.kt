@@ -2,6 +2,7 @@ package com.joegruff.viacoinaddressscanner.helpers
 
 import android.content.Context
 import android.content.res.Resources
+import android.graphics.Canvas
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
@@ -44,7 +45,13 @@ class MyConstraintLayout : RelativeLayout, AsyncObserver {
 
     }
 
+    override fun onVisibilityChanged(changedView: View?, visibility: Int) {
 
+        if (visibility == View.INVISIBLE)
+        balance_swirl_progress_bar.alpha = 0f
+
+        super.onVisibilityChanged(changedView, visibility)
+    }
 
     fun setAmounts(balance : String, oldBalance : String){
         val difference = balance.toDouble() - oldBalance.toDouble()

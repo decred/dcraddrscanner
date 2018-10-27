@@ -43,6 +43,7 @@ class AddressObject() : AsyncObserver {
         timestampCheck = if (jsonObject.has(JSON_TIMESTAMP_CHECK)) jsonObject.getDouble(JSON_TIMESTAMP_CHECK) else timestampCheck
         isBeingWatched = if (jsonObject.has(JSON_BEING_WATCHED)) jsonObject.getBoolean(JSON_BEING_WATCHED) else isBeingWatched
         isValid = true
+        updateIfFiveMinPast()
     }
 
     constructor(add: String) : this() {
