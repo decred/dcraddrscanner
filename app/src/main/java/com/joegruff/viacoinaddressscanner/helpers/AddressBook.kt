@@ -39,10 +39,12 @@ object AddressBook {
     }
 
     fun saveAddressBook(act: FragmentActivity?) {
+        if (gotAddressesAlready)
         JSONSerializer.saveJSON(act?.applicationContext, addresses)
     }
 
     fun saveAddressBook(ctx: Context?) {
+        if (gotAddressesAlready)
         JSONSerializer.saveJSON(ctx, addresses)
     }
 

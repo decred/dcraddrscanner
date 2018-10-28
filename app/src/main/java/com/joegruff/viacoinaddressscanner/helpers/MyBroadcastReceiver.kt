@@ -192,7 +192,7 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
                 val addressObject = AddressBook.getAddressObject(address)
                 val amount = addressObject.amount
                 val oldBalance = addressObject.amountOld
-                val timestamp = addressObject.timestampCheck
+                val timestamp = addressObject.timestampChange
                 /*
                 val amount = token.getDouble(JSON_AMOUNT)
                 val oldBalance = token.getString(JSON_AMOUNT_OLD)
