@@ -19,6 +19,7 @@ import android.support.v4.app.NotificationManagerCompat
 import android.util.Log
 import com.joegruff.viacoinaddressscanner.activities.ViewAddressActivity
 import java.util.*
+import kotlin.collections.ArrayList
 
 
 const val CHANNEL_ID = "com.joegruff.viacoinaddressscanner.notification_channel"
@@ -26,7 +27,8 @@ const val NOTIFICATION_ID = 1337
 
 class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
 
-    var changedaddresses = ArrayList<String>()
+    //var changedaddresses = ArrayList<String>()
+    val changedAddressObjects = ArrayList<AddressObject>()
 
     override fun onReceive(context: Context?, intent: Intent?) {
         if (context != null)
@@ -45,7 +47,7 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
         //give it five seconds to find changed addresses, report results as alert if something changed
         Handler().postDelayed({
 
-            var message = changedaddresses.size.toString()
+            /*var message = changedaddresses.size.toString()
             var myPendingIntent :PendingIntent? = null
 
             if (changedaddresses.size < 1) {
@@ -53,7 +55,16 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
             } else if (changedaddresses.size < 2) {
 
                 val token = JSONTokener(changedaddresses[0]).nextValue() as JSONObject
+*/
+            var message = changedAddressObjects.size.toString()
+            val size = changedAddressObjects.size
+            var myPendingIntent: PendingIntent? = null
 
+            if (size < 1) {
+                return@postDelayed
+            } else if (size < 2) {
+
+                /*val token = JSONTokener(changedaddresses[0]).nextValue() as JSONObject
                 var title = token.getString(JSON_TITLE)
                 val address = token.getString(JSON_ADDRESS)
                 if (title.equals(""))
@@ -62,16 +73,25 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
                 val oldBalance = token.getString(JSON_AMOUNT_OLD)
 
                 val formattedAmountString = setAmounts(amountString, oldBalance)
+*/
+                val token = changedAddressObjects[0]
+                var title = token.title
+                val address = token.address
+                if (title.equals(""))
+                    title = address
+                val amountString = token.amount.toString()
+                val oldBalance = token.amountOld.toString()
 
+                val formattedAmountString = setAmounts(amountString, oldBalance)
 
                 if (context != null) {
                     message = context.getString(R.string.changed_amounts_one, title, formattedAmountString)
                     val myNotificationIntent = Intent(context, ViewAddressActivity::class.java)
-                    myNotificationIntent.putExtra(ViewAddressFragment.INTENT_DATA,address)
+                    myNotificationIntent.putExtra(ViewAddressFragment.INTENT_DATA, address)
                     myNotificationIntent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
                     myPendingIntent = TaskStackBuilder.create(context).run {
                         addNextIntentWithParentStack(myNotificationIntent)
-                        getPendingIntent(0,PendingIntent.FLAG_UPDATE_CURRENT)
+                        getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT)
                     }
 
 
@@ -104,8 +124,10 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
                 val notificationManager = NotificationManagerCompat.from(context)
                 notificationManager.notify(NOTIFICATION_ID, mBuilder.build())
 
+                AddressBook.saveAddressBook(context)
 
             }
+
 
         }, 5000)
 
@@ -159,16 +181,29 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
         //catch all changed starred addresses
 
         if (output != null && output != NO_CONNECTION) {
-            val token = JSONTokener(output).nextValue()
+            /*val token = JSONTokener(output).nextValue()
             if (token is JSONObject) {
                 val amount = token.getDouble(JSON_AMOUNT)
                 val oldBalance = token.getString(JSON_AMOUNT_OLD)
+                val timestamp = token.getDouble(JSON_TIMESTAMP_CHANGE)*/
+            val token = JSONTokener(output).nextValue()
+            if (token is JSONObject) {
+                val address = token.getString(JSON_ADDRESS)
+                val addressObject = AddressBook.getAddressObject(address)
+                val amount = addressObject.amount
+                val oldBalance = addressObject.amountOld
+                val timestamp = addressObject.timestampCheck
+                /*
+                val amount = token.getDouble(JSON_AMOUNT)
+                val oldBalance = token.getString(JSON_AMOUNT_OLD)
                 val timestamp = token.getDouble(JSON_TIMESTAMP_CHANGE)
-                Log.d("mybroadcastreceiver", "prococess finished " + output + " size is " + changedaddresses.size + " old balance " + oldBalance + " new balance " + amount)
+                */
+                Log.d("mybroadcastreceiver", "prococess finished " + output + " size is " + changedAddressObjects.size + " old balance " + oldBalance + " new balance " + amount)
                 if (!amount.equals(oldBalance) && Date().time - timestamp < 1000 * 10)
-                    changedaddresses.add(output)
+                    changedAddressObjects.add(addressObject)
             }
-
         }
+
     }
+
 }

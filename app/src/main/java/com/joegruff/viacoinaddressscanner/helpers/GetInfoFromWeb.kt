@@ -18,17 +18,19 @@ class GetInfoFromWeb(val delegate: AsyncObserver, val add: String) : AsyncTask<V
     //get data about address
     override fun doInBackground(vararg params: Void?): String? {
 
+        var urlConnection : HttpURLConnection? = null
 
         Log.d("async", "Doin in background")
         delegate.processbegan()
         try {
             val url = URL(API_URL + add)
-            val urlConnection = url.openConnection()
-            urlConnection.connectTimeout = 5000
-            val bufferedReader = BufferedReader(InputStreamReader(urlConnection.getInputStream()))
+            urlConnection = url.openConnection() as? HttpURLConnection
+            urlConnection?.connectTimeout = 5000
+            val bufferedReader = BufferedReader(InputStreamReader(urlConnection?.getInputStream()))
             val line = bufferedReader.use { it.readText() }
             bufferedReader.close()
             return line
+
         } catch (e:Exception){
             var value : String? = null
             when (e) {
@@ -39,7 +41,8 @@ class GetInfoFromWeb(val delegate: AsyncObserver, val add: String) : AsyncTask<V
             }
             return value
         } finally {
-
+            if (urlConnection != null)
+            urlConnection.disconnect()
         }
     }
 
