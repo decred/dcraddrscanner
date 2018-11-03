@@ -47,15 +47,6 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
         //give it five seconds to find changed addresses, report results as alert if something changed
         Handler().postDelayed({
 
-            /*var message = changedaddresses.size.toString()
-            var myPendingIntent :PendingIntent? = null
-
-            if (changedaddresses.size < 1) {
-                return@postDelayed
-            } else if (changedaddresses.size < 2) {
-
-                val token = JSONTokener(changedaddresses[0]).nextValue() as JSONObject
-*/
             var message = changedAddressObjects.size.toString()
             val size = changedAddressObjects.size
             var myPendingIntent: PendingIntent? = null
@@ -64,16 +55,6 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
                 return@postDelayed
             } else if (size < 2) {
 
-                /*val token = JSONTokener(changedaddresses[0]).nextValue() as JSONObject
-                var title = token.getString(JSON_TITLE)
-                val address = token.getString(JSON_ADDRESS)
-                if (title.equals(""))
-                    title = address
-                val amountString = token.getString(JSON_AMOUNT)
-                val oldBalance = token.getString(JSON_AMOUNT_OLD)
-
-                val formattedAmountString = setAmounts(amountString, oldBalance)
-*/
                 val token = changedAddressObjects[0]
                 var title = token.title
                 val address = token.address
@@ -104,26 +85,23 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
                     myPendingIntent = PendingIntent.getActivity(context, 0, myNotificationIntent, 0)
                     message = context.getString(R.string.changed_amounts_many)
 
-                    /*changedaddresses.forEach {
-                        val token = JSONTokener(it).nextValue() as JSONObject
-                        val address = token.getString(JSON_ADDRESS)
-                        message = message + ":" + address.substring(0,7)
-                    }*/
                 }
             }
 
             if (context != null) {
 
                 val mBuilder = NotificationCompat.Builder(context, CHANNEL_ID)
-                        .setSmallIcon(R.drawable.small_coin_icon)
+                        .setSmallIcon(R.drawable.ic_stat_notification)
                         .setContentTitle(context.getString(R.string.changed_amounts_notification_title))
                         .setContentText(message)
                         .setContentIntent(myPendingIntent)
                         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                        .setAutoCancel(true)
 
                 val notificationManager = NotificationManagerCompat.from(context)
                 notificationManager.notify(NOTIFICATION_ID, mBuilder.build())
 
+                //these addresses should be holding a reference to addressBook, so should update properly, but im not sure
                 AddressBook.saveAddressBook(context)
 
             }
