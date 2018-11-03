@@ -39,7 +39,8 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
         //check for starred addresses and wether the current address is being displayed on screen
         for (starredAddress in AddressBook.addresses.filter { it.isBeingWatched }.filter { !balanceSwirlNotNull() }) {
             starredAddress.delegates[1] = this
-            GetInfoFromWeb(starredAddress, starredAddress.address).execute()
+            //GetInfoFromWeb(starredAddress, starredAddress.address).execute()
+            starredAddress.update(false)
             Log.d("mybroadcastreceiver", "onreceive fired " + starredAddress.address)
         }
 
@@ -47,7 +48,7 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
         //give it five seconds to find changed addresses, report results as alert if something changed
         Handler().postDelayed({
 
-            var message = changedAddressObjects.size.toString()
+            var message = ""
             val size = changedAddressObjects.size
             var myPendingIntent: PendingIntent? = null
 
@@ -176,8 +177,8 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
                 val oldBalance = token.getString(JSON_AMOUNT_OLD)
                 val timestamp = token.getDouble(JSON_TIMESTAMP_CHANGE)
                 */
-                Log.d("mybroadcastreceiver", "prococess finished " + output + " size is " + changedAddressObjects.size + " old balance " + oldBalance + " new balance " + amount)
-                if (!amount.equals(oldBalance) && Date().time - timestamp < 1000 * 10)
+                Log.d("mybroadcastreceiver", "prococess finished " + output + " size is " + changedAddressObjects.size + " old balance " + oldBalance + " new balance " + (Date().time - timestamp))
+                if (amount != oldBalance && Date().time - timestamp < 1000 * 10)
                     changedAddressObjects.add(addressObject)
             }
         }
