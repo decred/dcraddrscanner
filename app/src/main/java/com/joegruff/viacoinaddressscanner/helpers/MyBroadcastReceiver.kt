@@ -27,7 +27,6 @@ const val NOTIFICATION_ID = 1337
 
 class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
 
-    //var changedaddresses = ArrayList<String>()
     val changedAddressObjects = ArrayList<AddressObject>()
 
     override fun onReceive(context: Context?, intent: Intent?) {
@@ -39,7 +38,6 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
         //check for starred addresses and wether the current address is being displayed on screen
         for (starredAddress in AddressBook.addresses.filter { it.isBeingWatched }.filter { !balanceSwirlNotNull() }) {
             starredAddress.delegates[1] = this
-            //GetInfoFromWeb(starredAddress, starredAddress.address).execute()
             starredAddress.update(false)
             Log.d("mybroadcastreceiver", "onreceive fired " + starredAddress.address)
         }
@@ -92,7 +90,7 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
             if (context != null) {
 
                 val mBuilder = NotificationCompat.Builder(context, CHANNEL_ID)
-                        .setSmallIcon(R.drawable.ic_stat_notification)
+                        .setSmallIcon(R.drawable.ic_stat_notification2)
                         .setContentTitle(context.getString(R.string.changed_amounts_notification_title))
                         .setContentText(message)
                         .setContentIntent(myPendingIntent)
@@ -108,7 +106,7 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
             }
 
 
-        }, 5000)
+        }, 1000 * 5)
 
 
     }
@@ -160,11 +158,7 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
         //catch all changed starred addresses
 
         if (output != null && output != NO_CONNECTION) {
-            /*val token = JSONTokener(output).nextValue()
-            if (token is JSONObject) {
-                val amount = token.getDouble(JSON_AMOUNT)
-                val oldBalance = token.getString(JSON_AMOUNT_OLD)
-                val timestamp = token.getDouble(JSON_TIMESTAMP_CHANGE)*/
+
             val token = JSONTokener(output).nextValue()
             if (token is JSONObject) {
                 val address = token.getString(JSON_ADDRESS)
@@ -172,11 +166,7 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
                 val amount = addressObject.amount
                 val oldBalance = addressObject.amountOld
                 val timestamp = addressObject.timestampChange
-                /*
-                val amount = token.getDouble(JSON_AMOUNT)
-                val oldBalance = token.getString(JSON_AMOUNT_OLD)
-                val timestamp = token.getDouble(JSON_TIMESTAMP_CHANGE)
-                */
+
                 Log.d("mybroadcastreceiver", "prococess finished " + output + " size is " + changedAddressObjects.size + " old balance " + oldBalance + " new balance " + (Date().time - timestamp))
                 if (amount != oldBalance && Date().time - timestamp < 1000 * 10)
                     changedAddressObjects.add(addressObject)

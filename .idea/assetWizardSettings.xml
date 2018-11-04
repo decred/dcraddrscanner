@@ -60,8 +60,8 @@
                                   <option name="values">
                                     <map>
                                       <entry key="assetType" value="IMAGE" />
-                                      <entry key="imageAsset" value="$USER_HOME$/ocean/ic_launcher.png" />
-                                      <entry key="outputName" value="ic_stat_notification" />
+                                      <entry key="imageAsset" value="$USER_HOME$/ocean/ic_launcher2.png" />
+                                      <entry key="outputName" value="ic_stat_notification2" />
                                     </map>
                                   </option>
                                 </PersistentState>

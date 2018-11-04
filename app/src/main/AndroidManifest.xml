@@ -20,7 +20,7 @@
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
-
+                <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
@@ -37,7 +37,15 @@
         <activity android:name=".barcodeReader.BarcodeCaptureActivity"
                   android:label="Read QR Code"/>
 
-        <receiver android:name=".helpers.MyBroadcastReceiver"/>
+        <receiver android:name=".helpers.MyBroadcastReceiver"
+            android:enabled="true"
+            android:exported="false"
+            android:permission="androi.permission.RECEIVE_BOOT_COMPLETED">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
+
+        </receiver>
 
 
 
