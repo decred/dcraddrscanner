@@ -33,7 +33,6 @@ import com.joegruff.viacoinaddressscanner.activities.ViewAddressActivity
 import com.joegruff.viacoinaddressscanner.barcodeReader.BarcodeCaptureActivity
 import com.joegruff.viacoinaddressscanner.helpers.*
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.content_main.*
 
 
 class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
@@ -52,7 +51,7 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
 
 
         pullToRefresh_layout.setOnRefreshListener(this)
-        setrepeatingalarm()
+        setrepeatingalarm(this)
 
 
         viewManager = LinearLayoutManager(this)
@@ -321,21 +320,6 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
         private fun clearCanvas(c: Canvas?, left: Float, top: Float, right: Float, bottom: Float) {
             c?.drawRect(left, top, right, bottom, clearPaint)
         }
-    }
-
-    fun setrepeatingalarm() {
-        val alarmMgr = this.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val alarmIntent = Intent(this.applicationContext, MyBroadcastReceiver::class.java).let { intent ->
-            PendingIntent.getBroadcast(this, 0, intent, 0)
-        }
-
-        alarmMgr.setInexactRepeating(
-                AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                SystemClock.elapsedRealtime() + 1000 * 60 * 30,
-                1000 * 60 * 30,
-                alarmIntent
-        )
-
     }
 }
 

@@ -1,70 +1,90 @@
 package com.joegruff.viacoinaddressscanner.helpers
 
-import android.app.NotificationChannel
-import android.app.NotificationManager
+import android.app.*
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Handler
+import android.os.SystemClock
 import android.support.v4.app.NotificationCompat
 import com.joegruff.viacoinaddressscanner.MainActivity
 import com.joegruff.viacoinaddressscanner.R
 import com.joegruff.viacoinaddressscanner.ViewAddressFragment
 import org.json.JSONObject
 import org.json.JSONTokener
-import android.app.PendingIntent
-import android.app.TaskStackBuilder
 import android.support.v4.app.NotificationManagerCompat
 import android.util.Log
 import com.joegruff.viacoinaddressscanner.activities.ViewAddressActivity
 import java.util.*
 import kotlin.collections.ArrayList
 
+fun setrepeatingalarm(ctx: Context) {
+    val alarmMgr = ctx.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    val alarmIntent = Intent(ctx.applicationContext, MyBroadcastReceiver::class.java).let { intent ->
+        PendingIntent.getBroadcast(ctx, 0, intent, 0)
+    }
+
+    alarmMgr.setInexactRepeating(
+            AlarmManager.ELAPSED_REALTIME_WAKEUP,
+            SystemClock.elapsedRealtime() + 1000 * 60 * 30,
+            1000 * 60 * 30,
+            alarmIntent
+    )
+
+}
 
 const val CHANNEL_ID = "com.joegruff.viacoinaddressscanner.notification_channel"
 const val NOTIFICATION_ID = 1337
 
 class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
 
+    companion object {
+
+    }
+
     val changedAddressObjects = ArrayList<AddressObject>()
 
     override fun onReceive(context: Context?, intent: Intent?) {
-        if (context != null)
+        if (context != null) {
+            if (intent?.action == "android.intent.action.BOOT_COMPLETED")
+                setrepeatingalarm(context)
+
+
             createNotificationChannel(context)
 
-        AddressBook.fillAddressBook(context)
+            AddressBook.fillAddressBook(context)
 
-        //check for starred addresses and wether the current address is being displayed on screen
-        for (starredAddress in AddressBook.addresses.filter { it.isBeingWatched }.filter { !balanceSwirlNotNull() }) {
-            starredAddress.delegates[1] = this
-            starredAddress.update(false)
-            Log.d("mybroadcastreceiver", "onreceive fired " + starredAddress.address)
-        }
+            //check for starred addresses and wether the current address is being displayed on screen
+            for (starredAddress in AddressBook.addresses.filter { it.isBeingWatched }.filter { !balanceSwirlNotNull() }) {
+                starredAddress.delegates[1] = this
+                starredAddress.update(false)
+                Log.d("mybroadcastreceiver", "onreceive fired " + starredAddress.address)
+            }
 
 
-        //give it five seconds to find changed addresses, report results as alert if something changed
-        Handler().postDelayed({
+            //give it five seconds to find changed addresses, report results as alert if something changed
+            Handler().postDelayed({
 
-            var message = ""
-            val size = changedAddressObjects.size
-            var myPendingIntent: PendingIntent? = null
+                var message = ""
+                val size = changedAddressObjects.size
+                var myPendingIntent: PendingIntent? = null
 
-            if (size < 1) {
-                return@postDelayed
-            } else if (size < 2) {
+                if (size < 1) {
+                    return@postDelayed
+                } else if (size < 2) {
 
-                val token = changedAddressObjects[0]
-                var title = token.title
-                val address = token.address
-                if (title.equals(""))
-                    title = address
-                val amountString = token.amount.toString()
-                val oldBalance = token.amountOld.toString()
+                    val token = changedAddressObjects[0]
+                    var title = token.title
+                    val address = token.address
+                    if (title.equals(""))
+                        title = address
+                    val amountString = token.amount.toString()
+                    val oldBalance = token.amountOld.toString()
 
-                val formattedAmountString = setAmounts(amountString, oldBalance)
+                    val formattedAmountString = setAmounts(amountString, oldBalance)
 
-                if (context != null) {
+
                     message = context.getString(R.string.changed_amounts_one, title, formattedAmountString)
                     val myNotificationIntent = Intent(context, ViewAddressActivity::class.java)
                     myNotificationIntent.putExtra(ViewAddressFragment.INTENT_DATA, address)
@@ -75,19 +95,15 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
                     }
 
 
-                }
+                } else {
 
-            } else {
-                if (context != null) {
                     val myNotificationIntent = Intent(context, MainActivity::class.java)
                     myNotificationIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                     myPendingIntent = PendingIntent.getActivity(context, 0, myNotificationIntent, 0)
                     message = context.getString(R.string.changed_amounts_many)
 
                 }
-            }
 
-            if (context != null) {
 
                 val mBuilder = NotificationCompat.Builder(context, CHANNEL_ID)
                         .setSmallIcon(R.drawable.ic_stat_notification2)
@@ -103,12 +119,10 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
                 //these addresses should be holding a reference to addressBook, so should update properly, but im not sure
                 AddressBook.saveAddressBook(context)
 
-            }
 
+            }, 1000 * 5)
 
-        }, 1000 * 5)
-
-
+        }
     }
 
     private fun createNotificationChannel(ctx: Context) {
