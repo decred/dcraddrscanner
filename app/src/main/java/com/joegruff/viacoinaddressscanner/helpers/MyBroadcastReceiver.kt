@@ -47,8 +47,11 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
 
     override fun onReceive(context: Context?, intent: Intent?) {
         if (context != null) {
-            if (intent?.action == "android.intent.action.BOOT_COMPLETED")
+            Log.d("broadcast receiver", "intent is: " + intent?.action)
+            if (intent?.action == "android.intent.action.BOOT_COMPLETED") {
                 setrepeatingalarm(context)
+                return
+            }
 
 
             createNotificationChannel(context)
