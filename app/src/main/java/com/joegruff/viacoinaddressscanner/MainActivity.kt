@@ -133,7 +133,14 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == RC_BARCODE_CAPTURE && resultCode == Activity.RESULT_OK) {
             val intent = Intent(applicationContext, ViewAddressActivity::class.java)
-            intent.putExtra(ViewAddressFragment.INTENT_DATA, data?.getStringExtra(ViewAddressFragment.INTENT_DATA))
+            var address = data?.getStringExtra(ViewAddressFragment.INTENT_DATA) ?: ""
+            val splitAddress = address.split(":")
+            address = splitAddress[splitAddress.lastIndex]
+            address = address.trim()
+
+            Log.d("new address " , address)
+
+            intent.putExtra(ViewAddressFragment.INTENT_DATA, address)
             this.startActivity(intent)
         }
     }

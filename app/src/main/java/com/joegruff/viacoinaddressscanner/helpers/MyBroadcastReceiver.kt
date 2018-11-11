@@ -41,6 +41,7 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
 
 
     val changedAddressObjects = ArrayList<AddressObject>()
+    var numStarredAddresses = 0L
 
     override fun onReceive(context: Context?, intent: Intent?) {
         if (context != null) {
@@ -59,6 +60,7 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
             for (starredAddress in AddressBook.addresses.filter { it.isBeingWatched }.filter { !balanceSwirlNotNull() }) {
                 starredAddress.delegates[1] = this
                 starredAddress.update(false)
+                numStarredAddresses += 1
                 Log.d("mybroadcastreceiver", "onreceive fired " + starredAddress.address)
             }
 
@@ -120,7 +122,7 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
                 AddressBook.saveAddressBook(context)
 
 
-            }, 5000)
+            }, (100 * 25 * numStarredAddresses)  )
 
         }
     }
