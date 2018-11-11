@@ -19,7 +19,7 @@ import com.joegruff.viacoinaddressscanner.activities.ViewAddressActivity
 import java.util.*
 import kotlin.collections.ArrayList
 
-fun setrepeatingalarm(ctx: Context) {
+fun setrepeatingalarm(ctx: Context, startInterval : Long) {
     val alarmMgr = ctx.getSystemService(Context.ALARM_SERVICE) as AlarmManager
     val alarmIntent = Intent(ctx.applicationContext, MyBroadcastReceiver::class.java).let { intent ->
         PendingIntent.getBroadcast(ctx, 0, intent, 0)
@@ -27,8 +27,8 @@ fun setrepeatingalarm(ctx: Context) {
 
     alarmMgr.setInexactRepeating(
             AlarmManager.ELAPSED_REALTIME_WAKEUP,
-            SystemClock.elapsedRealtime() + 1000 * 60 * 30,
-            1000 * 60 * 30,
+            SystemClock.elapsedRealtime() + startInterval,
+            AlarmManager.INTERVAL_HALF_HOUR,
             alarmIntent
     )
 
@@ -39,9 +39,6 @@ const val NOTIFICATION_ID = 1337
 
 class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
 
-    companion object {
-
-    }
 
     val changedAddressObjects = ArrayList<AddressObject>()
 
@@ -49,7 +46,7 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
         if (context != null) {
             Log.d("broadcast receiver", "intent is: " + intent?.action)
             if (intent?.action == "android.intent.action.BOOT_COMPLETED") {
-                setrepeatingalarm(context)
+                setrepeatingalarm(context, 1000 * 60)
                 return
             }
 
@@ -123,7 +120,7 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
                 AddressBook.saveAddressBook(context)
 
 
-            }, 1000 * 5)
+            }, 5000)
 
         }
     }

@@ -51,7 +51,7 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
 
 
         pullToRefresh_layout.setOnRefreshListener(this)
-        setrepeatingalarm(this)
+        setrepeatingalarm(this, AlarmManager.INTERVAL_HALF_HOUR)
 
 
         viewManager = LinearLayoutManager(this)
