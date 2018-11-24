@@ -37,6 +37,7 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -68,6 +69,8 @@ public final class BarcodeCaptureActivity extends AppCompatActivity implements B
     // permission request codes need to be < 256
     private static final int RC_HANDLE_CAMERA_PERM = 2;
 
+    private Boolean flashOn = false;
+
     // constants used to pass extra data in the intent
     public static final String AutoFocus = "AutoFocus";
     public static final String UseFlash = "UseFlash";
@@ -78,8 +81,8 @@ public final class BarcodeCaptureActivity extends AppCompatActivity implements B
     private GraphicOverlay<BarcodeGraphic> mGraphicOverlay;
 
     // helper objects for detecting taps and pinches.
-    private ScaleGestureDetector scaleGestureDetector;
-    private GestureDetector gestureDetector;
+    //private ScaleGestureDetector scaleGestureDetector;
+    //private GestureDetector gestureDetector;
 
     /**
      * Initializes the UI and creates the detector pipeline.
@@ -105,13 +108,29 @@ public final class BarcodeCaptureActivity extends AppCompatActivity implements B
             requestCameraPermission();
         }
 
-        gestureDetector = new GestureDetector(this, new CaptureGestureListener());
-        scaleGestureDetector = new ScaleGestureDetector(this, new ScaleListener());
+        Button backButton = findViewById(R.id.cameraBackButton);
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mCameraSource.setFlashMode(toggleFlash());
+            }
+        });
 
-        Snackbar.make(mGraphicOverlay, "Tap to capture. Pinch/Stretch to zoom",
-                Snackbar.LENGTH_LONG)
-                .show();
+        //gestureDetector = new GestureDetector(this, new CaptureGestureListener());
+        //scaleGestureDetector = new ScaleGestureDetector(this, new ScaleListener());
     }
+
+    String toggleFlash() {
+        if(flashOn) {
+            flashOn = false;
+            return Camera.Parameters.FLASH_MODE_OFF;
+        } else {
+            flashOn = true;
+            return Camera.Parameters.FLASH_MODE_TORCH;
+        }
+    }
+
+
 
     /**
      * Handles the requesting of the camera permission.  This includes
@@ -146,14 +165,14 @@ public final class BarcodeCaptureActivity extends AppCompatActivity implements B
                 .show();
     }
 
-    @Override
+    /*@Override
     public boolean onTouchEvent(MotionEvent e) {
         boolean b = scaleGestureDetector.onTouchEvent(e);
 
         boolean c = gestureDetector.onTouchEvent(e);
 
         return b || c || super.onTouchEvent(e);
-    }
+    }*/
 
     /**
      * Creates and starts the camera.  Note that this uses a higher resolution in comparison

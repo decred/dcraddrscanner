@@ -122,7 +122,7 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
                 AddressBook.saveAddressBook(context)
 
 
-            }, (100 * 25 * numStarredAddresses)  )
+            }, (5000 + 1000 * numStarredAddresses)  )
 
         }
     }

@@ -36,6 +36,7 @@
             android:value="barcode" />
 
         <activity android:name=".barcodeReader.BarcodeCaptureActivity"
+                  android:screenOrientation="portrait"
                   android:label="Read QR Code"/>
 
         <receiver android:name=".helpers.MyBroadcastReceiver"

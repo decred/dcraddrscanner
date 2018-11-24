@@ -93,11 +93,11 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
             val qrbutton = dialogview.findViewById<Button>(R.id.get_address_view_scan_button)
             val pastebutton = dialogview.findViewById<Button>(R.id.get_address_view_paste_button)
             qrbutton?.setOnClickListener { _ ->
+                dialogview.dismiss()
                 val intent = Intent(this, BarcodeCaptureActivity::class.java)
                 intent.putExtra(BarcodeCaptureActivity.AutoFocus, true)
                 intent.putExtra(BarcodeCaptureActivity.UseFlash, false)
                 this.startActivityForResult(intent, RC_BARCODE_CAPTURE)
-                dialogview.dismiss()
             }
             pastebutton?.setOnClickListener { _ ->
                 val clipboard = this.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager?
@@ -137,8 +137,6 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
             val splitAddress = address.split(":")
             address = splitAddress[splitAddress.lastIndex]
             address = address.trim()
-
-            Log.d("new address " , address)
 
             intent.putExtra(ViewAddressFragment.INTENT_DATA, address)
             this.startActivity(intent)
