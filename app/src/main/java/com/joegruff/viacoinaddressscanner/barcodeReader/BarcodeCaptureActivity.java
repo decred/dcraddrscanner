@@ -31,6 +31,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -80,6 +81,9 @@ public final class BarcodeCaptureActivity extends AppCompatActivity implements B
     private CameraSourcePreview mPreview;
     private GraphicOverlay<BarcodeGraphic> mGraphicOverlay;
 
+    private Button backButton;
+    private Button flashButton;
+
     // helper objects for detecting taps and pinches.
     //private ScaleGestureDetector scaleGestureDetector;
     //private GestureDetector gestureDetector;
@@ -108,8 +112,17 @@ public final class BarcodeCaptureActivity extends AppCompatActivity implements B
             requestCameraPermission();
         }
 
-        Button backButton = findViewById(R.id.cameraBackButton);
+        backButton = findViewById(R.id.cameraBackButton);
+        flashButton = findViewById(R.id.cameraLightButton);
+
+
         backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
+        flashButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mCameraSource.setFlashMode(toggleFlash());
@@ -123,9 +136,11 @@ public final class BarcodeCaptureActivity extends AppCompatActivity implements B
     String toggleFlash() {
         if(flashOn) {
             flashOn = false;
+            flashButton.setBackground(ContextCompat.getDrawable(this,R.drawable.flashlight));
             return Camera.Parameters.FLASH_MODE_OFF;
         } else {
             flashOn = true;
+            flashButton.setBackground(ContextCompat.getDrawable(this,R.drawable.flashlight_off));
             return Camera.Parameters.FLASH_MODE_TORCH;
         }
     }
