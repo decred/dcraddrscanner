@@ -22,34 +22,41 @@ class MyConstraintLayout : RelativeLayout, AsyncObserver {
     constructor(context: Context) : super(context)
 
     var abbreviatedValues = false
+    var myAddress = ""
 
     override fun processbegan() {
        // Log.d("mycontraintlayout","process began")
         //this.clearAnimation()
         val handler = android.os.Handler(context.mainLooper)
-        handler.post({balance_swirl_progress_bar.visibility = View.VISIBLE})
+           handler.post({ balance_swirl_progress_bar.visibility = View.VISIBLE })
         //handler.postDelayed({balance_swirl_progress_bar.visibility = View.INVISIBLE},5000)
 
         //this.invalidate()
     }
 
     override fun processfinished(output: String?) {
-
+        goInvis()
 
         if (output != null) {
             val token = JSONTokener(output).nextValue()
 
             if (token is JSONObject) {
+
                 val amountString = token.getString(JSON_AMOUNT)
                 val oldBalance = token.getString(JSON_AMOUNT_OLD)
+                val address = token.getString(JSON_ADDRESS)
+                if (address != myAddress)
+                    return
                 setAmounts(amountString, oldBalance)
             }
         }
-        goInvis()
+
 
     }
 
     fun goInvis(){
+        //val handler = android.os.Handler(context.mainLooper)
+        //handler.post({balance_swirl_progress_bar.visibility = View.INVISIBLE})
         balance_swirl_progress_bar.visibility = View.INVISIBLE
     }
 

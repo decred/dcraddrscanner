@@ -119,6 +119,7 @@ public final class BarcodeCaptureActivity extends AppCompatActivity implements B
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                setResult(RESULT_CANCELED, null);
                 finish();
             }
         });

@@ -10,10 +10,7 @@ import android.content.Intent
 import android.graphics.*
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
-import android.os.AsyncTask
-import android.os.Bundle
-import android.os.Handler
-import android.os.SystemClock
+import android.os.*
 import android.support.design.widget.BottomSheetDialog
 import android.support.design.widget.Snackbar
 import android.support.v4.content.ContextCompat
@@ -100,6 +97,7 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
                 this.startActivityForResult(intent, RC_BARCODE_CAPTURE)
             }
             pastebutton?.setOnClickListener { _ ->
+
                 val clipboard = this.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager?
                 if (clipboard?.primaryClip?.getItemAt(0) != null) {
 
@@ -119,6 +117,7 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
 
 
     }
+
 
     override fun onRefresh() {
         Log.d(TAG, "refreshing")
@@ -140,6 +139,9 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
 
             intent.putExtra(ViewAddressFragment.INTENT_DATA, address)
             this.startActivity(intent)
+        } else {
+            //for some reason a progress bar gets stuck and i cant figure out for the life of me how to stop it, this is a fix tho...
+            //Handler(Looper.getMainLooper()).postDelayed({viewAdapter.notifyDataSetChanged()},1000)
         }
     }
 
@@ -149,10 +151,10 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
     }
 
     override fun onResume() {
-        viewAdapter.notifyDataSetChanged()
-        //Log.d("num", "num of addresses " + AddressBook.addresses.size)
+        Log.d("num", "num of addresses " + AddressBook.addresses.size)
         AddressBook.updateAddresses()
         viewAdapter.haveTouchedAnAddress = false
+        viewAdapter.notifyDataSetChanged()
         super.onResume()
     }
 
@@ -175,7 +177,7 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
     }
 
 
-    class MyAdapter(private val ctx: Context, private val myDataset: ArrayList<AddressObject>) : RecyclerView.Adapter<MyAdapter.viewholder>() {
+    class MyAdapter(private val ctx: Context, val myDataset: ArrayList<AddressObject>) : RecyclerView.Adapter<MyAdapter.viewholder>() {
 
         val addressesToDelete = ArrayList<AddressObject>()
         var haveTouchedAnAddress = false
@@ -185,6 +187,7 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
             return viewholder(mainView)
         }
 
+
         override fun getItemCount(): Int {
             return myDataset.size
         }
@@ -193,27 +196,26 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
 
             myDataset[position].delegates.set(0, holder.delegateHolder)
 
+            val address = myDataset[position].address
             var string = myDataset[position].title
             if (string == "") {
-                string = myDataset[position].address
+                string = address
             }
             //holder.textView.text = position.toString()
+            holder.delegateHolder.myAddress = address
             holder.textView.text = string
             holder.delegateHolder.abbreviatedValues = true
             holder.delegateHolder.setAmounts(myDataset[position].amount.toString(), myDataset[position].amountOld.toString())
             holder.itemView.setOnClickListener {
-
                 if (!haveTouchedAnAddress) {
                     haveTouchedAnAddress = true
-                    val address = myDataset[position].address
                     val intent = Intent(ctx, ViewAddressActivity::class.java)
                     intent.putExtra(ViewAddressFragment.INTENT_DATA, address)
                     ctx.startActivity(intent)
                 }
             }
 
-            if(!myDataset[position].isUpdating)
-                holder.delegateHolder.goInvis()
+            //holder.delegateHolder.goInvis()
         }
 
         //after a cell is swiped for delete
@@ -229,7 +231,6 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
                         notifyItemInserted(adapterPosition)
                         recyclerView.scrollToPosition(adapterPosition)
                         addressesToDelete.remove(addressObject)
-
                     }
             snackbar.show()
             myDataset.removeAt(adapterPosition)
@@ -238,7 +239,7 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
         }
 
 
-        class viewholder(val itemview: View) : RecyclerView.ViewHolder(itemview) {
+        class viewholder(itemview: View) : RecyclerView.ViewHolder(itemview) {
             val textView = itemview.findViewById<TextView>(R.id.one_list_item_view_text_view)
             val balanceTextview = itemview.findViewById<TextView>(R.id.balance_swirl_balance)
             val progressBar = itemview.findViewById<ProgressBar>(R.id.balance_swirl_progress_bar)
@@ -247,7 +248,7 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
         }
     }
 
-    inner class SimpleDividerItemDecoration() : RecyclerView.ItemDecoration() {
+    inner class SimpleDividerItemDecoration : RecyclerView.ItemDecoration() {
         private var mDivider: Drawable?
 
         init {
@@ -289,6 +290,7 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
         override fun onMove(recyclerView: RecyclerView?, viewHolder: RecyclerView.ViewHolder?, target: RecyclerView.ViewHolder?): Boolean {
             return false
         }
+
 
 
         override fun onChildDraw(
