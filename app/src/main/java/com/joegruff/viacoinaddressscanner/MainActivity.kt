@@ -158,7 +158,7 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
-        menuInflater.inflate(R.menu.menu_main, menu)
+        //menuInflater.inflate(R.menu.menu_main, menu)
         return true
     }
 
@@ -190,10 +190,14 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
         }
 
         override fun onBindViewHolder(holder: viewholder, position: Int) {
+
+            myDataset[position].delegates.set(0, holder.delegateHolder)
+
             var string = myDataset[position].title
             if (string == "") {
                 string = myDataset[position].address
             }
+            //holder.textView.text = position.toString()
             holder.textView.text = string
             holder.delegateHolder.abbreviatedValues = true
             holder.delegateHolder.setAmounts(myDataset[position].amount.toString(), myDataset[position].amountOld.toString())
@@ -207,7 +211,9 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
                     ctx.startActivity(intent)
                 }
             }
-            myDataset[position].delegates.set(0, holder.delegateHolder)
+
+            if(!myDataset[position].isUpdating)
+                holder.delegateHolder.goInvis()
         }
 
         //after a cell is swiped for delete
@@ -232,12 +238,12 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
         }
 
 
-        class viewholder(itemview: View) : RecyclerView.ViewHolder(itemview) {
+        class viewholder(val itemview: View) : RecyclerView.ViewHolder(itemview) {
             val textView = itemview.findViewById<TextView>(R.id.one_list_item_view_text_view)
             val balanceTextview = itemview.findViewById<TextView>(R.id.balance_swirl_balance)
             val progressBar = itemview.findViewById<ProgressBar>(R.id.balance_swirl_progress_bar)
             val changeView = itemview.findViewById<TextView>(R.id.balance_swirl_change)
-            val delegateHolder = itemview.findViewById<MyConstraintLayout>(R.id.balance_swirl_layout)
+            var delegateHolder = itemview.findViewById<MyConstraintLayout>(R.id.balance_swirl_layout)
         }
     }
 

@@ -14,6 +14,7 @@ import kotlinx.android.synthetic.main.balance_swirl.view.*
 import org.json.JSONObject
 import org.json.JSONTokener
 import java.text.DecimalFormat
+import java.util.logging.Handler
 
 class MyConstraintLayout : RelativeLayout, AsyncObserver {
     constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(context,attrs,defStyleAttr)
@@ -24,9 +25,12 @@ class MyConstraintLayout : RelativeLayout, AsyncObserver {
 
     override fun processbegan() {
        // Log.d("mycontraintlayout","process began")
-        this.clearAnimation()
-        balance_swirl_progress_bar.alpha = .7f
-        this.invalidate()
+        //this.clearAnimation()
+        val handler = android.os.Handler(context.mainLooper)
+        handler.post({balance_swirl_progress_bar.visibility = View.VISIBLE})
+        //handler.postDelayed({balance_swirl_progress_bar.visibility = View.INVISIBLE},5000)
+
+        //this.invalidate()
     }
 
     override fun processfinished(output: String?) {
@@ -41,14 +45,19 @@ class MyConstraintLayout : RelativeLayout, AsyncObserver {
                 setAmounts(amountString, oldBalance)
             }
         }
-        balance_swirl_progress_bar.alpha = 0f
+        goInvis()
 
+    }
+
+    fun goInvis(){
+        balance_swirl_progress_bar.visibility = View.INVISIBLE
     }
 
     override fun onVisibilityChanged(changedView: View?, visibility: Int) {
 
         if (visibility == View.INVISIBLE)
-        balance_swirl_progress_bar.alpha = 0f
+            goInvis()
+        //balance_swirl_progress_bar.alpha = 0f
 
         super.onVisibilityChanged(changedView, visibility)
     }
