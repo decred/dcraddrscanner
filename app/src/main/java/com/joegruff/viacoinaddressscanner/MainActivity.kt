@@ -141,7 +141,7 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
             this.startActivity(intent)
         } else {
             //for some reason a progress bar gets stuck and i cant figure out for the life of me how to stop it, this is a fix tho...
-            //Handler(Looper.getMainLooper()).postDelayed({viewAdapter.notifyDataSetChanged()},1000)
+            Handler(Looper.getMainLooper()).postDelayed({viewAdapter.notifyDataSetChanged()},1000)
         }
     }
 
