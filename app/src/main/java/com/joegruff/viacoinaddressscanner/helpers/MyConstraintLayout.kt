@@ -28,7 +28,8 @@ class MyConstraintLayout : RelativeLayout, AsyncObserver {
        // Log.d("mycontraintlayout","process began")
         //this.clearAnimation()
         val handler = android.os.Handler(context.mainLooper)
-           handler.post({ balance_swirl_progress_bar.visibility = View.VISIBLE })
+        handler.post({ balance_swirl_progress_bar.visibility = View.VISIBLE })
+        handler.postDelayed({goInvis()}, 3000)
         //handler.postDelayed({balance_swirl_progress_bar.visibility = View.INVISIBLE},5000)
 
         //this.invalidate()
@@ -45,8 +46,10 @@ class MyConstraintLayout : RelativeLayout, AsyncObserver {
                 val amountString = token.getString(JSON_AMOUNT)
                 val oldBalance = token.getString(JSON_AMOUNT_OLD)
                 val address = token.getString(JSON_ADDRESS)
-                if (address != myAddress)
+                if (address != myAddress) {
+                    Log.d("myConstraint ","wrong address")
                     return
+                }
                 setAmounts(amountString, oldBalance)
             }
         }
@@ -58,16 +61,16 @@ class MyConstraintLayout : RelativeLayout, AsyncObserver {
         //val handler = android.os.Handler(context.mainLooper)
         //handler.post({balance_swirl_progress_bar.visibility = View.INVISIBLE})
         balance_swirl_progress_bar.visibility = View.INVISIBLE
+        Log.d("myconstraint ","went invis")
     }
 
-    override fun onVisibilityChanged(changedView: View?, visibility: Int) {
+    //override fun onVisibilityChanged(changedView: View?, visibility: Int) {
 
-        if (visibility == View.INVISIBLE)
-            goInvis()
-        //balance_swirl_progress_bar.alpha = 0f
+        //if (visibility == View.INVISIBLE)
+         //   goInvis()
 
-        super.onVisibilityChanged(changedView, visibility)
-    }
+     //   super.onVisibilityChanged(changedView, visibility)
+    //}
 
     fun setAmounts(balance : String, oldBalance : String){
         val difference = balance.toDouble() - oldBalance.toDouble()

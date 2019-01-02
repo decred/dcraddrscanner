@@ -52,6 +52,7 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
 
 
         viewManager = LinearLayoutManager(this)
+
         viewAdapter = MyAdapter(this, AddressBook.addresses)
 
         recyclerView = findViewById<RecyclerView>(R.id.recycle_view).apply {
@@ -75,9 +76,6 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val adapter = recyclerView.adapter as MyAdapter
                 adapter.onItemRemove(viewHolder, recyclerView)
-                //adapter.asktoremove(viewHolder.adapterPosition)
-                //adapter.removeAt(viewHolder.adapterPosition)
-                //Log.d("dfdf", "swiped to delete")
             }
         }
         val itemTouchHelper = ItemTouchHelper(swipeHandler)
@@ -141,7 +139,7 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
             this.startActivity(intent)
         } else {
             //for some reason a progress bar gets stuck and i cant figure out for the life of me how to stop it, this is a fix tho...
-            Handler(Looper.getMainLooper()).postDelayed({viewAdapter.notifyDataSetChanged()},1000)
+            //Handler(Looper.getMainLooper()).postDelayed({viewAdapter.notifyDataSetChanged()},1000)
         }
     }
 
@@ -214,8 +212,6 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
                     ctx.startActivity(intent)
                 }
             }
-
-            //holder.delegateHolder.goInvis()
         }
 
         //after a cell is swiped for delete
@@ -237,6 +233,8 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
             notifyItemRemoved(adapterPosition)
             addressesToDelete.add(addressObject)
         }
+
+
 
 
         class viewholder(itemview: View) : RecyclerView.ViewHolder(itemview) {
