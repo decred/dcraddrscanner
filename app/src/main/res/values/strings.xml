@@ -28,4 +28,6 @@
     <string name="changed_amounts_notification_title">Viacoin balance change</string>
     <string name="channel_name">Viacoin Notifications</string>
     <string name="channel_description">Viacoin balance change notification channel</string>
+    <string name="updates_on">Notifications have been turned on for </string>
+    <string name="updates_off">Notifications have been turned off for </string>
 </resources>

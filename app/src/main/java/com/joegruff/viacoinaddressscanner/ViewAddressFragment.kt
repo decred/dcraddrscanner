@@ -136,6 +136,10 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
             checkstar(addressObject)
             addorRemoveFromWatchlist.setOnClickListener { _ ->
                 addressObject.isBeingWatched = !addressObject.isBeingWatched
+                var messageId = if(addressObject.isBeingWatched) R.string.updates_on else R.string.updates_off
+                val name = if(addressObject.title == "") addressObject.address else addressObject.title
+                val message = getString(messageId) + " " + name
+                Toast.makeText(activity,message,Toast.LENGTH_SHORT).show()
                 checkstar(addressObject)
 
 
