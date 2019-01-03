@@ -20,14 +20,13 @@ import com.google.zxing.common.BitMatrix
 import com.joegruff.viacoinaddressscanner.helpers.*
 import kotlinx.android.synthetic.main.balance_swirl.*
 import kotlinx.android.synthetic.main.view_address_view.*
-import java.util.*
 
 class ViewAddressFragment : Fragment(), AsyncObserver {
     companion object {
-        const val INTENT_DATA = "joe.viacoin.address.scanner.address"
-        fun new(address: String): ViewAddressFragment {
+        const val INTENT_ADDRESS_DATA = "joe.viacoin.address.scanner.address"
+        fun new(address: String, label : String = ""): ViewAddressFragment {
             val args = Bundle()
-            args.putSerializable(INTENT_DATA, address)
+            args.putSerializable(INTENT_ADDRESS_DATA, address)
             val fragment = ViewAddressFragment()
             fragment.arguments = args
             return fragment
@@ -45,7 +44,8 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
 
         AddressBook.fillAddressBook(activity)
 
-        address = arguments?.getSerializable(INTENT_DATA) as String
+        address = arguments?.getSerializable(INTENT_ADDRESS_DATA) as String
+
         val v = inflater.inflate(R.layout.view_address_view, container, false)
 
         addressObject = AddressBook.getAddressObject(address)
@@ -151,6 +151,10 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
         addorRemoveFromWatchlist.background = activity?.resources?.getDrawable(id)
     }
     fun setupeditlabel() {
+
+        if (addressObject.address == getString(R.string.donation_address))
+                addressObject.title = getString(R.string.donation_label)
+
         view_address_view_label.setText(addressObject.title)
         view_address_view_label.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(p0: Editable?) {

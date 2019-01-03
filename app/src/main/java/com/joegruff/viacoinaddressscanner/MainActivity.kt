@@ -2,8 +2,6 @@ package com.joegruff.viacoinaddressscanner
 
 import android.app.Activity
 import android.app.AlarmManager
-import android.app.PendingIntent
-import android.content.BroadcastReceiver
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
@@ -101,7 +99,7 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
 
                     val address = clipboard.primaryClip.getItemAt(0).text.toString()
                     val intent = Intent(this, ViewAddressActivity::class.java)
-                    intent.putExtra(ViewAddressFragment.INTENT_DATA, address)
+                    intent.putExtra(ViewAddressFragment.INTENT_ADDRESS_DATA, address)
                     this.startActivity(intent)
 
                 } else
@@ -130,16 +128,13 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == RC_BARCODE_CAPTURE && resultCode == Activity.RESULT_OK) {
             val intent = Intent(applicationContext, ViewAddressActivity::class.java)
-            var address = data?.getStringExtra(ViewAddressFragment.INTENT_DATA) ?: ""
+            var address = data?.getStringExtra(ViewAddressFragment.INTENT_ADDRESS_DATA) ?: ""
             val splitAddress = address.split(":")
             address = splitAddress[splitAddress.lastIndex]
             address = address.trim()
 
-            intent.putExtra(ViewAddressFragment.INTENT_DATA, address)
+            intent.putExtra(ViewAddressFragment.INTENT_ADDRESS_DATA, address)
             this.startActivity(intent)
-        } else {
-            //for some reason a progress bar gets stuck and i cant figure out for the life of me how to stop it, this is a fix tho...
-            //Handler(Looper.getMainLooper()).postDelayed({viewAdapter.notifyDataSetChanged()},1000)
         }
     }
 
@@ -158,7 +153,7 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
-        //menuInflater.inflate(R.menu.menu_main, menu)
+        menuInflater.inflate(R.menu.menu_main, menu)
         return true
     }
 
@@ -166,8 +161,13 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
+
         return when (item.itemId) {
-            R.id.action_settings -> true
+            R.id.action_donate -> true.also {
+                val intent = Intent(applicationContext, ViewAddressActivity::class.java)
+                intent.putExtra(ViewAddressFragment.INTENT_ADDRESS_DATA, getString(R.string.donation_address))
+                this.startActivity(intent)
+            }
             else -> super.onOptionsItemSelected(item)
         }
 
@@ -208,7 +208,7 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
                 if (!haveTouchedAnAddress) {
                     haveTouchedAnAddress = true
                     val intent = Intent(ctx, ViewAddressActivity::class.java)
-                    intent.putExtra(ViewAddressFragment.INTENT_DATA, address)
+                    intent.putExtra(ViewAddressFragment.INTENT_ADDRESS_DATA, address)
                     ctx.startActivity(intent)
                 }
             }

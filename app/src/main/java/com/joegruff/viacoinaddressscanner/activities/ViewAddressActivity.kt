@@ -6,7 +6,7 @@ import com.joegruff.viacoinaddressscanner.helpers.ReusableFragmentActivity
 
 class ViewAddressActivity : ReusableFragmentActivity(){
     override fun createFragment(): Fragment {
-        val address = intent.getSerializableExtra(ViewAddressFragment.INTENT_DATA) as String
+        val address = intent.getSerializableExtra(ViewAddressFragment.INTENT_ADDRESS_DATA) as String
         return ViewAddressFragment.new(address)
     }
 }

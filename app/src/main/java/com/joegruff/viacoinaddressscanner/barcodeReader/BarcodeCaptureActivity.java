@@ -471,7 +471,7 @@ public final class BarcodeCaptureActivity extends AppCompatActivity implements B
         //do something with barcode data returned
         Log.d("barcode value " , barcode.rawValue);
         Intent intent = new Intent(getApplicationContext(), ViewAddressActivity.class);
-        intent.putExtra(ViewAddressFragment.INTENT_DATA, barcode.rawValue);
+        intent.putExtra(ViewAddressFragment.INTENT_ADDRESS_DATA, barcode.rawValue);
         setResult(RESULT_OK, intent);
         //this.startActivity(intent);
         finish();

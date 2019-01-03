@@ -89,7 +89,7 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
 
                     message = context.getString(R.string.changed_amounts_one, title, formattedAmountString)
                     val myNotificationIntent = Intent(context, ViewAddressActivity::class.java)
-                    myNotificationIntent.putExtra(ViewAddressFragment.INTENT_DATA, address)
+                    myNotificationIntent.putExtra(ViewAddressFragment.INTENT_ADDRESS_DATA, address)
                     myNotificationIntent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
                     myPendingIntent = TaskStackBuilder.create(context).run {
                         addNextIntentWithParentStack(myNotificationIntent)
