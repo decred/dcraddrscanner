@@ -30,4 +30,5 @@
     <string name="channel_description">Viacoin balance change notification channel</string>
     <string name="updates_on">Notifications have been turned on for </string>
     <string name="updates_off">Notifications have been turned off for </string>
+    <string name="app_label">Via Scan</string>
 </resources>
