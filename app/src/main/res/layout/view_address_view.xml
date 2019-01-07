@@ -73,7 +73,7 @@
             android:id="@+id/view_address_view_info"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="1"
+            android:layout_weight="2"
             android:gravity="center_vertical|end"
             android:singleLine="true"
             android:text="@string/view_address_fragment_balance"
@@ -82,7 +82,7 @@
 
         <FrameLayout
             android:id="@+id/frameLayout"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
             tools:layout_editor_absoluteX="203dp"
