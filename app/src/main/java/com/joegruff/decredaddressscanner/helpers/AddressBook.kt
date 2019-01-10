@@ -58,15 +58,6 @@ object AddressBook {
         return newObject
     }
 
-    fun containsAddressObject (address: String): Boolean
-    {
-        for (a in addresses) {
-            if (a.address == address)
-                return true
-        }
-        return false
-    }
-
     fun updateAddress(addressObject: AddressObject?) {
         if (addressObject == null) {
             return
@@ -81,15 +72,6 @@ object AddressBook {
         }
         if (addressObject.isValid)
             this.addresses.add(addressObject)
-    }
-
-    fun removeAddress(address: String) {
-
-        for (a in addresses)
-            if (a.address == address) {
-                addresses.remove(a)
-            }
-
     }
 
     fun abbreviatedAmountfromstring(amountString: String): String {

@@ -8,7 +8,7 @@ import java.net.*
 
 const val NO_CONNECTION = "no_connection"
 
-class GetInfoFromWeb(val delegate: AsyncObserver, val add: String) : AsyncTask<Void, Void, String>() {
+class GetInfoFromWeb(val delegate: AsyncObserver, val add: String, val newAddress : Boolean = false) : AsyncTask<Void, Void, String>() {
 
     //this is the inspire api
     val API_URL = "https://explorer.dcrdata.org/api/address/"
@@ -20,7 +20,7 @@ class GetInfoFromWeb(val delegate: AsyncObserver, val add: String) : AsyncTask<V
         Log.d("async", "Doin in background")
         delegate.processbegan()
 
-        if (!AddressBook.containsAddressObject(add)) {
+        if (newAddress) {
             Log.d("arrrg ","not in boog")
             try {
                 val url = URL(API_URL + add)

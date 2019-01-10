@@ -42,7 +42,7 @@ class AddressObject() : AsyncObserver {
 
     constructor(add: String) : this() {
         address = add
-        update()
+        update(false,true)
     }
 
     fun toJSON(): JSONObject {
@@ -84,7 +84,7 @@ class AddressObject() : AsyncObserver {
     }
 
 
-    fun update(checkIfShown: Boolean = true) {
+    fun update(checkIfShown: Boolean = true, newAddress : Boolean = false) {
 
         if (checkIfShown)
             try {
@@ -97,7 +97,7 @@ class AddressObject() : AsyncObserver {
 
         if (!isUpdating) {
             isUpdating = true
-            GetInfoFromWeb(this, address).execute()
+            GetInfoFromWeb(this, address, newAddress).execute()
         }
     }
 
