@@ -11,18 +11,18 @@
     android:background="@color/WhiteSmoke"
     android:keepScreenOn="true">
 
-    <com.joegruff.viacoinaddressscanner.ui.CameraSourcePreview
+    <com.joegruff.decredaddressscanner.ui.CameraSourcePreview
         android:id="@+id/preview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         >
 
-        <com.joegruff.viacoinaddressscanner.ui.GraphicOverlay
+        <com.joegruff.decredaddressscanner.ui.GraphicOverlay
             android:id="@+id/graphicOverlay"
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>
 
-    </com.joegruff.viacoinaddressscanner.ui.CameraSourcePreview>
+    </com.joegruff.decredaddressscanner.ui.CameraSourcePreview>
 
     <ImageView
         android:id="@+id/imageView"
