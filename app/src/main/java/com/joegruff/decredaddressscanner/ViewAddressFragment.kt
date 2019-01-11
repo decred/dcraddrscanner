@@ -69,7 +69,9 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
 
     override fun onResume() {
         addressObject.delegates.set(0,this)
-        addressObject.updateIfFiveMinPast()
+        if(addressObject.isValid) {
+            addressObject.updateIfFiveMinPast()
+        }
         super.onResume()
     }
 
