@@ -10,7 +10,7 @@ const val NO_CONNECTION = "no_connection"
 
 class GetInfoFromWeb(val delegate: AsyncObserver, val add: String, val newAddress : Boolean = false) : AsyncTask<Void, Void, String>() {
 
-    //this is the inspire api
+    //this is the dcrdata api
     val API_URL = "https://explorer.dcrdata.org/api/address/"
 
 

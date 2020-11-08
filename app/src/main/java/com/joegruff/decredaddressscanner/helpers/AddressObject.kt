@@ -163,17 +163,4 @@ class AddressObject() : AsyncObserver {
 
     fun IntRange.random() = Random().nextInt((endInclusive + 1) - start) + start
 
-    /*fun <T> tryBlock (jsonObject: JSONObject, name: String, defaultValue : T) : T {
-        return try {
-            if (T is String) {
-                jsonObject.getString(name)
-            } else {
-                defaultValue
-            }
-        }catch (e: JSONException) {
-             defaultValue
-
-
-    }*/
-
 }

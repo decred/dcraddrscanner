@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">Decred Address Scanner</string>
-    <string name="action_donate">Decred Donation Address</string>
     <string name="get_address_view_scan_button">Scan QR</string>
     <string name="get_address_view_paste">Paste from clipboard</string>
     <string name="get_address_fragment_no_clipboard_data">nothing to paste</string>
@@ -31,6 +30,5 @@
     <string name="updates_on">Notifications have been turned on for </string>
     <string name="updates_off">Notifications have been turned off for </string>
     <string name="app_label">DCR Scan</string>
-    <string name="donation_address">DshRqT2x1rJcVu2ghoPUjvi6P57xTphJVNW</string>
-    <string name="donation_label">Donation Address</string>
+    <string name="version_label">Version 1.05</string>
 </resources>

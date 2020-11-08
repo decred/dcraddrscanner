@@ -153,10 +153,6 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
         addorRemoveFromWatchlist.background = activity?.resources?.getDrawable(id)
     }
     fun setupeditlabel() {
-
-        if (addressObject.address == getString(R.string.donation_address))
-                addressObject.title = getString(R.string.donation_label)
-
         view_address_view_label.setText(addressObject.title)
         view_address_view_label.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(p0: Editable?) {

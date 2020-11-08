@@ -162,11 +162,7 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
         // as you specify a parent activity in AndroidManifest.xml.
 
         return when (item.itemId) {
-            R.id.action_donate -> true.also {
-                val intent = Intent(applicationContext, ViewAddressActivity::class.java)
-                intent.putExtra(ViewAddressFragment.INTENT_ADDRESS_DATA, getString(R.string.donation_address))
-                this.startActivity(intent)
-            }
+            // Put options here.
             else -> super.onOptionsItemSelected(item)
         }
 

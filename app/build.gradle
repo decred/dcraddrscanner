@@ -10,8 +10,8 @@ android {
         applicationId "com.joegruff.decredaddressscanner"
         minSdkVersion 16
         targetSdkVersion 27
-        versionCode 3
-        versionName "1.03"
+        versionCode 5
+        versionName "1.05"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
