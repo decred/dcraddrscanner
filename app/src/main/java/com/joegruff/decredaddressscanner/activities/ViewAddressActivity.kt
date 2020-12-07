@@ -1,7 +1,8 @@
 package com.joegruff.decredaddressscanner.activities
 
-import android.support.v4.app.Fragment
-import com.joegruff.decredaddressscanner.ViewAddressFragment
+
+import androidx.fragment.app.Fragment
+import com.joegruff.decredaddressscanner.helpers.ViewAddressFragment
 import com.joegruff.decredaddressscanner.helpers.ReusableFragmentActivity
 
 class ViewAddressActivity : ReusableFragmentActivity(){

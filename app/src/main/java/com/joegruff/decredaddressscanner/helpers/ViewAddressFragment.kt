@@ -1,12 +1,12 @@
-package com.joegruff.decredaddressscanner
+package com.joegruff.decredaddressscanner.helpers
 
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.Bundle
-import android.support.v4.app.Fragment
-import android.support.v7.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import androidx.appcompat.app.AppCompatActivity
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
@@ -17,11 +17,12 @@ import com.google.zxing.BarcodeFormat
 import com.google.zxing.MultiFormatWriter
 import com.google.zxing.WriterException
 import com.google.zxing.common.BitMatrix
+import com.joegruff.decredaddressscanner.R
 import com.joegruff.decredaddressscanner.helpers.*
 import kotlinx.android.synthetic.main.balance_swirl.*
 import kotlinx.android.synthetic.main.view_address_view.*
 
-class ViewAddressFragment : Fragment(), AsyncObserver {
+public class ViewAddressFragment : Fragment(), AsyncObserver {
     companion object {
         const val INTENT_ADDRESS_DATA = "joe.decred.address.scanner.address"
         fun new(address: String, label : String = ""): ViewAddressFragment {
@@ -173,8 +174,8 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
         view_address_view_address_button.setOnClickListener {
             val clipboard = activity?.getSystemService(AppCompatActivity.CLIPBOARD_SERVICE) as ClipboardManager?
             val clip = ClipData.newPlainText("address",addressObject.address)
-            clipboard?.primaryClip = clip
-            Toast.makeText(activity,R.string.view_address_fragment_copied_clipdata,Toast.LENGTH_SHORT).show()
+            clipboard?.setPrimaryClip(clip)
+            Toast.makeText(activity, R.string.view_address_fragment_copied_clipdata,Toast.LENGTH_SHORT).show()
         }
     }
 

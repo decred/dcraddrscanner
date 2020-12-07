@@ -16,7 +16,7 @@
         android:hardwareAccelerated="true"
         >
         <activity
-            android:name=".MainActivity"
+            android:name=".activities.MainActivity"
             android:label="@string/app_label"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -27,18 +27,7 @@
         </activity>
         <activity
             android:name=".activities.ViewAddressActivity"
-            android:parentActivityName=".MainActivity"/>
-        <meta-data
-            android:name="com.google.android.gms.version"
-            android:value="@integer/google_play_services_version" />
-        <meta-data
-            android:name="com.google.android.gms.vision.DEPENDENCIES"
-            android:value="barcode" />
-
-        <activity android:name=".barcodeReader.BarcodeCaptureActivity"
-                  android:screenOrientation="portrait"
-                  android:label="Read QR Code"/>
-
+            android:parentActivityName=".activities.MainActivity"/>
         <receiver android:name=".helpers.MyBroadcastReceiver"
             android:enabled="true"
             android:exported="false">

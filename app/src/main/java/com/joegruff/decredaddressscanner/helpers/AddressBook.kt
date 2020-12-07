@@ -2,7 +2,8 @@ package com.joegruff.decredaddressscanner.helpers
 
 import android.app.Activity
 import android.content.Context
-import android.support.v4.app.FragmentActivity
+import androidx.fragment.app.FragmentActivity
+
 import java.text.DecimalFormat
 
 object AddressBook {

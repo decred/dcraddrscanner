@@ -7,13 +7,13 @@ import android.content.Intent
 import android.os.Build
 import android.os.Handler
 import android.os.SystemClock
-import android.support.v4.app.NotificationCompat
-import com.joegruff.decredaddressscanner.MainActivity
+import androidx.core.app.NotificationCompat
+import com.joegruff.decredaddressscanner.activities.MainActivity
 import com.joegruff.decredaddressscanner.R
-import com.joegruff.decredaddressscanner.ViewAddressFragment
+import com.joegruff.decredaddressscanner.helpers.ViewAddressFragment
 import org.json.JSONObject
 import org.json.JSONTokener
-import android.support.v4.app.NotificationManagerCompat
+import androidx.core.app.NotificationManagerCompat
 import android.util.Log
 import com.joegruff.decredaddressscanner.activities.ViewAddressActivity
 import java.util.*
