@@ -1,7 +1,7 @@
 package com.joegruff.decredaddressscanner.helpers
 
 interface AsyncObserver {
-    fun processfinished(output: String?)
-    fun processbegan()
+    fun processFinished(output: String?)
+    fun processBegan()
     fun balanceSwirlNotNull() = false
 }

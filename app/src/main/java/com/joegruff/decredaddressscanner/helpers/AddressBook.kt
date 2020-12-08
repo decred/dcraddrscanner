@@ -5,23 +5,24 @@ import android.content.Context
 import androidx.fragment.app.FragmentActivity
 
 import java.text.DecimalFormat
+import kotlin.math.pow
 
 object AddressBook {
     val addresses = ArrayList<AddressObject>()
-    var gotAddressesAlready = false
+    private var gotAddressesAlready = false
 
     fun fillAddressBook(act: Activity?) {
         if (gotAddressesAlready) {
             return
         }
         if (act != null) {
-            JSONSerializer.getAddresses(act.applicationContext)?.let {addresses += it.asIterable()}
+            JSONSerializer.getAddresses(act.applicationContext)
+                ?.let { addresses += it.asIterable() }
             gotAddressesAlready = true
         }
-
     }
 
-    fun updateAddresses( force : Boolean = false){
+    fun updateAddresses(force: Boolean = false) {
         addresses.forEach {
             if (force) it.update(false) else it.updateIfFiveMinPast()
         }
@@ -32,31 +33,27 @@ object AddressBook {
             return
         }
         if (ctx != null) {
-            JSONSerializer.getAddresses(ctx)?.let {addresses += it.asIterable()}
+            JSONSerializer.getAddresses(ctx)?.let { addresses += it.asIterable() }
             gotAddressesAlready = true
         }
-
     }
 
     fun saveAddressBook(act: FragmentActivity?) {
         if (gotAddressesAlready)
-        JSONSerializer.saveJSON(act?.applicationContext, addresses)
+            JSONSerializer.saveJSON(act?.applicationContext, addresses)
     }
 
     fun saveAddressBook(ctx: Context?) {
         if (gotAddressesAlready)
-        JSONSerializer.saveJSON(ctx, addresses)
+            JSONSerializer.saveJSON(ctx, addresses)
     }
-
 
     fun getAddressObject(address: String): AddressObject {
         for (a in addresses) {
             if (a.address == address)
                 return a
         }
-        val newObject = AddressObject(address)
-        //addresses.add(newObject)
-        return newObject
+        return AddressObject(address)
     }
 
     fun updateAddress(addressObject: AddressObject?) {
@@ -75,21 +72,19 @@ object AddressBook {
             this.addresses.add(addressObject)
     }
 
-    fun abbreviatedAmountfromstring(amountString: String): String {
+    fun abbreviatedAmountFromString(amountString: String): String {
         var x = amountString.toDouble()
         var i = 0
         var subfix = ""
         if (x >= 10) {
             while (x >= 10) {
-                x = x / 10
+                x /= 10
                 i += 1
-                //Log.d("this ix i", "this is i " + i + " and x " + x)
             }
         } else if (x < 1 && x > 0) {
             while (x < 1) {
-                x = x * 10
+                x *= 10
                 i -= 1
-                //Log.d("this ix i", "this is i " + i + " and x " + x)
             }
         }
 
@@ -129,7 +124,7 @@ object AddressBook {
             else -> {
             }
         }
-        x = x * Math.pow(10.0, i.toDouble())
+        x *= 10.0.pow(i.toDouble())
         val f = DecimalFormat("#.###")
         return f.format(x) + subfix
     }

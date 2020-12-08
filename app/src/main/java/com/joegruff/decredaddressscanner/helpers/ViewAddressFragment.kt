@@ -5,27 +5,26 @@ import android.content.ClipboardManager
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.Bundle
-import androidx.fragment.app.Fragment
-import androidx.appcompat.app.AppCompatActivity
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.MultiFormatWriter
 import com.google.zxing.WriterException
 import com.google.zxing.common.BitMatrix
 import com.joegruff.decredaddressscanner.R
-import com.joegruff.decredaddressscanner.helpers.*
 import kotlinx.android.synthetic.main.balance_swirl.*
 import kotlinx.android.synthetic.main.view_address_view.*
 
-public class ViewAddressFragment : Fragment(), AsyncObserver {
+class ViewAddressFragment : Fragment(), AsyncObserver {
     companion object {
         const val INTENT_ADDRESS_DATA = "joe.decred.address.scanner.address"
-        fun new(address: String, label : String = ""): ViewAddressFragment {
+        fun new(address: String): ViewAddressFragment {
             val args = Bundle()
             args.putSerializable(INTENT_ADDRESS_DATA, address)
             val fragment = ViewAddressFragment()
@@ -35,13 +34,16 @@ public class ViewAddressFragment : Fragment(), AsyncObserver {
     }
 
 
-
     lateinit var addressObject: AddressObject
     var address = ""
-    var delegate : AsyncObserver? = null
-    var hasBeenInitiated = false
+    private var delegate: AsyncObserver? = null
+    private var hasBeenInitiated = false
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
 
         AddressBook.fillAddressBook(activity)
 
@@ -56,11 +58,11 @@ public class ViewAddressFragment : Fragment(), AsyncObserver {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         if (addressObject.isValid) {
-            setupeditlabel()
-            setupqrcode()
-            setupaddressbutton()
-            setupinfoview()
-            setupwatchstar()
+            setupEditLabel()
+            setupQRCode()
+            setupAddressButton()
+            setupInfoView()
+            setupWatchStar()
             hasBeenInitiated = true
         } else {
             addressObject = AddressBook.getAddressObject(address)
@@ -69,41 +71,41 @@ public class ViewAddressFragment : Fragment(), AsyncObserver {
     }
 
     override fun onResume() {
-        addressObject.delegates.set(0,this)
-        if(addressObject.isValid) {
+        addressObject.delegates[0] = this
+        if (addressObject.isValid) {
             addressObject.updateIfFiveMinPast()
         }
         super.onResume()
     }
 
     override fun onPause() {
-            if (addressObject.isValid) {
-                AddressBook.updateAddress(addressObject)
-                AddressBook.saveAddressBook(activity)
-            }
+        if (addressObject.isValid) {
+            AddressBook.updateAddress(addressObject)
+            AddressBook.saveAddressBook(activity)
+        }
         super.onPause()
     }
 
-    override fun processbegan() {
+    override fun processBegan() {
         try {
-            delegate?.processbegan()
-        } catch (e:Exception){
+            delegate?.processBegan()
+        } catch (e: Exception) {
 
         }
     }
 
-    override fun processfinished(output: String?) {
+    override fun processFinished(output: String?) {
         try {
-            delegate?.processfinished(output)
-        } catch (e:Exception){
+            delegate?.processFinished(output)
+        } catch (e: Exception) {
 
         }
         if (output == null) {
             view_address_view_address_button.setText(R.string.view_address_fragment_invalid_address)
             return
         }
-        if (output == NO_CONNECTION){
-            if (!hasBeenInitiated){
+        if (output == NO_CONNECTION) {
+            if (!hasBeenInitiated) {
                 view_address_view_address_button.setText(R.string.view_address_fragment_no_connection)
                 return
             }
@@ -113,47 +115,54 @@ public class ViewAddressFragment : Fragment(), AsyncObserver {
                 //addressObject.hasBeenInitiated = true
                 activity?.let {
                     AddressBook.saveAddressBook(it)
-                    setupeditlabel()
-                    setupqrcode()
-                    setupaddressbutton()
-                    setupinfoview()
-                    setupwatchstar()
+                    setupEditLabel()
+                    setupQRCode()
+                    setupAddressButton()
+                    setupInfoView()
+                    setupWatchStar()
                 }
             }
         }
     }
 
 
-    fun setupinfoview() {
+    private fun setupInfoView() {
 
-            balance_swirl_layout.setAmounts(addressObject.amount.toString(),addressObject.amountOld.toString())
-            balance_swirl_balance.setOnClickListener { _ ->
-                addressObject.update()
-            }
-            this.delegate = balance_swirl_layout
+        balance_swirl_layout.setAmounts(
+            addressObject.amount.toString(),
+            addressObject.amountOld.toString()
+        )
+        balance_swirl_balance.setOnClickListener {
+            addressObject.update()
+        }
+        this.delegate = balance_swirl_layout
 
 
     }
 
-    fun setupwatchstar(){
-            checkstar(addressObject)
-            addorRemoveFromWatchlist.setOnClickListener { _ ->
-                addressObject.isBeingWatched = !addressObject.isBeingWatched
-                var messageId = if(addressObject.isBeingWatched) R.string.updates_on else R.string.updates_off
-                val name = if(addressObject.title == "") addressObject.address else addressObject.title
-                val message = getString(messageId) + " " + name
-                Toast.makeText(activity,message,Toast.LENGTH_SHORT).show()
-                checkstar(addressObject)
+    private fun setupWatchStar() {
+        checkStar(addressObject)
+        addorRemoveFromWatchlist.setOnClickListener {
+            addressObject.isBeingWatched = !addressObject.isBeingWatched
+            val messageId =
+                if (addressObject.isBeingWatched) R.string.updates_on else R.string.updates_off
+            val name = if (addressObject.title == "") addressObject.address else addressObject.title
+            val message = getString(messageId) + " " + name
+            Toast.makeText(activity, message, Toast.LENGTH_SHORT).show()
+            checkStar(addressObject)
 
 
         }
 
     }
-    fun checkstar(ad : AddressObject) {
-        val id = if (ad.isBeingWatched) android.R.drawable.btn_star_big_on else android.R.drawable.btn_star_big_off
+
+    private fun checkStar(ad: AddressObject) {
+        val id =
+            if (ad.isBeingWatched) android.R.drawable.btn_star_big_on else android.R.drawable.btn_star_big_off
         addorRemoveFromWatchlist.background = activity?.resources?.getDrawable(id)
     }
-    fun setupeditlabel() {
+
+    private fun setupEditLabel() {
         view_address_view_label.setText(addressObject.title)
         view_address_view_label.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(p0: Editable?) {
@@ -169,17 +178,22 @@ public class ViewAddressFragment : Fragment(), AsyncObserver {
         })
     }
 
-    fun setupaddressbutton() {
-        view_address_view_address_button.setText(addressObject.address)
+    private fun setupAddressButton() {
+        view_address_view_address_button.text = addressObject.address
         view_address_view_address_button.setOnClickListener {
-            val clipboard = activity?.getSystemService(AppCompatActivity.CLIPBOARD_SERVICE) as ClipboardManager?
-            val clip = ClipData.newPlainText("address",addressObject.address)
+            val clipboard =
+                activity?.getSystemService(AppCompatActivity.CLIPBOARD_SERVICE) as ClipboardManager?
+            val clip = ClipData.newPlainText("address", addressObject.address)
             clipboard?.setPrimaryClip(clip)
-            Toast.makeText(activity, R.string.view_address_fragment_copied_clipdata,Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                activity,
+                R.string.view_address_fragment_copied_clipdata,
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 
-    fun setupqrcode() {
+    private fun setupQRCode() {
         try {
             val bitmap = textToQRBitmap(addressObject.address)
             view_address_view_qr_code.setImageBitmap(bitmap)
@@ -193,7 +207,7 @@ public class ViewAddressFragment : Fragment(), AsyncObserver {
         val bitMatrix: BitMatrix
         try {
             bitMatrix = MultiFormatWriter().encode(Value, BarcodeFormat.QR_CODE, 500, 500, null)
-        } catch (Illegalargumentexception: IllegalArgumentException) {
+        } catch (illegalArgumentException: IllegalArgumentException) {
             return null
         }
 
@@ -214,7 +228,7 @@ public class ViewAddressFragment : Fragment(), AsyncObserver {
 
     override fun balanceSwirlNotNull(): Boolean {
         val permaDelegate = delegate
-            return permaDelegate?.balanceSwirlNotNull() ?: false
+        return permaDelegate?.balanceSwirlNotNull() ?: false
     }
 
 

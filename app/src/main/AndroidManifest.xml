@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest package="com.joegruff.decredaddressscanner"
           xmlns:android="http://schemas.android.com/apk/res/android">
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-feature android:name="android.hardware.camera" />
-    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-feature
+        android:name="android.hardware.CAMERA"
+        android:required="false"/>
+    <uses-feature
+        android:name="android.hardware.camera.autofocus"
+        android:required="false"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <application
         android:allowBackup="true"
@@ -13,8 +17,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:fullBackupContent="false"
-        android:hardwareAccelerated="true"
-        >
+        android:hardwareAccelerated="true">
         <activity
             android:name=".activities.MainActivity"
             android:label="@string/app_label"
@@ -26,6 +29,13 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".activities.QRActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait"
+            android:stateNotNeeded="true"
+            android:windowSoftInputMode="stateAlwaysHidden"/>
+        <activity
             android:name=".activities.ViewAddressActivity"
             android:parentActivityName=".activities.MainActivity"/>
         <receiver android:name=".helpers.MyBroadcastReceiver"
@@ -34,12 +44,6 @@
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
             </intent-filter>
-
         </receiver>
-
-
-
     </application>
-
-
 </manifest>
