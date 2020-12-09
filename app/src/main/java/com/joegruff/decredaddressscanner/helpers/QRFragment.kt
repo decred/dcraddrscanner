@@ -1,6 +1,5 @@
 package com.joegruff.decredaddressscanner.helpers
 
-import com.joegruff.decredaddressscanner.R
 import android.Manifest
 import android.app.Activity.RESULT_OK
 import android.content.Intent
@@ -17,6 +16,7 @@ import androidx.core.app.ActivityCompat.OnRequestPermissionsResultCallback
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.google.zxing.integration.android.IntentIntegrator
+import com.joegruff.decredaddressscanner.R
 import com.journeyapps.barcodescanner.CaptureActivity
 
 class QRFragment : Fragment(), OnRequestPermissionsResultCallback {

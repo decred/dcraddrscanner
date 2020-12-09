@@ -8,25 +8,25 @@ import android.content.Intent
 import android.graphics.*
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
-import android.os.*
-import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.google.android.material.snackbar.Snackbar
-import androidx.core.content.res.ResourcesCompat
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.ItemTouchHelper
-
+import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.*
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat.getDrawable
+import androidx.core.content.res.ResourcesCompat
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.snackbar.Snackbar
 import com.joegruff.decredaddressscanner.R
-import com.joegruff.decredaddressscanner.helpers.ViewAddressFragment
 import com.joegruff.decredaddressscanner.helpers.*
 
 var RC_BARCODE_CAPTURE = 9001
@@ -47,7 +47,7 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
 
         val ptr = findViewById<SwipeRefreshLayout>(R.id.pullToRefresh_layout)
         ptr.setOnRefreshListener(this)
-        setrepeatingalarm(this, AlarmManager.INTERVAL_HALF_HOUR)
+        setRepeatingAlarm(this, AlarmManager.INTERVAL_HALF_HOUR)
 
 
         viewManager = LinearLayoutManager(this)
@@ -101,10 +101,10 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
             }
             pasteButton?.setOnClickListener { _ ->
 
-                val clipboard = this.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager?
-                if (clipboard?.primaryClip?.getItemAt(0) != null) {
+                val clipboard = this.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+                if (clipboard.primaryClip?.getItemAt(0) != null) {
 
-                    val address = clipboard?.primaryClip?.getItemAt(0)?.text.toString()
+                    val address = clipboard.primaryClip?.getItemAt(0)?.text.toString()
                     val intent = Intent(this, ViewAddressActivity::class.java)
                     intent.putExtra(ViewAddressFragment.INTENT_ADDRESS_DATA, address)
                     this.startActivity(intent)
@@ -231,12 +231,10 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
         //after a cell is swiped for delete
         fun onItemRemove(viewHolder: RecyclerView.ViewHolder, recyclerView: RecyclerView) {
             val adapterPosition = viewHolder.adapterPosition
-            //Log.d("asdsadf", "adapter position " + adapterPosition)
             val addressObject = myDataset.get(adapterPosition)
             val snackbar = Snackbar
                 .make(recyclerView, R.string.main_view_deleted_address, Snackbar.LENGTH_LONG)
                 .setAction(R.string.main_view_undo_delete) {
-                    //val mAdapterPosition = viewHolder.adapterPosition
                     myDataset.add(adapterPosition, addressObject)
                     notifyItemInserted(adapterPosition)
                     recyclerView.scrollToPosition(adapterPosition)
@@ -251,12 +249,6 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
 
         class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             val textView: TextView = itemView.findViewById(R.id.one_list_item_view_text_view)
-
-            /*
-            val balanceTextview = itemview.findViewById<TextView>(R.id.balance_swirl_balance)
-            val progressBar = itemview.findViewById<ProgressBar>(R.id.balance_swirl_progress_bar)
-            val changeView = itemview.findViewById<TextView>(R.id.balance_swirl_change)
-             */
             var delegateHolder: MyConstraintLayout =
                 itemView.findViewById(R.id.balance_swirl_layout)
         }
@@ -288,7 +280,7 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
         }
     }
 
-    abstract class SwipeToDeleteCallback(private val context: Context) :
+    abstract class SwipeToDeleteCallback(context: Context) :
         ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
 
         private val deleteIcon = getDrawable(context, R.drawable.ic_delete_white_24)!!

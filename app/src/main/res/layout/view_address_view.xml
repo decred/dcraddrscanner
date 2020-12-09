@@ -50,7 +50,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.503"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintTop_toTopOf="parent"
+        android:autofillHints="" />
 
     <LinearLayout
         android:layout_width="248dp"
@@ -95,7 +96,7 @@
     </LinearLayout>
 
     <Button
-        android:id="@+id/addorRemoveFromWatchlist"
+        android:id="@+id/view_address_view_address_star_button"
         android:layout_width="45dp"
         android:layout_height="45dp"
         android:layout_marginEnd="28dp"

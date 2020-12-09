@@ -6,19 +6,20 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Handler
+import android.os.Looper
 import android.os.SystemClock
+import android.util.Log
 import androidx.core.app.NotificationCompat
-import com.joegruff.decredaddressscanner.activities.MainActivity
+import androidx.core.app.NotificationManagerCompat
 import com.joegruff.decredaddressscanner.R
+import com.joegruff.decredaddressscanner.activities.MainActivity
+import com.joegruff.decredaddressscanner.activities.ViewAddressActivity
 import org.json.JSONObject
 import org.json.JSONTokener
-import androidx.core.app.NotificationManagerCompat
-import android.util.Log
-import com.joegruff.decredaddressscanner.activities.ViewAddressActivity
 import java.util.*
 import kotlin.collections.ArrayList
 
-fun setrepeatingalarm(ctx: Context, startInterval: Long) {
+fun setRepeatingAlarm(ctx: Context, startInterval: Long) {
     val alarmMgr = ctx.getSystemService(Context.ALARM_SERVICE) as AlarmManager
     val alarmIntent =
         Intent(ctx.applicationContext, MyBroadcastReceiver::class.java).let { intent ->
@@ -47,10 +48,9 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
         if (context != null) {
             Log.d("broadcast receiver", "intent is: " + intent?.action)
             if (intent?.action == "android.intent.action.BOOT_COMPLETED") {
-                setrepeatingalarm(context, 1000 * 60)
+                setRepeatingAlarm(context, 1000 * 60)
                 return
             }
-
 
             createNotificationChannel(context)
 
@@ -62,13 +62,11 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
                 starredAddress.delegates[1] = this
                 starredAddress.update(false)
                 numStarredAddresses += 1
-                Log.d("mybroadcastreceiver", "onreceive fired " + starredAddress.address)
             }
 
 
             // Give it five seconds to find changed addresses, report results as alert if something changed.
-            Handler().postDelayed({
-
+            Handler(Looper.getMainLooper()).postDelayed({
                 val message: String
                 val size = changedAddressObjects.size
                 val myPendingIntent: PendingIntent?
@@ -168,9 +166,9 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
         return
     }
 
-    override fun processFinished(output: String?) {
+    override fun processFinished(output: String) {
         // Catch all changed starred addresses.
-        if (output != null && output != NO_CONNECTION) {
+        if (output != "" && output != NO_CONNECTION) {
             val token = JSONTokener(output).nextValue()
             if (token is JSONObject) {
                 val address = token.getString(JSON_ADDRESS)

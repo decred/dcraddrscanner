@@ -1,28 +1,35 @@
 package com.joegruff.decredaddressscanner.helpers
 
-import android.os.AsyncTask
+import android.util.Log
+import androidx.lifecycle.ViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.BufferedReader
 import java.io.InputStreamReader
-import java.net.*
+import java.net.ConnectException
+import java.net.SocketTimeoutException
+import java.net.URL
+import java.net.UnknownHostException
+
 
 const val NO_CONNECTION = "no_connection"
 
+// This is the dcrdata api.
+const val API_URL = "https://explorer.dcrdata.org/api/address/"
+
 class GetInfoFromWeb(
     private val delegate: AsyncObserver,
-    private val add: String,
+    private val addr: String,
     private val newAddress: Boolean = false
-) : AsyncTask<Void, Void, String>() {
-
-    // This is the dcrdata api.
-    private val API_URL = "https://explorer.dcrdata.org/api/address/"
-
-
+) : ViewModel() {
     // Get data about address.
-    override fun doInBackground(vararg params: Void?): String? {
-        delegate.processBegan()
+    private fun doInBackground(): String {
+        var value = ""
         if (newAddress) {
             try {
-                val url = URL(API_URL + add)
+                val url = URL(API_URL + addr)
                 val urlConnection = url.openConnection()
                 urlConnection.connectTimeout = 5000
                 val bufferedReader =
@@ -30,9 +37,8 @@ class GetInfoFromWeb(
                 val line = bufferedReader.use { it.readText() }
                 bufferedReader.close()
                 if (line == "Unprocessable Entity")
-                    return null
+                    return ""
             } catch (e: Exception) {
-                var value: String? = null
                 when (e) {
                     is ConnectException, is UnknownHostException, is SocketTimeoutException ->
                         value = NO_CONNECTION
@@ -44,7 +50,7 @@ class GetInfoFromWeb(
             }
         }
         try {
-            val url = URL("$API_URL$add/totals")
+            val url = URL("$API_URL$addr/totals")
             val urlConnection = url.openConnection()
             urlConnection.connectTimeout = 5000
             val bufferedReader = BufferedReader(InputStreamReader(urlConnection.getInputStream()))
@@ -53,7 +59,6 @@ class GetInfoFromWeb(
             return line
 
         } catch (e: Exception) {
-            var value: String? = null
             when (e) {
                 is ConnectException, is UnknownHostException, is SocketTimeoutException ->
                     value = NO_CONNECTION
@@ -66,13 +71,19 @@ class GetInfoFromWeb(
 
     }
 
-    // Send back to address view fragment.
-    override fun onPostExecute(result: String?) {
-        try {
-            delegate.processFinished(result)
-        } catch (e: Exception) {
-            e.printStackTrace()
+    fun execute() {
+        CoroutineScope(Dispatchers.Main).launch {
+            withContext(Dispatchers.Default) {
+                try {
+                    delegate.processBegan()
+                    val result = doInBackground()
+                    delegate.processFinished(result)
+                    Log.d("loggering", "finished in get from web")
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
         }
-        super.onPostExecute(result)
     }
+
 }

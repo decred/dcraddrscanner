@@ -100,9 +100,9 @@ class AddressObject() : AsyncObserver {
             update(false)
     }
 
-    override fun processFinished(output: String?) {
+    override fun processFinished(output: String) {
         var sendToDelegates = output
-        if (output != null) {
+        if (output != "") {
             val token = JSONTokener(output).nextValue()
             if (token is JSONObject) {
                 val addressString = token.getString(JSON_ADDRESS)

@@ -4,9 +4,11 @@ import android.content.Context
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
+import android.widget.ProgressBar
 import android.widget.RelativeLayout
+import android.widget.TextView
+import androidx.core.app.ActivityCompat
 import com.joegruff.decredaddressscanner.R
-import kotlinx.android.synthetic.main.balance_swirl.view.*
 import org.json.JSONObject
 import org.json.JSONTokener
 import java.text.DecimalFormat
@@ -26,13 +28,14 @@ class MyConstraintLayout : RelativeLayout, AsyncObserver {
 
     override fun processBegan() {
         val handler = android.os.Handler(context.mainLooper)
-        handler.post { balance_swirl_progress_bar.visibility = View.VISIBLE }
+        val swirl = findViewById<ProgressBar>(R.id.balance_swirl_progress_bar)
+        handler.post { swirl.visibility = View.VISIBLE }
         handler.postDelayed({ goInvis() }, 3000)
     }
 
-    override fun processFinished(output: String?) {
+    override fun processFinished(output: String) {
         goInvis()
-        if (output != null) {
+        if (output != "") {
             val token = JSONTokener(output).nextValue()
             if (token is JSONObject) {
                 val amountString = token.getString(JSON_AMOUNT)
@@ -50,25 +53,28 @@ class MyConstraintLayout : RelativeLayout, AsyncObserver {
     }
 
     private fun goInvis() {
-        balance_swirl_progress_bar.visibility = View.INVISIBLE
+        val swirl = findViewById<ProgressBar>(R.id.balance_swirl_progress_bar)
+        swirl.visibility = View.INVISIBLE
     }
 
     fun setAmounts(balance: String, oldBalance: String) {
         val difference = balance.toDouble() - oldBalance.toDouble()
+        val changeView = findViewById<TextView>(R.id.balance_swirl_change)
+        val balanceView = findViewById<TextView>(R.id.balance_swirl_balance)
         val differenceText =
             when {
                 difference > 0.0 -> {
-                    balance_swirl_change.setTextColor(resources.getColor(R.color.Green))
+                    changeView.setTextColor(ActivityCompat.getColor(this.context, R.color.Green))
                     "+" + amountFromString(difference.toString())
                 }
                 difference < 0.0 -> {
-                    balance_swirl_change.setTextColor(resources.getColor(R.color.Red))
+                    changeView.setTextColor(ActivityCompat.getColor(this.context, R.color.Red))
                     amountFromString(difference.toString())
                 }
                 else -> ""
             }
-        balance_swirl_balance.text = amountFromString(balance)
-        balance_swirl_change.text = differenceText
+        balanceView.text = amountFromString(balance)
+        changeView.text = differenceText
     }
 
     private fun amountFromString(amountString: String): String {
@@ -79,5 +85,6 @@ class MyConstraintLayout : RelativeLayout, AsyncObserver {
         return f.format(amountString.toDouble()).toString()
     }
 
-    override fun balanceSwirlNotNull() = balance_swirl_layout.isShown
+    private val swirlLayout = findViewById<MyConstraintLayout>(R.id.balance_swirl_layout)
+    override fun balanceSwirlNotNull() = swirlLayout.isShown
 }

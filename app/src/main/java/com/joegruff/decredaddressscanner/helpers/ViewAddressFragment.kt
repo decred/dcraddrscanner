@@ -10,16 +10,15 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.MultiFormatWriter
 import com.google.zxing.WriterException
 import com.google.zxing.common.BitMatrix
 import com.joegruff.decredaddressscanner.R
-import kotlinx.android.synthetic.main.balance_swirl.*
-import kotlinx.android.synthetic.main.view_address_view.*
 
 class ViewAddressFragment : Fragment(), AsyncObserver {
     companion object {
@@ -33,7 +32,6 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
         }
     }
 
-
     lateinit var addressObject: AddressObject
     var address = ""
     private var delegate: AsyncObserver? = null
@@ -44,15 +42,10 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-
         AddressBook.fillAddressBook(activity)
-
         address = arguments?.getSerializable(INTENT_ADDRESS_DATA) as String
-
         val v = inflater.inflate(R.layout.view_address_view, container, false)
-
         addressObject = AddressBook.getAddressObject(address)
-
         return v
     }
 
@@ -94,32 +87,36 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
         }
     }
 
-    override fun processFinished(output: String?) {
+    override fun processFinished(output: String) {
         try {
             delegate?.processFinished(output)
         } catch (e: Exception) {
 
         }
-        if (output == null) {
-            view_address_view_address_button.setText(R.string.view_address_fragment_invalid_address)
+        val addrButton =
+            this.activity!!.findViewById<TextView>(R.id.view_address_view_address_button)
+        if (output == "") {
+
+            addrButton.setText(R.string.view_address_fragment_invalid_address)
             return
         }
         if (output == NO_CONNECTION) {
             if (!hasBeenInitiated) {
-                view_address_view_address_button.setText(R.string.view_address_fragment_no_connection)
+                addrButton.setText(R.string.view_address_fragment_no_connection)
                 return
             }
         }
         if (addressObject.isValid) {
             if (!hasBeenInitiated) {
-                //addressObject.hasBeenInitiated = true
-                activity?.let {
-                    AddressBook.saveAddressBook(it)
-                    setupEditLabel()
-                    setupQRCode()
-                    setupAddressButton()
-                    setupInfoView()
-                    setupWatchStar()
+                activity.let {
+                    this.activity!!.runOnUiThread {
+                        AddressBook.saveAddressBook(it)
+                        setupEditLabel()
+                        setupQRCode()
+                        setupAddressButton()
+                        setupInfoView()
+                        setupWatchStar()
+                    }
                 }
             }
         }
@@ -127,22 +124,23 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
 
 
     private fun setupInfoView() {
-
-        balance_swirl_layout.setAmounts(
+        val swirlLayout =
+            this.activity!!.findViewById<MyConstraintLayout>(R.id.balance_swirl_layout)
+        swirlLayout.setAmounts(
             addressObject.amount.toString(),
             addressObject.amountOld.toString()
         )
-        balance_swirl_balance.setOnClickListener {
+        swirlLayout.setOnClickListener {
             addressObject.update()
         }
-        this.delegate = balance_swirl_layout
-
-
+        this.delegate = swirlLayout
     }
 
     private fun setupWatchStar() {
         checkStar(addressObject)
-        addorRemoveFromWatchlist.setOnClickListener {
+        val starButton =
+            this.activity!!.findViewById<Button>(R.id.view_address_view_address_star_button)
+        starButton.setOnClickListener {
             addressObject.isBeingWatched = !addressObject.isBeingWatched
             val messageId =
                 if (addressObject.isBeingWatched) R.string.updates_on else R.string.updates_off
@@ -159,12 +157,15 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
     private fun checkStar(ad: AddressObject) {
         val id =
             if (ad.isBeingWatched) android.R.drawable.btn_star_big_on else android.R.drawable.btn_star_big_off
-        addorRemoveFromWatchlist.background = activity?.resources?.getDrawable(id)
+        val starButton =
+            this.activity!!.findViewById<Button>(R.id.view_address_view_address_star_button)
+        starButton.background = ActivityCompat.getDrawable(this.context!!, id)
     }
 
     private fun setupEditLabel() {
-        view_address_view_label.setText(addressObject.title)
-        view_address_view_label.addTextChangedListener(object : TextWatcher {
+        val addrLabel = this.activity!!.findViewById<EditText>(R.id.view_address_view_label)
+        addrLabel.setText(addressObject.title)
+        addrLabel.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(p0: Editable?) {
             }
 
@@ -179,8 +180,9 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
     }
 
     private fun setupAddressButton() {
-        view_address_view_address_button.text = addressObject.address
-        view_address_view_address_button.setOnClickListener {
+        val addrButton = this.activity!!.findViewById<Button>(R.id.view_address_view_address_button)
+        addrButton.text = addressObject.address
+        addrButton.setOnClickListener {
             val clipboard =
                 activity?.getSystemService(AppCompatActivity.CLIPBOARD_SERVICE) as ClipboardManager?
             val clip = ClipData.newPlainText("address", addressObject.address)
@@ -196,7 +198,8 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
     private fun setupQRCode() {
         try {
             val bitmap = textToQRBitmap(addressObject.address)
-            view_address_view_qr_code.setImageBitmap(bitmap)
+            val qrImg = this.activity!!.findViewById<ImageView>(R.id.view_address_view_qr_code)
+            qrImg.setImageBitmap(bitmap)
         } catch (e: WriterException) {
             e.printStackTrace()
         }
