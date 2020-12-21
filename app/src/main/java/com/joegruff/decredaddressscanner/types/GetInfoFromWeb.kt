@@ -1,4 +1,4 @@
-package com.joegruff.decredaddressscanner.helpers
+package com.joegruff.decredaddressscanner.types
 
 import android.util.Log
 import androidx.lifecycle.ViewModel

@@ -1,4 +1,4 @@
-package com.joegruff.decredaddressscanner.helpers
+package com.joegruff.decredaddressscanner.types
 
 import android.app.*
 import android.content.BroadcastReceiver
@@ -14,6 +14,7 @@ import androidx.core.app.NotificationManagerCompat
 import com.joegruff.decredaddressscanner.R
 import com.joegruff.decredaddressscanner.activities.MainActivity
 import com.joegruff.decredaddressscanner.activities.ViewAddressActivity
+import com.joegruff.decredaddressscanner.viewfragments.ViewAddressFragment
 import org.json.JSONObject
 import org.json.JSONTokener
 import java.util.*

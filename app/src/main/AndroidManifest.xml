@@ -38,7 +38,7 @@
         <activity
             android:name=".activities.ViewAddressActivity"
             android:parentActivityName=".activities.MainActivity"/>
-        <receiver android:name=".helpers.MyBroadcastReceiver"
+        <receiver android:name=".types.MyBroadcastReceiver"
             android:enabled="true"
             android:exported="false">
             <intent-filter>

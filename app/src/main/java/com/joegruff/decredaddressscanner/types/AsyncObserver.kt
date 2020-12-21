@@ -1,4 +1,4 @@
-package com.joegruff.decredaddressscanner.helpers
+package com.joegruff.decredaddressscanner.types
 
 interface AsyncObserver {
     fun processFinished(output: String)

@@ -1,4 +1,4 @@
-package com.joegruff.decredaddressscanner.helpers
+package com.joegruff.decredaddressscanner.types
 
 import android.content.Context
 import org.json.JSONArray

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.joegruff.decredaddressscanner.helpers.MyConstraintLayout
+<com.joegruff.decredaddressscanner.types.MyConstraintLayout
     android:id="@+id/balance_swirl_layout"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -34,4 +34,4 @@
         android:layout_below="@id/balance_swirl_balance"
         android:gravity="center_horizontal" />
 
-</com.joegruff.decredaddressscanner.helpers.MyConstraintLayout>
+</com.joegruff.decredaddressscanner.types.MyConstraintLayout>

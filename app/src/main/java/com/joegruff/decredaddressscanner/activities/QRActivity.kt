@@ -3,8 +3,8 @@ package com.joegruff.decredaddressscanner.activities
 
 import android.content.Intent
 import androidx.fragment.app.Fragment
-import com.joegruff.decredaddressscanner.helpers.QRFragment
-import com.joegruff.decredaddressscanner.helpers.ReusableFragmentActivity
+import com.joegruff.decredaddressscanner.viewfragments.QRFragment
+import com.joegruff.decredaddressscanner.types.ReusableFragmentActivity
 
 class QRActivity : ReusableFragmentActivity() {
     private var frag: QRFragment? = null

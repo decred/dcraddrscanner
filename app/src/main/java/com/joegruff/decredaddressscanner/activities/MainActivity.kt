@@ -11,7 +11,6 @@ import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.view.*
 import android.widget.Button
 import android.widget.TextView
@@ -27,7 +26,8 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.snackbar.Snackbar
 import com.joegruff.decredaddressscanner.R
-import com.joegruff.decredaddressscanner.helpers.*
+import com.joegruff.decredaddressscanner.types.*
+import com.joegruff.decredaddressscanner.viewfragments.ViewAddressFragment
 
 var RC_BARCODE_CAPTURE = 9001
 
@@ -35,7 +35,6 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var viewAdapter: MyAdapter
     private lateinit var viewManager: LinearLayoutManager
-    private val TAG = "BarcodeMain"
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -149,7 +148,6 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
     }
 
     override fun onResume() {
-        Log.d("num", "num of addresses " + AddressBook.addresses.size)
         AddressBook.updateAddresses()
         viewAdapter.haveTouchedAnAddress = false
         viewAdapter.notifyDataSetChanged()
@@ -157,18 +155,12 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_main, menu)
         return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-
         return when (item.itemId) {
-            // Put options here.
             else -> super.onOptionsItemSelected(item)
         }
 
@@ -220,7 +212,6 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
             }
         }
 
-        //after a cell is swiped for delete
         fun onItemRemove(viewHolder: RecyclerView.ViewHolder, recyclerView: RecyclerView) {
             val adapterPosition = viewHolder.adapterPosition
             val addressObject = myDataSet.get(adapterPosition)

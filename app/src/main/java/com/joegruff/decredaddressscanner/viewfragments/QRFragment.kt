@@ -1,4 +1,4 @@
-package com.joegruff.decredaddressscanner.helpers
+package com.joegruff.decredaddressscanner.viewfragments
 
 import android.Manifest
 import android.app.Activity.RESULT_OK
