@@ -31,5 +31,10 @@
     <string name="updates_on">Notifications have been turned on for </string>
     <string name="updates_off">Notifications have been turned off for </string>
     <string name="app_label">DCR Scan</string>
-    <string name="version_label">Version 1.05</string>
+    <string name="menu_about">About</string>
+    <string name="menu_about_details">"Version: %s\nDetails: Decred address scanner scans addresses, shows their unspent balance, and any change within the last 24 hours. Star an address to receive notifications of balance changes."</string>
+    <string name="menu_set_explorer">Set Explorer</string>
+    <string name="menu_dcrdata_mainnet">Dcrdata MainNet</string>
+    <string name="menu_dcrdata_testnet">Dcrdata TestNet</string>
+    <string name="other">Other</string>
 </resources>

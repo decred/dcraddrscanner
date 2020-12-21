@@ -16,11 +16,9 @@ import java.net.UnknownHostException
 
 const val NO_CONNECTION = "no_connection"
 
-// This is the dcrdata api.
-const val API_URL = "https://explorer.dcrdata.org/api/address/"
-
 class GetInfoFromWeb(
     private val delegate: AsyncObserver,
+    private val url: String,
     private val addr: String,
     private val newAddress: Boolean = false
 ) : ViewModel() {
@@ -29,7 +27,7 @@ class GetInfoFromWeb(
         var value = ""
         if (newAddress) {
             try {
-                val url = URL(API_URL + addr)
+                val url = URL(url + "address/" + addr)
                 val urlConnection = url.openConnection()
                 urlConnection.connectTimeout = 5000
                 val bufferedReader =
@@ -50,7 +48,7 @@ class GetInfoFromWeb(
             }
         }
         try {
-            val url = URL("$API_URL$addr/totals")
+            val url = URL(url + "address/" + addr + "/totals")
             val urlConnection = url.openConnection()
             urlConnection.connectTimeout = 5000
             val bufferedReader = BufferedReader(InputStreamReader(urlConnection.getInputStream()))

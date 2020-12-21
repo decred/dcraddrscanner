@@ -9,7 +9,18 @@ import kotlin.math.pow
 
 object AddressBook {
     val addresses = ArrayList<AddressObject>()
+    const val mainNet = "https://explorer.dcrdata.org/api/"
+    const val testNet = "https://testnet.dcrdata.org/api/"
+    var url = mainNet
     private var gotAddressesAlready = false
+
+    fun setURL(url: String) {
+        this.url = url
+    }
+
+    fun url() : String {
+        return this.url
+    }
 
     fun fillAddressBook(act: Activity?) {
         if (gotAddressesAlready) {

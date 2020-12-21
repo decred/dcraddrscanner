@@ -91,7 +91,7 @@ class AddressObject() : AsyncObserver {
             }
         if (!isUpdating) {
             isUpdating = true
-            GetInfoFromWeb(this, address, newAddress).execute()
+            GetInfoFromWeb(this, AddressBook.url(), address, newAddress).execute()
         }
     }
 

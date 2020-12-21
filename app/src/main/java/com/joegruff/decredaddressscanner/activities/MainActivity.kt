@@ -35,6 +35,7 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var viewAdapter: MyAdapter
     private lateinit var viewManager: LinearLayoutManager
+    private lateinit var menuItems: MenuItems
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,6 +43,7 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
         setContentView(R.layout.activity_main)
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
+        this.menuItems = MenuItems(this)
         AddressBook.fillAddressBook(this)
 
         val ptr = findViewById<SwipeRefreshLayout>(R.id.pullToRefresh_layout)
@@ -58,8 +60,6 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
             layoutManager = viewManager
             adapter = viewAdapter
         }
-
-
 
         recyclerView.addItemDecoration(SimpleDividerItemDecoration())
 
@@ -160,11 +160,8 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            else -> super.onOptionsItemSelected(item)
-        }
-
-
+        if (this.menuItems.doIt(item.itemId)) return true
+        return super.onOptionsItemSelected(item)
     }
 
 
@@ -194,7 +191,6 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
             if (string == "") {
                 string = address
             }
-            //holder.textView.text = position.toString()
             holder.delegateHolder.myAddress = address
             holder.textView.text = string
             holder.delegateHolder.abbreviatedValues = true
