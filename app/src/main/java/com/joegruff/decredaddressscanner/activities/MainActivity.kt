@@ -55,16 +55,9 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
         viewAdapter = MyAdapter(this, AddressBook.addresses)
 
         recyclerView = findViewById<RecyclerView>(R.id.recycle_view).apply {
-            // use this setting to improve performance if you know that changes
-            // in content do not change the layout size of the RecyclerView
             setHasFixedSize(true)
-
-            // use a linear layout manager
             layoutManager = viewManager
-
-            // specify an viewAdapter (see also next example)
             adapter = viewAdapter
-
         }
 
 
@@ -126,7 +119,6 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
     }
 
     override fun onRefresh() {
-        Log.d(TAG, "refreshing")
         Handler(Looper.getMainLooper()).postDelayed({
             val ptr = findViewById<SwipeRefreshLayout>(R.id.pullToRefresh_layout)
             ptr.isRefreshing = false
@@ -184,7 +176,7 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
     }
 
 
-    class MyAdapter(private val ctx: Context, val myDataset: ArrayList<AddressObject>) :
+    class MyAdapter(private val ctx: Context, private val myDataSet: ArrayList<AddressObject>) :
         RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
 
         private val addressesToDelete = ArrayList<AddressObject>()
@@ -198,15 +190,15 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
 
 
         override fun getItemCount(): Int {
-            return myDataset.size
+            return myDataSet.size
         }
 
         override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
 
-            myDataset[position].delegates.set(0, holder.delegateHolder)
+            myDataSet[position].delegates.set(0, holder.delegateHolder)
 
-            val address = myDataset[position].address
-            var string = myDataset[position].title
+            val address = myDataSet[position].address
+            var string = myDataSet[position].title
             if (string == "") {
                 string = address
             }
@@ -215,8 +207,8 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
             holder.textView.text = string
             holder.delegateHolder.abbreviatedValues = true
             holder.delegateHolder.setAmounts(
-                myDataset[position].amount.toString(),
-                myDataset[position].amountOld.toString()
+                myDataSet[position].amount.toString(),
+                myDataSet[position].amountOld.toString()
             )
             holder.itemView.setOnClickListener {
                 if (!haveTouchedAnAddress) {
@@ -231,17 +223,17 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
         //after a cell is swiped for delete
         fun onItemRemove(viewHolder: RecyclerView.ViewHolder, recyclerView: RecyclerView) {
             val adapterPosition = viewHolder.adapterPosition
-            val addressObject = myDataset.get(adapterPosition)
+            val addressObject = myDataSet.get(adapterPosition)
             val snackbar = Snackbar
                 .make(recyclerView, R.string.main_view_deleted_address, Snackbar.LENGTH_LONG)
                 .setAction(R.string.main_view_undo_delete) {
-                    myDataset.add(adapterPosition, addressObject)
+                    myDataSet.add(adapterPosition, addressObject)
                     notifyItemInserted(adapterPosition)
                     recyclerView.scrollToPosition(adapterPosition)
                     addressesToDelete.remove(addressObject)
                 }
             snackbar.show()
-            myDataset.removeAt(adapterPosition)
+            myDataSet.removeAt(adapterPosition)
             notifyItemRemoved(adapterPosition)
             addressesToDelete.add(addressObject)
         }

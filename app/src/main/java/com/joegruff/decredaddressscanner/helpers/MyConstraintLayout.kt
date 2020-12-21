@@ -30,11 +30,13 @@ class MyConstraintLayout : RelativeLayout, AsyncObserver {
         val handler = android.os.Handler(context.mainLooper)
         val swirl = findViewById<ProgressBar>(R.id.balance_swirl_progress_bar)
         handler.post { swirl.visibility = View.VISIBLE }
-        handler.postDelayed({ goInvis() }, 3000)
+        handler.postDelayed({ swirl.visibility = View.INVISIBLE }, 3000)
     }
 
     override fun processFinished(output: String) {
-        goInvis()
+        val handler = android.os.Handler(context.mainLooper)
+        val swirl = findViewById<ProgressBar>(R.id.balance_swirl_progress_bar)
+        handler.post { swirl.visibility = View.INVISIBLE }
         if (output != "") {
             val token = JSONTokener(output).nextValue()
             if (token is JSONObject) {
@@ -48,13 +50,6 @@ class MyConstraintLayout : RelativeLayout, AsyncObserver {
                 setAmounts(amountString, oldBalance)
             }
         }
-
-
-    }
-
-    private fun goInvis() {
-        val swirl = findViewById<ProgressBar>(R.id.balance_swirl_progress_bar)
-        swirl.visibility = View.INVISIBLE
     }
 
     fun setAmounts(balance: String, oldBalance: String) {
