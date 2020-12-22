@@ -12,9 +12,14 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.joegruff.decredaddressscanner.R
+import com.joegruff.decredaddressscanner.activities.AddrBook
 import com.joegruff.decredaddressscanner.activities.MainActivity
 import com.joegruff.decredaddressscanner.activities.ViewAddressActivity
 import com.joegruff.decredaddressscanner.viewfragments.ViewAddressFragment
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
 import org.json.JSONObject
 import org.json.JSONTokener
 import java.util.*
@@ -40,10 +45,9 @@ const val CHANNEL_ID = "com.joegruff.decredaddressscanner.notification_channel"
 const val NOTIFICATION_ID = 1337
 
 class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
-
-
-    private val changedAddressObjects = ArrayList<AddressObject>()
+    private val changedAddressObjects = ArrayList<Address>()
     private var numStarredAddresses = 0L
+    private lateinit var db: MyDatabase
 
     override fun onReceive(context: Context?, intent: Intent?) {
         if (context != null) {
@@ -52,13 +56,11 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
                 setRepeatingAlarm(context, 1000 * 60)
                 return
             }
-
             createNotificationChannel(context)
 
-            AddressBook.fillAddressBook(context)
 
             // Check for starred addresses and whether the current address is being displayed on screen.
-            for (starredAddress in AddressBook.addresses.filter { it.isBeingWatched }
+            for (starredAddress in AddrBook.addresses.filter { it.isBeingWatched }
                 .filter { !balanceSwirlNotNull() }) {
                 starredAddress.delegates[1] = this
                 starredAddress.update(false)
@@ -121,9 +123,6 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
                 val notificationManager = NotificationManagerCompat.from(context)
                 notificationManager.notify(NOTIFICATION_ID, mBuilder.build())
 
-                // These addresses should be holding a reference to addressBook, so should update properly.
-                AddressBook.saveAddressBook(context)
-
             }, (1000 + 4500 * numStarredAddresses))
 
         }
@@ -160,7 +159,7 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
     }
 
     private fun amountFromString(amountString: String): String {
-        return AddressBook.abbreviatedAmountFromString(amountString)
+        return abbreviatedAmountFromString(amountString)
     }
 
     override fun processBegan() {
@@ -172,8 +171,8 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
         if (output != "" && output != NO_CONNECTION) {
             val token = JSONTokener(output).nextValue()
             if (token is JSONObject) {
-                val address = token.getString(JSON_ADDRESS)
-                val addressObject = AddressBook.getAddressObject(address)
+                val address = token.getString(ADDRESS)
+                val addressObject = AddrBook.getAddress(address)
                 val amount = addressObject.amount
                 val oldBalance = addressObject.amountOld
                 val timestamp = addressObject.timestampChange

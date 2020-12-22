@@ -1,143 +1,134 @@
 package com.joegruff.decredaddressscanner.types
 
-import android.app.Activity
-import android.content.Context
-import androidx.fragment.app.FragmentActivity
+import android.util.Log
+import androidx.annotation.WorkerThread
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.forEach
+import kotlinx.coroutines.launch
 
 import java.text.DecimalFormat
 import kotlin.math.pow
 
-object AddressBook {
-    val addresses = ArrayList<AddressObject>()
-    const val mainNet = "https://explorer.dcrdata.org/api/"
-    const val testNet = "https://testnet.dcrdata.org/api/"
+const val mainNet = "https://explorer.dcrdata.org/api/"
+const val testNet = "https://testnet.dcrdata.org/api/"
+
+class AddressBook(private val addrDao: AddressDao) {
+    val addresses = addresses()
     var url = mainNet
-    private var gotAddressesAlready = false
 
     fun setURL(url: String) {
         this.url = url
     }
 
-    fun url() : String {
+    fun url(): String {
         return this.url
     }
 
-    fun fillAddressBook(act: Activity?) {
-        if (gotAddressesAlready) {
-            return
+    private fun addresses(): ArrayList<Address> {
+        val flowAddrs: Flow<List<Address>> = addrDao.getAll()
+        val addrs = ArrayList<Address>()
+        Log.d("loggering", "updating addresses")
+        GlobalScope.launch {
+            flowAddrs.collect {
+                addrs.addAll(it)
+                this.cancel()
+            }
         }
-        if (act != null) {
-            JSONSerializer.getAddresses(act.applicationContext)
-                ?.let { addresses += it.asIterable() }
-            gotAddressesAlready = true
-        }
+        return addrs
     }
 
     fun updateAddresses(force: Boolean = false) {
-        addresses.forEach {
-            if (force) it.update(false) else it.updateIfFiveMinPast()
+        GlobalScope.launch {
+            addresses.forEach {
+                if (force) it.update(false) else it.updateIfFiveMinPast()
+                addrDao.update(it)
+            }
         }
     }
 
-    fun fillAddressBook(ctx: Context?) {
-        if (gotAddressesAlready) {
-            return
-        }
-        if (ctx != null) {
-            JSONSerializer.getAddresses(ctx)?.let { addresses += it.asIterable() }
-            gotAddressesAlready = true
+    fun updateAddress(addr: Address, force: Boolean = false) {
+        GlobalScope.launch {
+            if (force) addr.update(false) else addr.updateIfFiveMinPast()
+            addrDao.update(addr)
+            Log.d("loggering", "updating address and isbeingwatched " + addr.isBeingWatched)
         }
     }
 
-    fun saveAddressBook(act: FragmentActivity?) {
-        if (gotAddressesAlready)
-            JSONSerializer.saveJSON(act?.applicationContext, addresses)
+
+    @Suppress("RedundantSuspendModifier")
+    @WorkerThread
+    suspend fun insert(addr: Address) {
+        addrDao.insert(addr)
     }
 
-    fun saveAddressBook(ctx: Context?) {
-        if (gotAddressesAlready)
-            JSONSerializer.saveJSON(ctx, addresses)
+    fun getAddress(address: String): Address {
+        var a: Address? = null
+        addresses.forEach { addr: Address ->
+            if (addr.address == address) a = addr
+        }
+        if (a != null) return a as Address
+        a = newAddress(address)
+        return a!!
+    }
+}
+
+fun abbreviatedAmountFromString(amountString: String): String {
+    var x = amountString.toDouble()
+    var i = 0
+    var suffix = ""
+    if (x >= 10) {
+        while (x >= 10) {
+            x /= 10
+            i += 1
+        }
+    } else if (x < 1 && x > 0) {
+        while (x < 1) {
+            x *= 10
+            i -= 1
+        }
     }
 
-    fun getAddressObject(address: String): AddressObject {
-        for (a in addresses) {
-            if (a.address == address)
-                return a
+    when (i) {
+        in -12..-10 -> {
+            suffix = "p"
+            i -= -12
         }
-        return AddressObject(address)
+        in -9..-7 -> {
+            suffix = "n"
+            i -= -9
+        }
+        in -6..-4 -> {
+            suffix = "μ"
+            i -= -6
+        }
+        in 3..5 -> {
+            suffix = "k"
+            i -= 3
+        }
+        in 6..8 -> {
+            suffix = "M"
+            i -= 6
+        }
+        in 9..11 -> {
+            suffix = "B"
+            i -= 9
+        }
+        in 12..14 -> {
+            suffix = "T"
+            i -= 12
+        }
+        in 15..17 -> {
+            suffix = "P"
+            i -= 15
+        }
+        else -> {
+        }
     }
-
-    fun updateAddress(addressObject: AddressObject?) {
-        if (addressObject == null) {
-            return
-        }
-        for (a in addresses) {
-
-            if (a.address == addressObject.address) {
-                a.amount = addressObject.amount
-                a.title = addressObject.title
-                return
-            }
-        }
-        if (addressObject.isValid)
-            this.addresses.add(addressObject)
-    }
-
-    fun abbreviatedAmountFromString(amountString: String): String {
-        var x = amountString.toDouble()
-        var i = 0
-        var subfix = ""
-        if (x >= 10) {
-            while (x >= 10) {
-                x /= 10
-                i += 1
-            }
-        } else if (x < 1 && x > 0) {
-            while (x < 1) {
-                x *= 10
-                i -= 1
-            }
-        }
-
-        when (i) {
-            in -12..-10 -> {
-                subfix = "p"
-                i -= -12
-            }
-            in -9..-7 -> {
-                subfix = "n"
-                i -= -9
-            }
-            in -6..-4 -> {
-                subfix = "μ"
-                i -= -6
-            }
-            in 3..5 -> {
-                subfix = "k"
-                i -= 3
-            }
-            in 6..8 -> {
-                subfix = "M"
-                i -= 6
-            }
-            in 9..11 -> {
-                subfix = "B"
-                i -= 9
-            }
-            in 12..14 -> {
-                subfix = "T"
-                i -= 12
-            }
-            in 15..17 -> {
-                subfix = "P"
-                i -= 15
-            }
-            else -> {
-            }
-        }
-        x *= 10.0.pow(i.toDouble())
-        val f = DecimalFormat("#.###")
-        return f.format(x) + subfix
-    }
-
+    x *= 10.0.pow(i.toDouble())
+    val f = DecimalFormat("#.###")
+    return f.format(x) + suffix
 }

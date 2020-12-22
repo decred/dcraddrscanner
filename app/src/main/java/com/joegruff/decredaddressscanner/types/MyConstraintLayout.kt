@@ -40,9 +40,9 @@ class MyConstraintLayout : RelativeLayout, AsyncObserver {
         if (output != "") {
             val token = JSONTokener(output).nextValue()
             if (token is JSONObject) {
-                val amountString = token.getString(JSON_AMOUNT)
-                val oldBalance = token.getString(JSON_AMOUNT_OLD)
-                val address = token.getString(JSON_ADDRESS)
+                val amountString = token.getString(AMOUNT)
+                val oldBalance = token.getString(AMOUNT_OLD)
+                val address = token.getString(ADDRESS)
                 if (address != myAddress) {
                     Log.d("myConstraint ", "wrong address")
                     return
@@ -74,7 +74,7 @@ class MyConstraintLayout : RelativeLayout, AsyncObserver {
 
     private fun amountFromString(amountString: String): String {
         if (abbreviatedValues) {
-            return AddressBook.abbreviatedAmountFromString(amountString)
+            return abbreviatedAmountFromString(amountString)
         }
         val f = DecimalFormat("#.########")
         return f.format(amountString.toDouble()).toString()

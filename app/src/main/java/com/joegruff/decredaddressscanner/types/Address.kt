@@ -1,63 +1,43 @@
 package com.joegruff.decredaddressscanner.types
 
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.Ignore
+import androidx.room.PrimaryKey
+import com.joegruff.decredaddressscanner.activities.AddrBook
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 import org.json.JSONObject
 import org.json.JSONTokener
 import java.util.*
 
-const val JSON_AMOUNT = "dcr_unspent"
-const val JSON_ADDRESS = "address"
-const val JSON_TITLE = "title"
-const val JSON_TIMESTAMP_CHANGE = "timestampchange"
-const val JSON_TIMESTAMP_CHECK = "timestampcheck"
-const val JSON_AMOUNT_OLD = "amountold"
-const val JSON_BEING_WATCHED = "beingwatched"
+const val AMOUNT = "dcr_unspent"
+const val ADDRESS_TABLE = "address_table"
+const val ADDRESS = "address"
+const val TITLE = "title"
+const val TIMESTAMP_CHANGE = "timestamp_change"
+const val TIMESTAMP_CHECK = "timestamp_check"
+const val AMOUNT_OLD = "amount_old"
+const val BEING_WATCHED = "being_watched"
+const val VALID = "valid"
 
-class AddressObject() : AsyncObserver {
-    var address = ""
-    var title = ""
-    var amount = -1.0
+@Entity(tableName = ADDRESS_TABLE)
+data class Address(
+    @PrimaryKey val address: String,
+    @ColumnInfo(name = AMOUNT) var amount: Double = -1.0,
+    @ColumnInfo(name = TITLE) var title: String = "",
+    @ColumnInfo(name = TIMESTAMP_CHANGE) var timestampChange: Double = Date().time.toDouble(),
+    @ColumnInfo(name = TIMESTAMP_CHECK) var timestampCheck: Double = timestampChange,
+    @ColumnInfo(name = AMOUNT_OLD) var amountOld: Double = 0.0,
+    @ColumnInfo(name = BEING_WATCHED) var isBeingWatched: Boolean = false,
+    @ColumnInfo(name = VALID) var isValid: Boolean = false,
+) : AsyncObserver {
+    @Ignore
     private var isUpdating = false
-    var isValid = false
-    var isBeingWatched = false
-    var amountOld = 0.0
-    var timestampChange = Date().time.toDouble()
-    private var timestampCheck = timestampChange
 
     // Fist delegate is ui and second is for alarmManager
+    @Ignore
     var delegates = mutableListOf<AsyncObserver?>(null, null)
-
-    constructor(jsonObject: JSONObject) : this() {
-        address = if (jsonObject.has(JSON_ADDRESS)) jsonObject.getString(JSON_ADDRESS) else address
-        title = if (jsonObject.has(JSON_TITLE)) jsonObject.getString(JSON_TITLE) else title
-        amount = if (jsonObject.has(JSON_AMOUNT)) jsonObject.getDouble(JSON_AMOUNT) else amount
-        amountOld =
-            if (jsonObject.has(JSON_AMOUNT_OLD)) jsonObject.getDouble(JSON_AMOUNT_OLD) else amountOld
-        timestampChange =
-            if (jsonObject.has(JSON_TIMESTAMP_CHANGE)) jsonObject.getDouble(JSON_TIMESTAMP_CHANGE) else timestampChange
-        timestampCheck =
-            if (jsonObject.has(JSON_TIMESTAMP_CHECK)) jsonObject.getDouble(JSON_TIMESTAMP_CHECK) else timestampCheck
-        isBeingWatched =
-            if (jsonObject.has(JSON_BEING_WATCHED)) jsonObject.getBoolean(JSON_BEING_WATCHED) else isBeingWatched
-        isValid = true
-        updateIfFiveMinPast()
-    }
-
-    constructor(add: String) : this() {
-        address = add
-        update(checkIfShown = false, newAddress = true)
-    }
-
-    fun toJSON(): JSONObject {
-        val jsonObject = JSONObject()
-        jsonObject.put(JSON_ADDRESS, address)
-        jsonObject.put(JSON_TITLE, title)
-        jsonObject.put(JSON_AMOUNT, amount)
-        jsonObject.put(JSON_AMOUNT_OLD, amountOld)
-        jsonObject.put(JSON_TIMESTAMP_CHANGE, timestampChange)
-        jsonObject.put(JSON_TIMESTAMP_CHECK, timestampCheck)
-        jsonObject.put(JSON_BEING_WATCHED, isBeingWatched)
-        return jsonObject
-    }
 
 
     override fun processBegan() {
@@ -91,7 +71,7 @@ class AddressObject() : AsyncObserver {
             }
         if (!isUpdating) {
             isUpdating = true
-            GetInfoFromWeb(this, AddressBook.url(), address, newAddress).execute()
+            GetInfoFromWeb(this, AddrBook.url(), address, newAddress).execute()
         }
     }
 
@@ -105,9 +85,9 @@ class AddressObject() : AsyncObserver {
         if (output != "") {
             val token = JSONTokener(output).nextValue()
             if (token is JSONObject) {
-                val addressString = token.getString(JSON_ADDRESS)
+                val addressString = token.getString(ADDRESS)
                 if (address == addressString) {
-                    val amountString = token.getString(JSON_AMOUNT)
+                    val amountString = token.getString(AMOUNT)
                     val amountDoubleFromString = amountString.toDouble()
                     timestampCheck = Date().time.toDouble()
                     val elapsedHrsSinceChange =
@@ -131,10 +111,16 @@ class AddressObject() : AsyncObserver {
                             amountOld = amount
                         }
                     }
-                    sendToDelegates = toJSON().toString()
+                    val addr = this
+                    sendToDelegates = this.toString()
                     if (!isValid) {
                         isValid = true
+
+                        GlobalScope.async { AddrBook.insert(addr) }
+                    } else {
+                        AddrBook.updateAddress(addr)
                     }
+
                 }
             }
         }
@@ -148,4 +134,10 @@ class AddressObject() : AsyncObserver {
             e.printStackTrace()
         }
     }
+}
+
+fun newAddress(add: String): Address {
+    val a = Address(add)
+    a.update(checkIfShown = false, newAddress = true)
+    return a
 }

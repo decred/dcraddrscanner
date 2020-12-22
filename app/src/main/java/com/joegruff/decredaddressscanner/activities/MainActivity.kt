@@ -28,8 +28,10 @@ import com.google.android.material.snackbar.Snackbar
 import com.joegruff.decredaddressscanner.R
 import com.joegruff.decredaddressscanner.types.*
 import com.joegruff.decredaddressscanner.viewfragments.ViewAddressFragment
+import kotlinx.coroutines.*
 
 var RC_BARCODE_CAPTURE = 9001
+lateinit var AddrBook: AddressBook
 
 class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
@@ -40,12 +42,13 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val applicationScope = CoroutineScope(SupervisorJob())
+        val db = MyDatabase.getDatabase(this, applicationScope)
+        AddrBook = AddressBook(db.addrDao())
         setContentView(R.layout.activity_main)
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
         this.menuItems = MenuItems(this)
-        AddressBook.fillAddressBook(this)
-
         val ptr = findViewById<SwipeRefreshLayout>(R.id.pullToRefresh_layout)
         ptr.setOnRefreshListener(this)
         setRepeatingAlarm(this, AlarmManager.INTERVAL_HALF_HOUR)
@@ -53,7 +56,7 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
 
         viewManager = LinearLayoutManager(this)
 
-        viewAdapter = MyAdapter(this, AddressBook.addresses)
+        viewAdapter = MyAdapter(this, AddrBook.addresses)
 
         recyclerView = findViewById<RecyclerView>(R.id.recycle_view).apply {
             setHasFixedSize(true)
@@ -107,14 +110,10 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
                         R.string.get_address_fragment_no_clipboard_data,
                         Toast.LENGTH_SHORT
                     ).show()
-
                 dialogView.dismiss()
             }
             dialogView.show()
-
         }
-
-
     }
 
     override fun onRefresh() {
@@ -122,8 +121,7 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
             val ptr = findViewById<SwipeRefreshLayout>(R.id.pullToRefresh_layout)
             ptr.isRefreshing = false
         }, 1000)
-        AddressBook.updateAddresses(true)
-
+        AddrBook.updateAddresses(true)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -141,14 +139,8 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
 
     }
 
-
-    override fun onPause() {
-        AddressBook.saveAddressBook(this)
-        super.onPause()
-    }
-
     override fun onResume() {
-        AddressBook.updateAddresses()
+        AddrBook.updateAddresses()
         viewAdapter.haveTouchedAnAddress = false
         viewAdapter.notifyDataSetChanged()
         super.onResume()
@@ -165,10 +157,10 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
     }
 
 
-    class MyAdapter(private val ctx: Context, private val myDataSet: ArrayList<AddressObject>) :
+    class MyAdapter(private val ctx: Context, var myDataSet: ArrayList<Address>) :
         RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
 
-        private val addressesToDelete = ArrayList<AddressObject>()
+        private val addressesToDelete = ArrayList<Address>()
         var haveTouchedAnAddress = false
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
@@ -177,14 +169,13 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
             return MyViewHolder(mainView)
         }
 
-
         override fun getItemCount(): Int {
             return myDataSet.size
         }
 
         override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
 
-            myDataSet[position].delegates.set(0, holder.delegateHolder)
+            myDataSet[position].delegates[0] = holder.delegateHolder
 
             val address = myDataSet[position].address
             var string = myDataSet[position].title

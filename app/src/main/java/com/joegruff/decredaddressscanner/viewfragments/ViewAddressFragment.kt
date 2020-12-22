@@ -19,6 +19,7 @@ import com.google.zxing.MultiFormatWriter
 import com.google.zxing.WriterException
 import com.google.zxing.common.BitMatrix
 import com.joegruff.decredaddressscanner.R
+import com.joegruff.decredaddressscanner.activities.AddrBook
 import com.joegruff.decredaddressscanner.types.*
 
 class ViewAddressFragment : Fragment(), AsyncObserver {
@@ -33,7 +34,7 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
         }
     }
 
-    lateinit var addressObject: AddressObject
+    lateinit var addressObject: Address
     var address = ""
     private var delegate: AsyncObserver? = null
     private var hasBeenInitiated = false
@@ -43,10 +44,9 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        AddressBook.fillAddressBook(activity)
         address = arguments?.getSerializable(INTENT_ADDRESS_DATA) as String
         val v = inflater.inflate(R.layout.view_address_view, container, false)
-        addressObject = AddressBook.getAddressObject(address)
+        addressObject = AddrBook.getAddress(address)
         return v
     }
 
@@ -58,8 +58,6 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
             setupInfoView()
             setupWatchStar()
             hasBeenInitiated = true
-        } else {
-            addressObject = AddressBook.getAddressObject(address)
         }
         super.onViewCreated(view, savedInstanceState)
     }
@@ -70,14 +68,6 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
             addressObject.updateIfFiveMinPast()
         }
         super.onResume()
-    }
-
-    override fun onPause() {
-        if (addressObject.isValid) {
-            AddressBook.updateAddress(addressObject)
-            AddressBook.saveAddressBook(activity)
-        }
-        super.onPause()
     }
 
     override fun processBegan() {
@@ -109,9 +99,9 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
         }
         if (addressObject.isValid) {
             if (!hasBeenInitiated) {
+                hasBeenInitiated = true
                 activity.let {
                     this.activity!!.runOnUiThread {
-                        AddressBook.saveAddressBook(it)
                         setupEditLabel()
                         setupQRCode()
                         setupAddressButton()
@@ -143,21 +133,19 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
             this.activity!!.findViewById<Button>(R.id.view_address_view_address_star_button)
         starButton.setOnClickListener {
             addressObject.isBeingWatched = !addressObject.isBeingWatched
+            AddrBook.updateAddress(addressObject, false)
             val messageId =
                 if (addressObject.isBeingWatched) R.string.updates_on else R.string.updates_off
             val name = if (addressObject.title == "") addressObject.address else addressObject.title
             val message = getString(messageId) + " " + name
             Toast.makeText(activity, message, Toast.LENGTH_SHORT).show()
             checkStar(addressObject)
-
-
         }
-
     }
 
-    private fun checkStar(ad: AddressObject) {
+    private fun checkStar(addr: Address) {
         val id =
-            if (ad.isBeingWatched) android.R.drawable.btn_star_big_on else android.R.drawable.btn_star_big_off
+            if (addr.isBeingWatched) android.R.drawable.btn_star_big_on else android.R.drawable.btn_star_big_off
         val starButton =
             this.activity!!.findViewById<Button>(R.id.view_address_view_address_star_button)
         starButton.background = ActivityCompat.getDrawable(this.context!!, id)
