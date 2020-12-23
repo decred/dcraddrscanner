@@ -1,15 +1,15 @@
 package com.joegruff.decredaddressscanner.types
 
+import android.content.Context
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
-import com.joegruff.decredaddressscanner.activities.AddrBook
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
 import org.json.JSONObject
 import org.json.JSONTokener
+import java.text.DecimalFormat
 import java.util.*
+import kotlin.math.pow
 
 const val AMOUNT = "dcr_unspent"
 const val ADDRESS_TABLE = "address_table"
@@ -24,21 +24,20 @@ const val VALID = "valid"
 @Entity(tableName = ADDRESS_TABLE)
 data class Address(
     @PrimaryKey val address: String,
-    @ColumnInfo(name = AMOUNT) var amount: Double = -1.0,
+    // Amounts in coins.
+    @ColumnInfo(name = AMOUNT) var amount: Double = 0.0,
+    @ColumnInfo(name = AMOUNT_OLD) var amountOld: Double = 0.0,
     @ColumnInfo(name = TITLE) var title: String = "",
     @ColumnInfo(name = TIMESTAMP_CHANGE) var timestampChange: Double = Date().time.toDouble(),
     @ColumnInfo(name = TIMESTAMP_CHECK) var timestampCheck: Double = timestampChange,
-    @ColumnInfo(name = AMOUNT_OLD) var amountOld: Double = 0.0,
     @ColumnInfo(name = BEING_WATCHED) var isBeingWatched: Boolean = false,
     @ColumnInfo(name = VALID) var isValid: Boolean = false,
 ) : AsyncObserver {
     @Ignore
     private var isUpdating = false
-
     // Fist delegate is ui and second is for alarmManager
     @Ignore
     var delegates = mutableListOf<AsyncObserver?>(null, null)
-
 
     override fun processBegan() {
         isUpdating = true
@@ -51,93 +50,138 @@ data class Address(
         }
     }
 
-    override fun balanceSwirlNotNull(): Boolean {
-        return try {
-            delegates[0]!!.balanceSwirlNotNull()
-        } catch (e: java.lang.Exception) {
-            false
-        }
+    override fun balanceSwirlIsShown(): Boolean {
+        return delegates[0]?.balanceSwirlIsShown() ?: false
     }
 
+    override fun processError(str: String) {}
 
-    fun update(checkIfShown: Boolean = true, newAddress: Boolean = false) {
-        if (checkIfShown)
-            try {
-                if (!delegates[0]!!.balanceSwirlNotNull()) {
-                    return
-                }
-            } catch (e: java.lang.Exception) {
-                e.printStackTrace()
-            }
+    fun update(ctx: Context) {
         if (!isUpdating) {
             isUpdating = true
-            GetInfoFromWeb(this, AddrBook.url(), address, newAddress).execute()
+            GetInfoFromWeb(this, address, ctx).execute()
         }
     }
 
-    fun updateIfFiveMinPast() {
+    fun updateIfFiveMinPast(ctx: Context) {
         if (Date().time - timestampCheck > (1000 * 60 * 5))
-            update(false)
+            update(ctx)
     }
 
-    override fun processFinished(output: String) {
-        var sendToDelegates = output
-        if (output != "") {
-            val token = JSONTokener(output).nextValue()
-            if (token is JSONObject) {
-                val addressString = token.getString(ADDRESS)
-                if (address == addressString) {
-                    val amountString = token.getString(AMOUNT)
-                    val amountDoubleFromString = amountString.toDouble()
-                    timestampCheck = Date().time.toDouble()
-                    val elapsedHrsSinceChange =
-                        (timestampCheck - timestampChange) / (1000 * 60 * 60)
-                    when {
-                        amount < 0 -> {
-                            // Don`t imply a change if this is the initiation.
-                            timestampChange = timestampCheck
-                            amountOld = amountDoubleFromString
-                            amount = amountOld
-                        }
-                        amount != amountDoubleFromString -> {
-                            // Record change.
-                            amountOld = amount
-                            amount = amountDoubleFromString
-                            timestampChange = timestampCheck
-                        }
-                        elapsedHrsSinceChange > 24 -> {
-                            // Forget older changes.
-                            timestampChange = timestampCheck
-                            amountOld = amount
-                        }
-                    }
-                    val addr = this
-                    sendToDelegates = this.toString()
-                    if (!isValid) {
-                        isValid = true
-
-                        GlobalScope.async { AddrBook.insert(addr) }
-                    } else {
-                        AddrBook.updateAddress(addr)
-                    }
-
-                }
+    override fun processFinished(addr: Address, ctx: Context) {
+        if (address != addr.address) {
+            throw Exception("updating wrong addr")
+        }
+        timestampCheck = addr.timestampCheck
+        val elapsedHrsSinceChange =
+            (timestampCheck - timestampChange) / (1000 * 60 * 60)
+        when {
+            !isValid -> {
+                // New address copy retrieved values.
+                amount = addr.amount
+                amountOld = addr.amountOld
+                timestampChange = addr.timestampChange
+                timestampCheck = addr.timestampCheck
+                // Because we were able to fetch it, it must be valid.
+                isValid = true
+                addrBook(ctx).insert(this)
+            }
+            amount != addr.amount -> {
+                // Record change.
+                amountOld = amount
+                amount = addr.amount
+                timestampChange = timestampCheck
+                addrBook(ctx).updateAddress(this)
+            }
+            elapsedHrsSinceChange > 24 -> {
+                // Forget older changes.
+                timestampChange = timestampCheck
+                amountOld = amount
+                addrBook(ctx).updateAddress(this)
             }
         }
         isUpdating = false
-
-        try {
-            delegates.forEach {
-                it?.processFinished(sendToDelegates)
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
+        delegates.forEach {
+            it?.processFinished(this, ctx)
         }
     }
 }
 
-fun newAddress(add: String): Address {
+fun newAddress(add: String, ctx: Context): Address {
     val a = Address(add)
-    a.update(checkIfShown = false, newAddress = true)
+    a.update(ctx)
     return a
+}
+
+fun addrFromWebJSON(str: String): Address {
+    val token = JSONTokener(str).nextValue()
+    if (token is JSONObject) {
+        val a = Address(token.getString(ADDRESS))
+        val amountString = token.getString(AMOUNT)
+        val amountDoubleFromString = amountString.toDouble()
+        a.amount = amountDoubleFromString
+        a.amountOld = amountDoubleFromString
+        val t = Date().time.toDouble()
+        a.timestampCheck = t
+        a.timestampChange = t
+        return a
+    }
+    throw Exception("unknown JSON")
+}
+
+fun abbreviatedAmountFromString(amountString: String): String {
+    var x = amountString.toDouble()
+    var i = 0
+    var suffix = ""
+    if (x >= 10) {
+        while (x >= 10) {
+            x /= 10
+            i += 1
+        }
+    } else if (x < 1 && x > 0) {
+        while (x < 1) {
+            x *= 10
+            i -= 1
+        }
+    }
+
+    when (i) {
+        in -12..-10 -> {
+            suffix = "p"
+            i -= -12
+        }
+        in -9..-7 -> {
+            suffix = "n"
+            i -= -9
+        }
+        in -6..-4 -> {
+            suffix = "μ"
+            i -= -6
+        }
+        in 3..5 -> {
+            suffix = "k"
+            i -= 3
+        }
+        in 6..8 -> {
+            suffix = "M"
+            i -= 6
+        }
+        in 9..11 -> {
+            suffix = "B"
+            i -= 9
+        }
+        in 12..14 -> {
+            suffix = "T"
+            i -= 12
+        }
+        in 15..17 -> {
+            suffix = "P"
+            i -= 15
+        }
+        else -> {
+        }
+    }
+    x *= 10.0.pow(i.toDouble())
+    val f = DecimalFormat("#.##")
+    return f.format(x) + suffix
 }

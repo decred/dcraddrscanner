@@ -6,7 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import kotlinx.coroutines.CoroutineScope
 
-@Database(entities = [Address::class], version = 1)
+@Database(entities = [Address::class], version = 1, exportSchema = false)
 abstract class MyDatabase : RoomDatabase() {
     abstract fun addrDao(): AddressDao
     companion object {

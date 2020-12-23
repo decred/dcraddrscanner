@@ -1,7 +1,10 @@
 package com.joegruff.decredaddressscanner.types
 
+import android.content.Context
+
 interface AsyncObserver {
-    fun processFinished(output: String)
+    fun processFinished(addr: Address, ctx: Context)
     fun processBegan()
-    fun balanceSwirlNotNull() = false
+    fun processError(str: String)
+    fun balanceSwirlIsShown() = true
 }

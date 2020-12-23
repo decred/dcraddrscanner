@@ -1,6 +1,6 @@
 package com.joegruff.decredaddressscanner.types
 
-import android.util.Log
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -17,56 +17,21 @@ import java.net.UnknownHostException
 const val NO_CONNECTION = "no_connection"
 
 class GetInfoFromWeb(
+    // The delegate is always an Address.
     private val delegate: AsyncObserver,
-    private val url: String,
     private val addr: String,
-    private val newAddress: Boolean = false
+    private val ctx: Context,
 ) : ViewModel() {
     // Get data about address.
-    private fun doInBackground(): String {
-        var value = ""
-        if (newAddress) {
-            try {
-                val url = URL(url + "address/" + addr)
-                val urlConnection = url.openConnection()
-                urlConnection.connectTimeout = 5000
-                val bufferedReader =
-                    BufferedReader(InputStreamReader(urlConnection.getInputStream()))
-                val line = bufferedReader.use { it.readText() }
-                bufferedReader.close()
-                if (line == "Unprocessable Entity")
-                    return ""
-            } catch (e: Exception) {
-                when (e) {
-                    is ConnectException, is UnknownHostException, is SocketTimeoutException ->
-                        value = NO_CONNECTION
-                    else -> {
-                        e.printStackTrace()
-                    }
-                }
-                return value
-            }
-        }
-        try {
-            val url = URL(url + "address/" + addr + "/totals")
-            val urlConnection = url.openConnection()
-            urlConnection.connectTimeout = 5000
-            val bufferedReader = BufferedReader(InputStreamReader(urlConnection.getInputStream()))
-            val line = bufferedReader.use { it.readText() }
-            bufferedReader.close()
-            return line
-
-        } catch (e: Exception) {
-            when (e) {
-                is ConnectException, is UnknownHostException, is SocketTimeoutException ->
-                    value = NO_CONNECTION
-                else -> {
-                    e.printStackTrace()
-                }
-            }
-            return value
-        }
-
+    private fun doInBackground(): Address {
+        val urlStr = addrBook(ctx).url()
+        val url = URL(urlStr + "address/" + addr + "/totals")
+        val urlConnection = url.openConnection()
+        urlConnection.connectTimeout = 5000
+        val bufferedReader = BufferedReader(InputStreamReader(urlConnection.getInputStream()))
+        val line = bufferedReader.use { it.readText() }
+        bufferedReader.close()
+        return addrFromWebJSON(line)
     }
 
     fun execute() {
@@ -75,13 +40,17 @@ class GetInfoFromWeb(
                 try {
                     delegate.processBegan()
                     val result = doInBackground()
-                    delegate.processFinished(result)
-                    Log.d("loggering", "finished in get from web")
+                    delegate.processFinished(result, ctx)
                 } catch (e: Exception) {
-                    e.printStackTrace()
+                    when (e) {
+                        is ConnectException, is UnknownHostException, is SocketTimeoutException ->
+                            delegate.processError(NO_CONNECTION)
+                        else -> {
+                            delegate.processError(e.message ?: "unspecified error")
+                        }
+                    }
                 }
             }
         }
     }
-
 }

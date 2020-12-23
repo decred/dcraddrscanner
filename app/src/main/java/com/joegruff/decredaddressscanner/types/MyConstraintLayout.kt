@@ -2,15 +2,12 @@ package com.joegruff.decredaddressscanner.types
 
 import android.content.Context
 import android.util.AttributeSet
-import android.util.Log
 import android.view.View
 import android.widget.ProgressBar
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.core.app.ActivityCompat
 import com.joegruff.decredaddressscanner.R
-import org.json.JSONObject
-import org.json.JSONTokener
 import java.text.DecimalFormat
 
 class MyConstraintLayout : RelativeLayout, AsyncObserver {
@@ -33,24 +30,14 @@ class MyConstraintLayout : RelativeLayout, AsyncObserver {
         handler.postDelayed({ swirl.visibility = View.INVISIBLE }, 3000)
     }
 
-    override fun processFinished(output: String) {
+    override fun processFinished(addr: Address, ctx: Context) {
         val handler = android.os.Handler(context.mainLooper)
         val swirl = findViewById<ProgressBar>(R.id.balance_swirl_progress_bar)
         handler.post { swirl.visibility = View.INVISIBLE }
-        if (output != "") {
-            val token = JSONTokener(output).nextValue()
-            if (token is JSONObject) {
-                val amountString = token.getString(AMOUNT)
-                val oldBalance = token.getString(AMOUNT_OLD)
-                val address = token.getString(ADDRESS)
-                if (address != myAddress) {
-                    Log.d("myConstraint ", "wrong address")
-                    return
-                }
-                setAmounts(amountString, oldBalance)
-            }
-        }
+        setAmounts(addr.amount.toString(), addr.amountOld.toString())
     }
+
+    override fun processError(str: String) {}
 
     fun setAmounts(balance: String, oldBalance: String) {
         val difference = balance.toDouble() - oldBalance.toDouble()
@@ -80,6 +67,8 @@ class MyConstraintLayout : RelativeLayout, AsyncObserver {
         return f.format(amountString.toDouble()).toString()
     }
 
-    private val swirlLayout = findViewById<MyConstraintLayout>(R.id.balance_swirl_layout)
-    override fun balanceSwirlNotNull() = swirlLayout.isShown
+    override fun balanceSwirlIsShown(): Boolean {
+        val swirlLayout = findViewById<MyConstraintLayout>(R.id.balance_swirl_layout)
+        return swirlLayout.isShown
+    }
 }

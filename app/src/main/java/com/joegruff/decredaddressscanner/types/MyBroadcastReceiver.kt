@@ -8,20 +8,12 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.joegruff.decredaddressscanner.R
-import com.joegruff.decredaddressscanner.activities.AddrBook
 import com.joegruff.decredaddressscanner.activities.MainActivity
 import com.joegruff.decredaddressscanner.activities.ViewAddressActivity
 import com.joegruff.decredaddressscanner.viewfragments.ViewAddressFragment
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.async
-import org.json.JSONObject
-import org.json.JSONTokener
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -38,7 +30,6 @@ fun setRepeatingAlarm(ctx: Context, startInterval: Long) {
         AlarmManager.INTERVAL_HALF_HOUR,
         alarmIntent
     )
-
 }
 
 const val CHANNEL_ID = "com.joegruff.decredaddressscanner.notification_channel"
@@ -46,12 +37,9 @@ const val NOTIFICATION_ID = 1337
 
 class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
     private val changedAddressObjects = ArrayList<Address>()
-    private var numStarredAddresses = 0L
-    private lateinit var db: MyDatabase
 
     override fun onReceive(context: Context?, intent: Intent?) {
         if (context != null) {
-            Log.d("broadcast receiver", "intent is: " + intent?.action)
             if (intent?.action == "android.intent.action.BOOT_COMPLETED") {
                 setRepeatingAlarm(context, 1000 * 60)
                 return
@@ -60,10 +48,11 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
 
 
             // Check for starred addresses and whether the current address is being displayed on screen.
-            for (starredAddress in AddrBook.addresses.filter { it.isBeingWatched }
-                .filter { !balanceSwirlNotNull() }) {
+            var numStarredAddresses = 0L
+            for (starredAddress in addrBook(context).addresses.filter { it.isBeingWatched }
+                .filter { !it.balanceSwirlIsShown() }) {
                 starredAddress.delegates[1] = this
-                starredAddress.update(false)
+                starredAddress.update(context)
                 numStarredAddresses += 1
             }
 
@@ -79,13 +68,12 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
                         return@postDelayed
                     }
                     size < 2 -> {
-                        val token = changedAddressObjects[0]
-                        var title = token.title
-                        val address = token.address
+                        val addr = changedAddressObjects[0]
+                        var title = addr.title
                         if (title == "")
-                            title = address
-                        val amountString = token.amount.toString()
-                        val oldBalance = token.amountOld.toString()
+                            title = addr.address
+                        val amountString = addr.amount.toString()
+                        val oldBalance = addr.amountOld.toString()
                         val formattedAmountString = setAmounts(amountString, oldBalance)
                         message = context.getString(
                             R.string.changed_amounts_one,
@@ -95,7 +83,7 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
                         val myNotificationIntent = Intent(context, ViewAddressActivity::class.java)
                         myNotificationIntent.putExtra(
                             ViewAddressFragment.INTENT_ADDRESS_DATA,
-                            address
+                            addr.address
                         )
                         myNotificationIntent.flags = Intent.FLAG_ACTIVITY_MULTIPLE_TASK
                         myPendingIntent = TaskStackBuilder.create(context).run {
@@ -123,62 +111,43 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
                 val notificationManager = NotificationManagerCompat.from(context)
                 notificationManager.notify(NOTIFICATION_ID, mBuilder.build())
 
-            }, (1000 + 4500 * numStarredAddresses))
+            }, (4500 + 1000 * numStarredAddresses))
 
         }
     }
 
     private fun createNotificationChannel(ctx: Context) {
-        // Create the NotificationChannel, but only on API 26+ because
-        // the NotificationChannel class is new and not in the support library
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name = ctx.getString(R.string.channel_name)
             val description = ctx.getString(R.string.channel_description)
             val importance = NotificationManager.IMPORTANCE_DEFAULT
             val channel = NotificationChannel(CHANNEL_ID, name, importance)
             channel.description = description
-            // Register the channel with the system; you can't change the importance
-            // or other notification behaviors after this
             val notificationManager = ctx.getSystemService(NotificationManager::class.java)
             notificationManager.createNotificationChannel(channel)
         }
     }
 
-
     private fun setAmounts(balance: String, oldBalance: String): String {
         val difference = balance.toDouble() - oldBalance.toDouble()
         return when {
             difference > 0.0 -> {
-                "+" + amountFromString(difference.toString())
+                "+" + abbreviatedAmountFromString(difference.toString())
             }
             difference < 0.0 -> {
-                amountFromString(difference.toString())
+                abbreviatedAmountFromString(difference.toString())
             }
             else -> "0"
         }
     }
 
-    private fun amountFromString(amountString: String): String {
-        return abbreviatedAmountFromString(amountString)
-    }
+    override fun processBegan() {}
 
-    override fun processBegan() {
-        return
-    }
+    override fun processError(str: String) {}
 
-    override fun processFinished(output: String) {
+    override fun processFinished(addr: Address, ctx: Context) {
         // Catch all changed starred addresses.
-        if (output != "" && output != NO_CONNECTION) {
-            val token = JSONTokener(output).nextValue()
-            if (token is JSONObject) {
-                val address = token.getString(ADDRESS)
-                val addressObject = AddrBook.getAddress(address)
-                val amount = addressObject.amount
-                val oldBalance = addressObject.amountOld
-                val timestamp = addressObject.timestampChange
-                if (amount != oldBalance && Date().time - timestamp < 1000 * 10)
-                    changedAddressObjects.add(addressObject)
-            }
-        }
+        if (addr.amount != addr.amountOld && Date().time - addr.timestampChange < 1000 * 10)
+            changedAddressObjects.add(addr)
     }
 }

@@ -28,10 +28,8 @@ import com.google.android.material.snackbar.Snackbar
 import com.joegruff.decredaddressscanner.R
 import com.joegruff.decredaddressscanner.types.*
 import com.joegruff.decredaddressscanner.viewfragments.ViewAddressFragment
-import kotlinx.coroutines.*
 
 var RC_BARCODE_CAPTURE = 9001
-lateinit var AddrBook: AddressBook
 
 class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
@@ -42,21 +40,17 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val applicationScope = CoroutineScope(SupervisorJob())
-        val db = MyDatabase.getDatabase(this, applicationScope)
-        AddrBook = AddressBook(db.addrDao())
         setContentView(R.layout.activity_main)
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
         this.menuItems = MenuItems(this)
         val ptr = findViewById<SwipeRefreshLayout>(R.id.pullToRefresh_layout)
         ptr.setOnRefreshListener(this)
+
         setRepeatingAlarm(this, AlarmManager.INTERVAL_HALF_HOUR)
-
-
         viewManager = LinearLayoutManager(this)
 
-        viewAdapter = MyAdapter(this, AddrBook.addresses)
+        viewAdapter = MyAdapter(this, addrBook(this).addresses)
 
         recyclerView = findViewById<RecyclerView>(R.id.recycle_view).apply {
             setHasFixedSize(true)
@@ -121,7 +115,7 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
             val ptr = findViewById<SwipeRefreshLayout>(R.id.pullToRefresh_layout)
             ptr.isRefreshing = false
         }, 1000)
-        AddrBook.updateAddresses(true)
+        addrBook(this).updateBalances(true)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -140,7 +134,7 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
     }
 
     override fun onResume() {
-        AddrBook.updateAddresses()
+        addrBook(this).updateBalances()
         viewAdapter.haveTouchedAnAddress = false
         viewAdapter.notifyDataSetChanged()
         super.onResume()
@@ -157,10 +151,9 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
     }
 
 
-    class MyAdapter(private val ctx: Context, var myDataSet: ArrayList<Address>) :
+    class MyAdapter(private val ctx: Context, private var myDataSet: ArrayList<Address>) :
         RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
 
-        private val addressesToDelete = ArrayList<Address>()
         var haveTouchedAnAddress = false
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
@@ -201,19 +194,17 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
 
         fun onItemRemove(viewHolder: RecyclerView.ViewHolder, recyclerView: RecyclerView) {
             val adapterPosition = viewHolder.adapterPosition
-            val addressObject = myDataSet.get(adapterPosition)
+            val addr = myDataSet[adapterPosition]
             val snackbar = Snackbar
                 .make(recyclerView, R.string.main_view_deleted_address, Snackbar.LENGTH_LONG)
                 .setAction(R.string.main_view_undo_delete) {
-                    myDataSet.add(adapterPosition, addressObject)
+                    addrBook(this.ctx).insert(addr, adapterPosition)
                     notifyItemInserted(adapterPosition)
                     recyclerView.scrollToPosition(adapterPosition)
-                    addressesToDelete.remove(addressObject)
                 }
             snackbar.show()
-            myDataSet.removeAt(adapterPosition)
+            addrBook(this.ctx).delete(addr)
             notifyItemRemoved(adapterPosition)
-            addressesToDelete.add(addressObject)
         }
 
 
@@ -252,7 +243,6 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
 
     abstract class SwipeToDeleteCallback(context: Context) :
         ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
-
         private val deleteIcon = getDrawable(context, R.drawable.ic_delete_white_24)!!
         private val intrinsicWidth = deleteIcon.intrinsicWidth
         private val intrinsicHeight = deleteIcon.intrinsicHeight
@@ -275,8 +265,6 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
             val itemHeight = itemView.bottom - itemView.top
             val isCanceled = dX == 0f && !isCurrentlyActive
 
-
-
             if (isCanceled) {
                 clearCanvas(
                     c,
@@ -296,7 +284,6 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
                 )
                 return
             }
-
 
             // Draw the red delete background
             background.color = backgroundColor
