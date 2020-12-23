@@ -49,7 +49,7 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
 
             // Check for starred addresses and whether the current address is being displayed on screen.
             var numStarredAddresses = 0L
-            for (starredAddress in addrBook(context).addresses.filter { it.isBeingWatched }
+            for (starredAddress in AddressBook.get(context).addresses.filter { it.isBeingWatched }
                 .filter { !it.balanceSwirlIsShown() }) {
                 starredAddress.delegates[1] = this
                 starredAddress.update(context)

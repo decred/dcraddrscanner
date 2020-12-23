@@ -50,7 +50,7 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
         setRepeatingAlarm(this, AlarmManager.INTERVAL_HALF_HOUR)
         viewManager = LinearLayoutManager(this)
 
-        viewAdapter = MyAdapter(this, addrBook(this).addresses)
+        viewAdapter = MyAdapter(this, AddressBook.get(this).addresses)
 
         recyclerView = findViewById<RecyclerView>(R.id.recycle_view).apply {
             setHasFixedSize(true)
@@ -115,7 +115,7 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
             val ptr = findViewById<SwipeRefreshLayout>(R.id.pullToRefresh_layout)
             ptr.isRefreshing = false
         }, 1000)
-        addrBook(this).updateBalances(true)
+        AddressBook.get(this).updateBalances(true)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -134,7 +134,7 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
     }
 
     override fun onResume() {
-        addrBook(this).updateBalances()
+        AddressBook.get(this).updateBalances()
         viewAdapter.haveTouchedAnAddress = false
         viewAdapter.notifyDataSetChanged()
         super.onResume()
@@ -198,12 +198,12 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
             val snackbar = Snackbar
                 .make(recyclerView, R.string.main_view_deleted_address, Snackbar.LENGTH_LONG)
                 .setAction(R.string.main_view_undo_delete) {
-                    addrBook(this.ctx).insert(addr, adapterPosition)
+                    AddressBook.get(this.ctx).insert(addr, adapterPosition)
                     notifyItemInserted(adapterPosition)
                     recyclerView.scrollToPosition(adapterPosition)
                 }
             snackbar.show()
-            addrBook(this.ctx).delete(addr)
+            AddressBook.get(this.ctx).delete(addr)
             notifyItemRemoved(adapterPosition)
         }
 

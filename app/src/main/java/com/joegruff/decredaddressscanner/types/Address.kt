@@ -84,20 +84,20 @@ data class Address(
                 timestampCheck = addr.timestampCheck
                 // Because we were able to fetch it, it must be valid.
                 isValid = true
-                addrBook(ctx).insert(this)
+                AddressBook.get(ctx).insert(this)
             }
             amount != addr.amount -> {
                 // Record change.
                 amountOld = amount
                 amount = addr.amount
                 timestampChange = timestampCheck
-                addrBook(ctx).updateAddress(this)
+                AddressBook.get(ctx).updateAddress(this)
             }
             elapsedHrsSinceChange > 24 -> {
                 // Forget older changes.
                 timestampChange = timestampCheck
                 amountOld = amount
-                addrBook(ctx).updateAddress(this)
+                AddressBook.get(ctx).updateAddress(this)
             }
         }
         isUpdating = false
@@ -121,9 +121,6 @@ fun addrFromWebJSON(str: String): Address {
         val amountDoubleFromString = amountString.toDouble()
         a.amount = amountDoubleFromString
         a.amountOld = amountDoubleFromString
-        val t = Date().time.toDouble()
-        a.timestampCheck = t
-        a.timestampChange = t
         return a
     }
     throw Exception("unknown JSON")

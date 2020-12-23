@@ -24,7 +24,7 @@ class GetInfoFromWeb(
 ) : ViewModel() {
     // Get data about address.
     private fun doInBackground(): Address {
-        val urlStr = addrBook(ctx).url()
+        val urlStr = UserSettings.get(ctx).settings.url
         val url = URL(urlStr + "address/" + addr + "/totals")
         val urlConnection = url.openConnection()
         urlConnection.connectTimeout = 5000
@@ -47,6 +47,7 @@ class GetInfoFromWeb(
                             delegate.processError(NO_CONNECTION)
                         else -> {
                             delegate.processError(e.message ?: "unspecified error")
+                            e.printStackTrace()
                         }
                     }
                 }

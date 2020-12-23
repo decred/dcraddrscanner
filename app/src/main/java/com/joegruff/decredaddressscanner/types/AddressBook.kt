@@ -1,52 +1,38 @@
 package com.joegruff.decredaddressscanner.types
 
 import android.content.Context
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.runBlocking
 
-
-const val mainNet = "https://explorer.dcrdata.org/api/"
-const val testNet = "https://testnet.dcrdata.org/api/"
-
-private var addrBook: AddressBook? = null
-
-fun addrBook(ctx: Context) : AddressBook {
-    if (addrBook != null) return addrBook as AddressBook
-    val applicationScope = CoroutineScope(SupervisorJob())
-    val db = MyDatabase.getDatabase(ctx, applicationScope)
-    addrBook = AddressBook(db.addrDao(), ctx)
-    return addrBook!!
-}
 
 class AddressBook(private val addrDao: AddressDao, private val ctx: Context) {
+    companion object {
+        @Volatile
+        private var addrBook: AddressBook? = null
+        fun get(
+            ctx: Context,
+        ): AddressBook {
+            if (addrBook != null) return addrBook as AddressBook
+            val db = MyDatabase.get(ctx)
+            addrBook = AddressBook(db.addrDao(), ctx)
+            return addrBook!!
+        }
+    }
+
     val addresses = addresses()
-    var url = mainNet
 
-    fun setURL(url: String) {
-        this.url = url
-    }
-
-    fun url(): String {
-        return this.url
-    }
 
     // TODO: It would probably be better to make everything asynchronous and use the db more
     //  cleverly, but for now just get the values once on startup and save as we go.
     private fun addresses(): ArrayList<Address> {
-        val flowAddrs: Flow<List<Address>> = addrDao.getAll()
         val addrs = ArrayList<Address>()
-        GlobalScope.launch {
-            flowAddrs.collect {
-                addrs.addAll(it)
-                this.cancel()
-            }
+        runBlocking {
+                addrs.addAll(addrDao.getAll())
         }
         return addrs
     }
 
     fun updateBalances(force: Boolean = false) {
-        GlobalScope.launch {
+        runBlocking {
             addresses.forEach {
                 if (force) it.update(ctx) else it.updateIfFiveMinPast(ctx)
                 addrDao.update(it)
@@ -55,7 +41,7 @@ class AddressBook(private val addrDao: AddressDao, private val ctx: Context) {
     }
 
     fun updateAddress(addr: Address, force: Boolean = false) {
-        GlobalScope.launch {
+        runBlocking {
             if (force) addr.update(ctx) else addr.updateIfFiveMinPast(ctx)
             addrDao.update(addr)
         }
@@ -63,14 +49,14 @@ class AddressBook(private val addrDao: AddressDao, private val ctx: Context) {
 
     fun insert(addr: Address, idx: Int = addresses.size) {
         addresses.add(idx, addr)
-        GlobalScope.launch {
+        runBlocking {
             addrDao.insert(addr)
         }
     }
 
     fun delete(addr: Address) {
         addresses.remove(addr)
-        GlobalScope.launch {
+        runBlocking {
             addrDao.delete(addr)
         }
     }

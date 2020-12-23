@@ -45,7 +45,7 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
     ): View? {
         val addrStr = arguments?.getSerializable(INTENT_ADDRESS_DATA) as String
         val v = inflater.inflate(R.layout.view_address_view, container, false)
-        address = addrBook(context!!).getAddress(addrStr)
+        address = AddressBook.get(context!!).getAddress(addrStr)
         return v
     }
 
@@ -70,7 +70,7 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
     }
 
     override fun onPause() {
-        addrBook(context!!).updateAddress(address, false)
+        AddressBook.get(context!!).updateAddress(address, false)
         super.onPause()
     }
 
