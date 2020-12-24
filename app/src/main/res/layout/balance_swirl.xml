@@ -23,6 +23,7 @@
         android:textAlignment="center"
         android:textSize="18sp"
         app:layout_constraintTop_toTopOf="parent"
+        android:includeFontPadding="false"
         android:gravity="center_horizontal" />
 
     <TextView
@@ -32,6 +33,7 @@
         android:textAlignment="center"
         android:textSize="12sp"
         android:layout_below="@id/balance_swirl_balance"
+        android:includeFontPadding="false"
         android:gravity="center_horizontal" />
 
 </com.joegruff.decredaddressscanner.types.MyConstraintLayout>

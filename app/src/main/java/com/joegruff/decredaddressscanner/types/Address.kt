@@ -21,6 +21,8 @@ const val AMOUNT_OLD = "amount_old"
 const val BEING_WATCHED = "being_watched"
 const val VALID = "valid"
 
+// NOTE: Not sure if we need to worry about concurrency with separate fields. Only isUpdating is
+// specifically locked. Watch for problems.
 @Entity(tableName = ADDRESS_TABLE)
 data class Address(
     @PrimaryKey val address: String,
@@ -34,13 +36,14 @@ data class Address(
     @ColumnInfo(name = VALID) var isValid: Boolean = false,
 ) : AsyncObserver {
     @Ignore
+    @Volatile
     private var isUpdating = false
+
     // Fist delegate is ui and second is for alarmManager
     @Ignore
     var delegates = mutableListOf<AsyncObserver?>(null, null)
 
     override fun processBegan() {
-        isUpdating = true
         try {
             delegates.forEach {
                 it?.processBegan()
@@ -54,13 +57,18 @@ data class Address(
         return delegates[0]?.balanceSwirlIsShown() ?: false
     }
 
-    override fun processError(str: String) {}
+    override fun processError(str: String) {
+        synchronized(isUpdating) {
+            isUpdating = false
+        }
+    }
 
     fun update(ctx: Context) {
-        if (!isUpdating) {
+        synchronized(isUpdating) {
+            if (isUpdating) return
             isUpdating = true
-            GetInfoFromWeb(this, address, ctx).execute()
         }
+        GetInfoFromWeb(this, address, ctx).execute()
     }
 
     fun updateIfFiveMinPast(ctx: Context) {
@@ -100,7 +108,9 @@ data class Address(
                 AddressBook.get(ctx).updateAddress(this)
             }
         }
-        isUpdating = false
+        synchronized(isUpdating) {
+            isUpdating = false
+        }
         delegates.forEach {
             it?.processFinished(this, ctx)
         }

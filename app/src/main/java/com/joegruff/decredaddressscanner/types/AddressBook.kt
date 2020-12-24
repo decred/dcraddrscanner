@@ -20,8 +20,9 @@ class AddressBook(private val addrDao: AddressDao, private val ctx: Context) {
         }
     }
 
+    // NOTE: Not volatile? Various threads may be accessing this. Not sure how concurrency is
+    // handled here. Watch for problems.
     val addresses = addresses()
-
 
     // TODO: It would probably be better to make everything asynchronous and use the db more
     //  cleverly, but for now just get the values once on startup and save as we go.

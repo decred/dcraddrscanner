@@ -23,21 +23,46 @@ class MyConstraintLayout : RelativeLayout, AsyncObserver {
     var abbreviatedValues = false
     var myAddress = ""
 
+    @Volatile
+    var processing = false
+
     override fun processBegan() {
+        synchronized(processing) {
+            if (processing) return
+            processing = true
+        }
         val handler = android.os.Handler(context.mainLooper)
         val swirl = findViewById<ProgressBar>(R.id.balance_swirl_progress_bar)
         handler.post { swirl.visibility = View.VISIBLE }
-        handler.postDelayed({ swirl.visibility = View.INVISIBLE }, 3000)
+        // If for some reason processFinished/Error is not called. Should not happen however.
+        handler.postDelayed({
+            synchronized(processing) {
+                swirl.visibility = View.INVISIBLE
+                processing = false
+            }
+        }, 10000)
     }
 
     override fun processFinished(addr: Address, ctx: Context) {
+        synchronized(processing) {
+            if (!processing) return
+            processing = false
+        }
         val handler = android.os.Handler(context.mainLooper)
         val swirl = findViewById<ProgressBar>(R.id.balance_swirl_progress_bar)
         handler.post { swirl.visibility = View.INVISIBLE }
         setAmounts(addr.amount.toString(), addr.amountOld.toString())
     }
 
-    override fun processError(str: String) {}
+    override fun processError(str: String) {
+        synchronized(processing) {
+            if (!processing) return
+            processing = false
+        }
+        val handler = android.os.Handler(context.mainLooper)
+        val swirl = findViewById<ProgressBar>(R.id.balance_swirl_progress_bar)
+        handler.post { swirl.visibility = View.INVISIBLE }
+    }
 
     fun setAmounts(balance: String, oldBalance: String) {
         val difference = balance.toDouble() - oldBalance.toDouble()
