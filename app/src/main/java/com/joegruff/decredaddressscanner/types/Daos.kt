@@ -1,7 +1,6 @@
 package com.joegruff.decredaddressscanner.types
 
 import androidx.room.*
-import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface AddressDao {

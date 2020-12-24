@@ -140,13 +140,18 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
         super.onResume()
     }
 
+    override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
+        menuItems.prepareOptionsMenu(menu, this)
+        return super.onPrepareOptionsMenu(menu)
+    }
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
         return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (this.menuItems.doIt(item.itemId)) return true
+        if (this.menuItems.optionsItemSelected(item.itemId, this)) return true
         return super.onOptionsItemSelected(item)
     }
 
