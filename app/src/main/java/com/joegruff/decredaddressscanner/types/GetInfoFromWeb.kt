@@ -2,10 +2,7 @@ package com.joegruff.decredaddressscanner.types
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.ConnectException
@@ -24,7 +21,7 @@ class GetInfoFromWeb(
 ) : ViewModel() {
     // Get data about address.
     private fun doInBackground(): Address {
-        val urlStr = UserSettings.get(ctx).settings.url
+        val urlStr = UserSettings.get(ctx).url()
         val url = URL(urlStr + "address/" + addr + "/totals")
         val urlConnection = url.openConnection()
         urlConnection.connectTimeout = 5000
@@ -33,22 +30,19 @@ class GetInfoFromWeb(
         bufferedReader.close()
         return addrFromWebJSON(line)
     }
-
     fun execute() {
-        CoroutineScope(Dispatchers.Main).launch {
-            withContext(Dispatchers.Default) {
-                try {
-                    delegate.processBegan()
-                    val result = doInBackground()
-                    delegate.processFinished(result, ctx)
-                } catch (e: Exception) {
-                    when (e) {
-                        is ConnectException, is UnknownHostException, is SocketTimeoutException ->
-                            delegate.processError(NO_CONNECTION)
-                        else -> {
-                            delegate.processError(e.message ?: "unspecified error")
-                            e.printStackTrace()
-                        }
+        GlobalScope.launch {
+            try {
+                delegate.processBegan()
+                val result = doInBackground()
+                delegate.processFinished(result, ctx)
+            } catch (e: Exception) {
+                when (e) {
+                    is ConnectException, is UnknownHostException, is SocketTimeoutException ->
+                        delegate.processError(NO_CONNECTION)
+                    else -> {
+                        delegate.processError(e.message ?: "unspecified error")
+                        e.printStackTrace()
                     }
                 }
             }

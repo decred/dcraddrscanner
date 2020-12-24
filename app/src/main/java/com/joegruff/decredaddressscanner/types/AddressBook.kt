@@ -11,10 +11,12 @@ class AddressBook(private val addrDao: AddressDao, private val ctx: Context) {
         fun get(
             ctx: Context,
         ): AddressBook {
-            if (addrBook != null) return addrBook as AddressBook
-            val db = MyDatabase.get(ctx)
-            addrBook = AddressBook(db.addrDao(), ctx)
-            return addrBook!!
+            return addrBook ?: synchronized(this) {
+                val db = MyDatabase.get(ctx)
+                val instance = AddressBook(db.addrDao(), ctx)
+                addrBook = instance
+                instance
+            }
         }
     }
 

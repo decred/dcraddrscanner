@@ -4,57 +4,60 @@ import android.content.Context
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 
 const val SETTINGS_TABLE = "settings_table"
 const val URL_FIELD = "url"
 const val DEFAULT_USER = "default"
 
-const val mainNet = "https://explorer.dcrdata.org/api/"
-const val testNet = "https://testnet.dcrdata.org/api/"
+const val dcrdataMainNet = "https://explorer.dcrdata.org/api/"
+const val dcrdataTestNet = "https://testnet.dcrdata.org/api/"
 
 @Entity(tableName = SETTINGS_TABLE)
 data class Settings(
     @PrimaryKey val user: String,
-    @ColumnInfo(name = URL_FIELD) var url: String = mainNet,
+    @ColumnInfo(name = URL_FIELD) var url: String = dcrdataMainNet,
 )
 
-class UserSettings(private val settingsDao: SettingsDao, private val ctx: Context) {
+class UserSettings(private val settingsDao: SettingsDao) {
     companion object {
         @Volatile
         private var settings: UserSettings? = null
         fun get(
             ctx: Context,
         ): UserSettings {
-            if (settings != null) return settings as UserSettings
-            val db = MyDatabase.get(ctx)
-            settings = UserSettings(db.settingsDao(), ctx)
-            return settings!!
-        }
-    }
-
-    val settings = settings()
-
-    private fun settings(): Settings {
-        var setts: Settings? = null
-        runBlocking {
-            setts = settingsDao.get(DEFAULT_USER)
-            if (setts == null) {
-                setts = Settings(DEFAULT_USER)
-                settingsDao.insert(setts!!)
+            return settings ?: synchronized(this) {
+                val db = MyDatabase.get(ctx)
+                val instance = UserSettings(db.settingsDao())
+                settings = instance
+                instance
             }
         }
-        return setts as Settings
     }
 
-    fun updateSettings(settings: Settings) {
+    private suspend fun settings(): Settings {
+        var setts = settingsDao.get(DEFAULT_USER)
+        if (setts != null) return setts
+        setts = Settings(DEFAULT_USER)
+        settingsDao.insert(setts)
+        return setts
+    }
+
+    fun url(): String {
+        var url: String
         runBlocking {
-            settingsDao.update(settings)
+            url = settings().url
+        }
+        return url
+    }
+
+    fun setUrl(str: String) {
+        suspend fun set(setts: Settings) {
+            setts.url = str
+            settingsDao.update(setts)
+        }
+        GlobalScope.launch {
+            set(settings())
         }
     }
-
-    suspend fun insert(settings: Settings) {
-        settingsDao.insert(settings)
-    }
-
 }

@@ -13,12 +13,12 @@ abstract class MyDatabase : RoomDatabase() {
     abstract fun settingsDao(): SettingsDao
     companion object {
         @Volatile
-        private var INSTANCE: MyDatabase? = null
+        private var mydb: MyDatabase? = null
 
         fun get( ctx: Context): MyDatabase {
             // if the INSTANCE is not null, then return it,
             // if it is, then create the database
-            return INSTANCE ?: synchronized(this) {
+            return mydb ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
                     ctx.applicationContext,
                     MyDatabase::class.java,
@@ -27,7 +27,7 @@ abstract class MyDatabase : RoomDatabase() {
                     // Wipes and rebuilds instead of migrating if no Migration object.
                     .fallbackToDestructiveMigration()
                     .build()
-                INSTANCE = instance
+                mydb = instance
                 // return instance
                 instance
             }
