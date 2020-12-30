@@ -4,7 +4,7 @@ import androidx.room.*
 
 @Dao
 interface AddressDao {
-    @Query("SELECT * FROM address_table")
+    @Query("SELECT * FROM address_table ORDER BY timestamp_create ASC")
     suspend fun getAll(): List<Address>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)

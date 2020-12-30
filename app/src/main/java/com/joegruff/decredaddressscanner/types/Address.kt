@@ -17,6 +17,7 @@ const val ADDRESS = "address"
 const val TITLE = "title"
 const val TIMESTAMP_CHANGE = "timestamp_change"
 const val TIMESTAMP_CHECK = "timestamp_check"
+const val TIMESTAMP_CREATE = "timestamp_create"
 const val AMOUNT_OLD = "amount_old"
 const val BEING_WATCHED = "being_watched"
 const val VALID = "valid"
@@ -32,6 +33,7 @@ data class Address(
     @ColumnInfo(name = TITLE) var title: String = "",
     @ColumnInfo(name = TIMESTAMP_CHANGE) var timestampChange: Double = Date().time.toDouble(),
     @ColumnInfo(name = TIMESTAMP_CHECK) var timestampCheck: Double = timestampChange,
+    @ColumnInfo(name = TIMESTAMP_CREATE) var timestampCreate: Double = timestampChange,
     @ColumnInfo(name = BEING_WATCHED) var isBeingWatched: Boolean = false,
     @ColumnInfo(name = VALID) var isValid: Boolean = false,
 ) : AsyncObserver {
