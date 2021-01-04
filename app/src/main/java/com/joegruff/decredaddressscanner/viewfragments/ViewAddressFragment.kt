@@ -25,9 +25,11 @@ import com.joegruff.decredaddressscanner.types.*
 class ViewAddressFragment : Fragment(), AsyncObserver {
     companion object {
         const val INTENT_ADDRESS_DATA = "joe.decred.address.scanner.address"
-        fun new(address: String): ViewAddressFragment {
+        const val INTENT_TICKET_TXID_DATA = "joe.decred.address.scanner.ticket.txid"
+        fun new(address: String, ticketTxid: String = ""): ViewAddressFragment {
             val args = Bundle()
             args.putSerializable(INTENT_ADDRESS_DATA, address)
+            args.putSerializable(INTENT_TICKET_TXID_DATA, ticketTxid)
             val fragment = ViewAddressFragment()
             fragment.arguments = args
             return fragment
@@ -44,8 +46,9 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
         savedInstanceState: Bundle?
     ): View? {
         val addrStr = arguments?.getSerializable(INTENT_ADDRESS_DATA) as String
+        val ticketStr = arguments?.getSerializable(INTENT_TICKET_TXID_DATA) as String
         val v = inflater.inflate(R.layout.view_address_view, container, false)
-        address = AddressBook.get(context!!).getAddress(addrStr)
+        address = AddressBook.get(context!!).getAddress(addrStr, ticketStr)
         return v
     }
 
@@ -92,6 +95,13 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
             }
             addrButton.setText(R.string.view_address_fragment_invalid_address)
         }
+        this.activity!!.runOnUiThread {
+            Toast.makeText(
+                this.activity,
+                str,
+                Toast.LENGTH_SHORT
+            ).show()
+        }
     }
 
     override fun processFinished(addr: Address, ctx: Context) {
@@ -124,6 +134,7 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
             address.amount.toString(),
             address.amountOld.toString()
         )
+        swirlLayout.setTicketStatus(address.ticketStatus)
         swirlLayout.setOnClickListener {
             address.update(context!!)
         }
@@ -219,7 +230,7 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
         return bitmap
     }
 
-    override fun balanceSwirlIsShown():  Boolean {
+    override fun balanceSwirlIsShown(): Boolean {
         return delegate?.balanceSwirlIsShown() ?: false
     }
 

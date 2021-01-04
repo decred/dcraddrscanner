@@ -19,6 +19,8 @@ import com.google.zxing.integration.android.IntentIntegrator
 import com.joegruff.decredaddressscanner.R
 import com.journeyapps.barcodescanner.CaptureActivity
 
+const val INTENT_INPUT_DATA = "joe.decred.address.scanner.input"
+
 class QRFragment : Fragment(), OnRequestPermissionsResultCallback {
     companion object {
         fun new(): QRFragment {
@@ -48,7 +50,7 @@ class QRFragment : Fragment(), OnRequestPermissionsResultCallback {
             val scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent)
             if (scanResult.contents != null) {
                 val address = scanResult.contents
-                intent!!.putExtra(ViewAddressFragment.INTENT_ADDRESS_DATA, address)
+                intent!!.putExtra(INTENT_INPUT_DATA, address)
                 this.activity?.setResult(RESULT_OK, intent)
                 this.activity?.finish()
             } else {

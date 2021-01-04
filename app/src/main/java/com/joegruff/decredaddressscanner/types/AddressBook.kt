@@ -64,13 +64,13 @@ class AddressBook(private val addrDao: AddressDao, private val ctx: Context) {
         }
     }
 
-    fun getAddress(address: String): Address {
+    fun getAddress(address: String, ticketTXID: String = ""): Address {
         var a: Address? = null
         addresses.forEach { addr: Address ->
             if (addr.address == address) a = addr
         }
         if (a != null) return a as Address
-        a = newAddress(address, ctx)
+        a = newAddress(address, ticketTXID, ctx)
         return a!!
     }
 }

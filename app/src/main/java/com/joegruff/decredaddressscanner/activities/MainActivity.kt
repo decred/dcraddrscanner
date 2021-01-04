@@ -27,6 +27,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.snackbar.Snackbar
 import com.joegruff.decredaddressscanner.R
 import com.joegruff.decredaddressscanner.types.*
+import com.joegruff.decredaddressscanner.viewfragments.INTENT_INPUT_DATA
 import com.joegruff.decredaddressscanner.viewfragments.ViewAddressFragment
 
 var RC_BARCODE_CAPTURE = 9001
@@ -89,15 +90,19 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
                 this.startActivityForResult(intent, RC_BARCODE_CAPTURE)
             }
             pasteButton?.setOnClickListener { _ ->
-
                 val clipboard = this.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
                 if (clipboard.primaryClip?.getItemAt(0) != null) {
-
-                    val address = clipboard.primaryClip?.getItemAt(0)?.text.toString()
+                    val input = clipboard.primaryClip?.getItemAt(0)?.text.toString()
                     val intent = Intent(this, ViewAddressActivity::class.java)
-                    intent.putExtra(ViewAddressFragment.INTENT_ADDRESS_DATA, address)
+                    var addrStr = input
+                    var ticketTxid = ""
+                    if (input.length == 64) {
+                        addrStr = ""
+                        ticketTxid = input
+                    }
+                    intent.putExtra(ViewAddressFragment.INTENT_ADDRESS_DATA, addrStr)
+                    intent.putExtra(ViewAddressFragment.INTENT_TICKET_TXID_DATA, ticketTxid)
                     this.startActivity(intent)
-
                 } else
                     Toast.makeText(
                         this,
@@ -122,12 +127,18 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == RC_BARCODE_CAPTURE && resultCode == Activity.RESULT_OK) {
             val intent = Intent(applicationContext, ViewAddressActivity::class.java)
-            var address = data?.getStringExtra(ViewAddressFragment.INTENT_ADDRESS_DATA) ?: ""
-            val splitAddress = address.split(":")
-            address = splitAddress[splitAddress.lastIndex]
-            address = address.trim()
-
-            intent.putExtra(ViewAddressFragment.INTENT_ADDRESS_DATA, address)
+            var input = data?.getStringExtra(INTENT_INPUT_DATA) ?: ""
+            val splitInput = input.split(":")
+            input = splitInput[splitInput.lastIndex]
+            input = input.trim()
+            var addrStr = input
+            var ticketTxid = ""
+            if (input.length == 64) {
+                addrStr = ""
+                ticketTxid = input
+            }
+            intent.putExtra(ViewAddressFragment.INTENT_ADDRESS_DATA, addrStr)
+            intent.putExtra(ViewAddressFragment.INTENT_TICKET_TXID_DATA, ticketTxid)
             this.startActivity(intent)
         }
 
@@ -176,22 +187,29 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
             myDataSet[position].delegates[0] = holder.delegateHolder
 
             val address = myDataSet[position].address
-            var string = myDataSet[position].title
-            if (string == "") {
-                string = address
+            val ticketTXID = myDataSet[position].ticketTXID
+
+            var title = myDataSet[position].title
+            if (title == "") {
+                title = address
             }
             holder.delegateHolder.myAddress = address
-            holder.textView.text = string
+            holder.textView.text = title
             holder.delegateHolder.abbreviatedValues = true
             holder.delegateHolder.setAmounts(
                 myDataSet[position].amount.toString(),
                 myDataSet[position].amountOld.toString()
             )
+            if (ticketTXID != "") {
+                val ticketStatus = myDataSet[position].ticketStatus
+                holder.delegateHolder.setTicketStatus(ticketStatus)
+            }
             holder.itemView.setOnClickListener {
                 if (!haveTouchedAnAddress) {
                     haveTouchedAnAddress = true
                     val intent = Intent(ctx, ViewAddressActivity::class.java)
                     intent.putExtra(ViewAddressFragment.INTENT_ADDRESS_DATA, address)
+                    intent.putExtra(ViewAddressFragment.INTENT_TICKET_TXID_DATA, ticketTXID)
                     ctx.startActivity(intent)
                 }
             }

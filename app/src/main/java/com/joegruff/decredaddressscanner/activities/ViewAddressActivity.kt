@@ -8,6 +8,7 @@ import com.joegruff.decredaddressscanner.viewfragments.ViewAddressFragment
 class ViewAddressActivity : ReusableFragmentActivity() {
     override fun createFragment(): Fragment {
         val address = intent.getSerializableExtra(ViewAddressFragment.INTENT_ADDRESS_DATA) as String
-        return ViewAddressFragment.new(address)
+        val ticketTXID = intent.getSerializableExtra(ViewAddressFragment.INTENT_TICKET_TXID_DATA) as String
+        return ViewAddressFragment.new(address, ticketTXID)
     }
 }

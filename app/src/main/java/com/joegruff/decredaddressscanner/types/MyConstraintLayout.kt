@@ -52,6 +52,7 @@ class MyConstraintLayout : RelativeLayout, AsyncObserver {
         val swirl = findViewById<ProgressBar>(R.id.balance_swirl_progress_bar)
         handler.post { swirl.visibility = View.INVISIBLE }
         setAmounts(addr.amount.toString(), addr.amountOld.toString())
+        setTicketStatus(addr.ticketStatus)
     }
 
     override fun processError(str: String) {
@@ -82,6 +83,17 @@ class MyConstraintLayout : RelativeLayout, AsyncObserver {
             }
         balanceView.text = amountFromString(balance)
         changeView.text = differenceText
+    }
+
+    fun setTicketStatus(statusStr: String) {
+        val statusView = findViewById<TextView>(R.id.balance_swirl_ticket_status)
+        val colorInt = when (statusStr) {
+            TicketStatus.UNMINED.Name, TicketStatus.IMMATURE.Name, TicketStatus.LIVE.Name -> R.color.Blue
+            TicketStatus.VOTED.Name -> R.color.Green
+            else -> R.color.Red
+        }
+        statusView.setTextColor(ActivityCompat.getColor(this.context, colorInt))
+        statusView.text = statusStr
     }
 
     private fun amountFromString(amountString: String): String {
