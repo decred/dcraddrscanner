@@ -51,7 +51,7 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
             var numStarredAddresses = 0L
             for (starredAddress in AddressBook.get(context).addresses.filter { it.isBeingWatched }
                 .filter { !it.balanceSwirlIsShown() }) {
-                starredAddress.delegates[1] = this
+                starredAddress.delegates.other = this
                 starredAddress.update(context)
                 numStarredAddresses += 1
             }

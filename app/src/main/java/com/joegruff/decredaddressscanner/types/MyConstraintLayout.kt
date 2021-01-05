@@ -87,9 +87,9 @@ class MyConstraintLayout : RelativeLayout, AsyncObserver {
 
     fun setTicketStatus(statusStr: String) {
         val statusView = findViewById<TextView>(R.id.balance_swirl_ticket_status)
-        val colorInt = when (statusStr) {
-            TicketStatus.UNMINED.Name, TicketStatus.IMMATURE.Name, TicketStatus.LIVE.Name -> R.color.Blue
-            TicketStatus.VOTED.Name -> R.color.Green
+        val colorInt = when (ticketStatusFromName(statusStr)) {
+            TicketStatus.UNMINED, TicketStatus.IMMATURE, TicketStatus.LIVE -> R.color.Blue
+            TicketStatus.VOTED, TicketStatus.SPENDABLE, TicketStatus.SPENT -> R.color.Green
             else -> R.color.Red
         }
         statusView.setTextColor(ActivityCompat.getColor(this.context, colorInt))

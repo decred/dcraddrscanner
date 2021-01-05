@@ -20,15 +20,13 @@ const val TIMESTAMP_CHECK = "timestamp_check"
 const val TIMESTAMP_CREATE = "timestamp_create"
 const val AMOUNT_OLD = "amount_old"
 const val IS_BEING_WATCHED = "being_watched"
-const val IS_SSTX_COMMITMENT = "is_sstx_commitment"
 const val TICKET_STATUS = "ticket_status"
 const val TICKET_TXID = "ticket_txid"
 const val TICKET_EXPIRY = "ticket_expiry"
 const val TICKET_MATURITY = "ticket_maturity"
+const val TICKET_SPENDABLE = "ticket_spendable"
 const val NETWORK = "network"
 const val IS_VALID = "valid"
-
-const val sstxCommitmentPrefixTestnet = ""
 
 enum class TicketStatus(
     val Name: String,
@@ -37,18 +35,12 @@ enum class TicketStatus(
     IMMATURE("immature"),
     LIVE("live"),
     VOTED("voted"),
+    SPENDABLE("spendable"),
+    SPENT("spent"),
     EXPIRED("expired"),
     MISSED("missed"),
+    REVOKED("revoked"),
     UNKNOWN("unknown");
-
-    fun done(): Boolean {
-        return when (this) {
-            VOTED -> true
-            EXPIRED -> true
-            MISSED -> true
-            else -> false
-        }
-    }
 }
 
 fun ticketStatusFromName(name: String): TicketStatus {
@@ -58,10 +50,14 @@ fun ticketStatusFromName(name: String): TicketStatus {
         TicketStatus.LIVE.Name -> TicketStatus.LIVE
         TicketStatus.VOTED.Name -> TicketStatus.VOTED
         TicketStatus.EXPIRED.Name -> TicketStatus.EXPIRED
+        TicketStatus.SPENDABLE.Name -> TicketStatus.SPENDABLE
+        TicketStatus.SPENT.Name -> TicketStatus.SPENT
+        TicketStatus.REVOKED.Name -> TicketStatus.REVOKED
         TicketStatus.MISSED.Name -> TicketStatus.MISSED
         else -> TicketStatus.UNKNOWN
     }
 }
+
 
 // NOTE: Not sure if we need to worry about concurrency with separate fields. Only isUpdating is
 // specifically locked. Watch for problems.
@@ -77,6 +73,7 @@ data class Address(
     @ColumnInfo(name = TIMESTAMP_CREATE) var timestampCreate: Double = timestampChange,
     @ColumnInfo(name = TICKET_EXPIRY) var ticketExpiry: Double = 0.0,
     @ColumnInfo(name = TICKET_MATURITY) var ticketMaturity: Double = 0.0,
+    @ColumnInfo(name = TICKET_SPENDABLE) var ticketSpendable: Double = 0.0,
     @ColumnInfo(name = IS_BEING_WATCHED) var isBeingWatched: Boolean = false,
     @ColumnInfo(name = IS_VALID) var isValid: Boolean = false,
     @ColumnInfo(name = TICKET_STATUS) var ticketStatus: String = "",
@@ -88,30 +85,32 @@ data class Address(
     @Volatile
     private var isUpdating = false
 
-    // Fist delegate is ui and second is for alarmManager
-    // TODO: This delegate array is confusing. Fix it.
+    class DelegateListeners(){
+        var swirl: AsyncObserver? = null
+        var addrFragment: AsyncObserver? = null
+        // other is either the broadcast receiver or a batch request.
+        var other: AsyncObserver? = null
+    }
     @Ignore
-    var delegates = mutableListOf<AsyncObserver?>(null, null)
+    val delegates = DelegateListeners()
 
     fun processBegan() {
-        try {
-            delegates.forEach {
-                it?.processBegan()
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+        delegates.swirl?.processBegan()
+        delegates.other?.processBegan()
+        delegates.addrFragment?.processBegan()
     }
 
     fun balanceSwirlIsShown(): Boolean {
-        return delegates[0]?.balanceSwirlIsShown() ?: false
+        return delegates.swirl?.balanceSwirlIsShown() ?: false
     }
 
     fun processError(str: String) {
         synchronized(isUpdating) {
             isUpdating = false
         }
-        delegates[0]?.processError(str)
+        delegates.swirl?.processError(str)
+        delegates.other?.processError(str)
+        delegates.addrFragment?.processError(str)
     }
 
     fun update(ctx: Context) {
@@ -139,7 +138,7 @@ data class Address(
     }
 
     fun checkTicketLive(): Boolean {
-        val now = Date().time.toDouble()
+        val now = Date().time.toDouble() / 1000
         if (now < this.ticketMaturity) {
             return false
         }
@@ -147,7 +146,7 @@ data class Address(
         return true
     }
 
-    fun checkTicketVotedOrMissedWebJSON(str: String): Boolean {
+    fun checkTicketVotedWebJSON(str: String): Boolean {
         val token = JSONTokener(str).nextValue()
         if (token !is JSONObject) {
             throw Exception("unknown JSON")
@@ -157,6 +156,15 @@ data class Address(
             this.ticketStatus = status
             return true
         }
+        return false
+    }
+
+    fun checkTicketMissedWebJSON(str: String): Boolean {
+        val token = JSONTokener(str).nextValue()
+        if (token !is JSONObject) {
+            throw Exception("unknown JSON")
+        }
+        val status = token.getString("status")
         if (status == TicketStatus.MISSED.Name) {
             this.ticketStatus = status
             return true
@@ -164,12 +172,31 @@ data class Address(
         return false
     }
 
-    fun checkTicketExpired() {
-        val now = Date().time.toDouble()
-        if (now > this.ticketExpiry) {
-            return
+    fun checkTicketExpired(): Boolean {
+        val now = Date().time.toDouble() / 1000
+        if (now < this.ticketExpiry) {
+            return false
         }
         this.ticketStatus = TicketStatus.EXPIRED.Name
+        return true
+    }
+
+    fun checkTicketSpendable(): Boolean {
+        val now = Date().time.toDouble() / 1000
+        if (now < this.ticketSpendable) {
+            return false
+        }
+        this.ticketStatus = TicketStatus.SPENDABLE.Name
+        return true
+    }
+
+
+    fun checkTicketSpent(): Boolean {
+        if (this.ticketStatus != TicketStatus.SPENDABLE.Name || this.amount != 0.0) {
+            return false
+        }
+        this.ticketStatus = TicketStatus.SPENT.Name
+        return true
     }
 
     fun initTicketFromWebJSON(str: String) {
@@ -237,14 +264,15 @@ data class Address(
         synchronized(isUpdating) {
             isUpdating = false
         }
-        delegates.forEach {
-            it?.processFinished(this, ctx)
-        }
+        delegates.swirl?.processFinished(this, ctx)
+        delegates.other?.processFinished(this, ctx)
+        delegates.addrFragment?.processFinished(this, ctx)
     }
 }
 
-fun newAddress(add: String, ticketTXID: String, ctx: Context): Address {
+fun newAddress(add: String, ticketTXID: String, delegate: AsyncObserver?, ctx: Context): Address {
     val a = Address(add)
+    a.delegates.other = delegate
     a.ticketTXID = ticketTXID
     a.update(ctx)
     return a

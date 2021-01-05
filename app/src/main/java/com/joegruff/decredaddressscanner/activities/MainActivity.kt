@@ -29,6 +29,8 @@ import com.joegruff.decredaddressscanner.R
 import com.joegruff.decredaddressscanner.types.*
 import com.joegruff.decredaddressscanner.viewfragments.INTENT_INPUT_DATA
 import com.joegruff.decredaddressscanner.viewfragments.ViewAddressFragment
+import org.json.JSONArray
+import java.util.concurrent.CountDownLatch
 
 var RC_BARCODE_CAPTURE = 9001
 
@@ -131,6 +133,17 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
             val splitInput = input.split(":")
             input = splitInput[splitInput.lastIndex]
             input = input.trim()
+            try {
+                val token = JSONArray(input)
+                val ptr = findViewById<SwipeRefreshLayout>(R.id.pullToRefresh_layout)
+                ptr.isRefreshing = true
+                waitForAddresses(token)
+                viewAdapter.notifyDataSetChanged()
+                ptr.isRefreshing = false
+                return
+            } catch (e: Exception) {
+                // Expected if not a json array.
+            }
             var addrStr = input
             var ticketTxid = ""
             if (input.length == 64) {
@@ -142,6 +155,29 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
             this.startActivity(intent)
         }
 
+    }
+
+    private fun waitForAddresses(token: JSONArray) {
+        val n = token.length()
+        val latch = CountDownLatch(n)
+
+        class Del : AsyncObserver {
+            override fun processFinished(addr: Address, ctx: Context) {
+                latch.countDown()
+            }
+
+            override fun processBegan() {}
+            override fun processError(str: String) {
+                latch.countDown()
+            }
+        }
+
+        val book = AddressBook.get(this)
+        for (i in 0 until n) {
+            val addr = book.getAddress("", token[i] as String, Del())
+            addr.isBeingWatched = true
+        }
+        latch.await()
     }
 
     override fun onResume() {
@@ -184,7 +220,7 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
 
         override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
 
-            myDataSet[position].delegates[0] = holder.delegateHolder
+            myDataSet[position].delegates.swirl = holder.delegateHolder
 
             val address = myDataSet[position].address
             val ticketTXID = myDataSet[position].ticketTXID

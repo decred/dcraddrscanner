@@ -37,7 +37,6 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
     }
 
     lateinit var address: Address
-    private var delegate: AsyncObserver? = null
     private var isInitiated = false
 
     override fun onCreateView(
@@ -65,7 +64,7 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
     }
 
     override fun onResume() {
-        address.delegates[0] = this
+        address.delegates.addrFragment = this
         if (address.isValid) {
             address.updateIfFiveMinPast(context!!)
         }
@@ -77,13 +76,7 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
         super.onPause()
     }
 
-    override fun processBegan() {
-        try {
-            delegate?.processBegan()
-        } catch (e: Exception) {
-
-        }
-    }
+    override fun processBegan() {}
 
     override fun processError(str: String) {
         if (!isInitiated) {
@@ -105,11 +98,6 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
     }
 
     override fun processFinished(addr: Address, ctx: Context) {
-        try {
-            delegate?.processFinished(addr, ctx)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
         if (address.isValid) {
             if (!isInitiated) {
                 isInitiated = true
@@ -126,7 +114,6 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
         }
     }
 
-
     private fun setupInfoView() {
         val swirlLayout =
             this.activity!!.findViewById<MyConstraintLayout>(R.id.balance_swirl_layout)
@@ -138,7 +125,7 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
         swirlLayout.setOnClickListener {
             address.update(context!!)
         }
-        this.delegate = swirlLayout
+        this.address.delegates.swirl = swirlLayout
     }
 
     private fun setupWatchStar() {
@@ -168,12 +155,8 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
         val addrLabel = this.activity!!.findViewById<EditText>(R.id.view_address_view_label)
         addrLabel.setText(address.title)
         addrLabel.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(p0: Editable?) {
-            }
-
-            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-            }
-
+            override fun afterTextChanged(p0: Editable?) {}
+            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
             override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
                 address.title = p0.toString()
             }
@@ -229,11 +212,5 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
         bitmap.setPixels(pixels, 0, 500, 0, 0, matrixWidth, matrixHeight)
         return bitmap
     }
-
-    override fun balanceSwirlIsShown(): Boolean {
-        return delegate?.balanceSwirlIsShown() ?: false
-    }
-
-
 }
 
