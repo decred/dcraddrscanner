@@ -66,7 +66,7 @@ class AddressBook(private val addrDao: AddressDao, private val ctx: Context) {
 
     fun getAddress(address: String, ticketTXID: String = "", delegate: AsyncObserver? = null): Address {
         for (addr in addresses) {
-            if (addr.address == address || addr.ticketTXID == ticketTXID) {
+            if (addr.address == address || (addr.ticketTXID != "" && addr.ticketTXID == ticketTXID)) {
                 delegate?.processFinished(addr, ctx)
                 return addr
             }
