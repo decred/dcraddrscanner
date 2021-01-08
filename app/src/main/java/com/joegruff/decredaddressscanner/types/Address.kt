@@ -1,6 +1,8 @@
 package com.joegruff.decredaddressscanner.types
 
 import android.content.Context
+import android.util.JsonToken
+import android.util.Log
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Ignore
@@ -199,11 +201,7 @@ data class Address(
         return true
     }
 
-    fun initTicketFromWebJSON(str: String) {
-        val token = JSONTokener(str).nextValue()
-        if (token !is JSONObject) {
-            throw Exception("unknown JSON")
-        }
+    fun initTicketFromWebJSON(token: JSONObject) {
         if (token.getString("txid") != this.ticketTXID) throw Exception("initializing wrong address")
         val outs = token.getJSONArray("vout")
         val len = outs.length()
@@ -216,12 +214,9 @@ data class Address(
         this.ticketStatus = TicketStatus.UNMINED.Name
     }
 
-    fun checkTicketMinedWebJSON(str: String): Boolean {
-        val token = JSONTokener(str).nextValue()
-        if (token !is JSONObject) {
-            throw Exception("unknown JSON")
-        }
+    fun checkTicketMinedWebJSON(token: JSONObject): Boolean {
         val block = token.optJSONObject("block") ?: return false
+        Log.d("loggering", "block "+block)
         val minedTime = block.getInt("blocktime").toDouble()
         val net = netFromName(this.network)
         this.ticketMaturity = minedTime + (net.TicketMaturity * net.TargetTimePerBlock)

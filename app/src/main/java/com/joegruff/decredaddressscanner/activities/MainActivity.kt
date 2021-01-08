@@ -219,33 +219,21 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
         }
 
         override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-
             myDataSet[position].delegates.swirl = holder.delegateHolder
-
-            val address = myDataSet[position].address
-            val ticketTXID = myDataSet[position].ticketTXID
-
-            var title = myDataSet[position].title
-            if (title == "") {
-                title = address
-            }
-            holder.delegateHolder.myAddress = address
-            holder.textView.text = title
+            val addr = myDataSet[position]
             holder.delegateHolder.abbreviatedValues = true
-            holder.delegateHolder.setAmounts(
-                myDataSet[position].amount.toString(),
-                myDataSet[position].amountOld.toString()
-            )
-            if (ticketTXID != "") {
-                val ticketStatus = myDataSet[position].ticketStatus
-                holder.delegateHolder.setTicketStatus(ticketStatus)
+            holder.delegateHolder.setUI(addr)
+            var title = addr.title
+            if (title == "") {
+                title = addr.address
             }
+            holder.textView.text = title
             holder.itemView.setOnClickListener {
                 if (!haveTouchedAnAddress) {
                     haveTouchedAnAddress = true
                     val intent = Intent(ctx, ViewAddressActivity::class.java)
-                    intent.putExtra(ViewAddressFragment.INTENT_ADDRESS_DATA, address)
-                    intent.putExtra(ViewAddressFragment.INTENT_TICKET_TXID_DATA, ticketTXID)
+                    intent.putExtra(ViewAddressFragment.INTENT_ADDRESS_DATA, addr.address)
+                    intent.putExtra(ViewAddressFragment.INTENT_TICKET_TXID_DATA, addr.ticketTXID)
                     ctx.startActivity(intent)
                 }
             }

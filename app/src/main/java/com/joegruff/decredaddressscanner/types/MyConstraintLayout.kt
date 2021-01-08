@@ -48,6 +48,10 @@ class MyConstraintLayout : RelativeLayout, AsyncObserver {
             if (!processing) return
             processing = false
         }
+        setUI(addr)
+    }
+
+    fun setUI(addr: Address) {
         val handler = android.os.Handler(context.mainLooper)
         val swirl = findViewById<ProgressBar>(R.id.balance_swirl_progress_bar)
         handler.post { swirl.visibility = View.INVISIBLE }

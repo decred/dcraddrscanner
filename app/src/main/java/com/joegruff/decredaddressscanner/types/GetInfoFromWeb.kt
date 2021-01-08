@@ -2,8 +2,7 @@ package com.joegruff.decredaddressscanner.types
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import org.json.JSONObject
 import org.json.JSONTokener
 import java.io.BufferedReader
@@ -12,6 +11,7 @@ import java.net.ConnectException
 import java.net.SocketTimeoutException
 import java.net.URL
 import java.net.UnknownHostException
+import kotlin.coroutines.CoroutineContext
 
 
 const val NO_CONNECTION = "no_connection"
@@ -19,7 +19,11 @@ const val NO_CONNECTION = "no_connection"
 class GetInfoFromWeb(
     private val addr: Address,
     private val ctx: Context,
-) : ViewModel() {
+) : ViewModel(), CoroutineScope {
+
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.IO + SupervisorJob()
+
     private val urlStr = UserSettings.get(ctx).url()
     private fun doInBackground() {
         getTicketInfo()
@@ -50,7 +54,11 @@ class GetInfoFromWeb(
         if (s == TicketStatus.SPENDABLE || s == TicketStatus.SPENT) return
         if (addr.address == "" || s == TicketStatus.UNMINED || s == TicketStatus.UNKNOWN) {
             val txURL = URL(urlStr + "tx/" + addr.ticketTXID)
-            val txToken = getGetResp(txURL)
+            val txStr = getGetResp(txURL)
+            val txToken = JSONTokener(txStr).nextValue()
+            if (txToken !is JSONObject) {
+                throw Exception("unknown JSON")
+            }
             // If no address this is initiation.
             if (addr.address == "") {
                 addr.initTicketFromWebJSON(txToken)
@@ -108,7 +116,7 @@ class GetInfoFromWeb(
     }
 
     fun execute() {
-        GlobalScope.launch {
+        launch {
             try {
                 addr.processBegan()
                 doInBackground()
