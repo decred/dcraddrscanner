@@ -36,7 +36,7 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
         }
     }
 
-    lateinit var address: Address
+    var address: Address = Address("placeholder")
     private var isInitiated = false
 
     override fun onCreateView(
@@ -47,7 +47,7 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
         val addrStr = arguments?.getSerializable(INTENT_ADDRESS_DATA) as String
         val ticketStr = arguments?.getSerializable(INTENT_TICKET_TXID_DATA) as String
         val v = inflater.inflate(R.layout.view_address_view, container, false)
-        address = AddressBook.get(context!!).getAddress(addrStr, ticketStr)
+        context?.let { AddressBook.get(it).getAddress(addrStr, ticketStr) }
         return v
     }
 
@@ -66,13 +66,13 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
     override fun onResume() {
         address.delegates.addrFragment = this
         if (address.isValid) {
-            address.updateIfFiveMinPast(context!!)
+            context?.let{ address.updateIfFiveMinPast(it) }
         }
         super.onResume()
     }
 
     override fun onPause() {
-        AddressBook.get(context!!).updateAddress(address, false)
+        context?.let { AddressBook.get(it).updateAddress(address, false) }
         super.onPause()
     }
 
@@ -121,7 +121,7 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
         )
         swirlLayout?.setTicketStatus(address.ticketStatus)
         swirlLayout?.setOnClickListener {
-            address.update(context!!)
+            context?.let{ address.update(it) }
         }
         this.address.delegates.swirl = swirlLayout
     }
@@ -146,7 +146,7 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
             if (addr.isBeingWatched) android.R.drawable.btn_star_big_on else android.R.drawable.btn_star_big_off
         val starButton =
             this.activity?.findViewById<Button>(R.id.view_address_view_address_star_button)
-        starButton?.background = ActivityCompat.getDrawable(this.context!!, id)
+        context?.let{ starButton?.background = ActivityCompat.getDrawable(it, id) }
     }
 
     private fun setupEditLabel() {

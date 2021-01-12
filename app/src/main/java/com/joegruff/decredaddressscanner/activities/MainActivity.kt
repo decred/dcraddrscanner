@@ -290,9 +290,8 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
 
     abstract class SwipeToDeleteCallback(context: Context) :
         ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
-        private val deleteIcon = getDrawable(context, R.drawable.ic_delete_white_24)!!
-        private val intrinsicWidth = deleteIcon.intrinsicWidth
-        private val intrinsicHeight = deleteIcon.intrinsicHeight
+        private val deleteIcon = getDrawable(context, R.drawable.ic_delete_white_24)
+
         private val background = ColorDrawable()
         private val backgroundColor = Color.parseColor("#f44336")
         private val clearPaint =
@@ -307,7 +306,9 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
             actionState: Int,
             isCurrentlyActive: Boolean
         ) {
-
+            if (deleteIcon == null) return
+            val intrinsicWidth = deleteIcon.intrinsicWidth
+            val intrinsicHeight = deleteIcon.intrinsicHeight
             val itemView = viewHolder.itemView
             val itemHeight = itemView.bottom - itemView.top
             val isCanceled = dX == 0f && !isCurrentlyActive

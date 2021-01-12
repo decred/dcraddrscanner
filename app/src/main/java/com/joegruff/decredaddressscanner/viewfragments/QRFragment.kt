@@ -50,7 +50,7 @@ class QRFragment : Fragment(), OnRequestPermissionsResultCallback {
             val scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent)
             if (scanResult.contents != null) {
                 val address = scanResult.contents
-                intent!!.putExtra(INTENT_INPUT_DATA, address)
+                intent?.putExtra(INTENT_INPUT_DATA, address)
                 this.activity?.setResult(RESULT_OK, intent)
                 this.activity?.finish()
             } else {
@@ -60,26 +60,29 @@ class QRFragment : Fragment(), OnRequestPermissionsResultCallback {
     }
 
     private fun requestCameraPermission() {
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
-            val allowed =
-                ContextCompat.checkSelfPermission(this.context!!, Manifest.permission.CAMERA)
-            if (allowed == PackageManager.PERMISSION_DENIED) {
-                AlertDialog.Builder(this.context!!).setTitle(R.string.permission_camera_rationale)
-                    .setMessage(R.string.permission_camera_rationale)
-                    .setPositiveButton(
-                        R.string.ok
-                    ) { _, _ ->
-                        val permissions =
-                            arrayOf(Manifest.permission.CAMERA, Manifest.permission.VIBRATE)
-                        ActivityCompat.requestPermissions(this.activity!!, permissions, 200)
-                    }
-                    .setNegativeButton(R.string.no_thanks) { _, _ ->
-                        this.activity?.finish()
-                    }
-                    .setCancelable(false)
-                    .show()
+        activity?.let {
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
+                val allowed =
+                    ContextCompat.checkSelfPermission(it, Manifest.permission.CAMERA)
+                if (allowed == PackageManager.PERMISSION_DENIED) {
+                    AlertDialog.Builder(it)
+                        .setTitle(R.string.permission_camera_rationale)
+                        .setMessage(R.string.permission_camera_rationale)
+                        .setPositiveButton(
+                            R.string.ok
+                        ) { _, _ ->
+                            val permissions =
+                                arrayOf(Manifest.permission.CAMERA, Manifest.permission.VIBRATE)
+                            ActivityCompat.requestPermissions(it, permissions, 200)
+                        }
+                        .setNegativeButton(R.string.no_thanks) { _, _ ->
+                            it.finish()
+                        }
+                        .setCancelable(false)
+                        .show()
+                }
+                startCamera()
             }
-            startCamera()
         }
     }
 
@@ -94,9 +97,15 @@ class QRFragment : Fragment(), OnRequestPermissionsResultCallback {
                 //permission granted
                 startCamera()
             } else {
-                Toast.makeText(this.context!!, R.string.no_camera_permission, Toast.LENGTH_SHORT)
-                    .show()
-                this.activity?.finish()
+                activity?.let {
+                    Toast.makeText(
+                        it,
+                        R.string.no_camera_permission,
+                        Toast.LENGTH_SHORT
+                    )
+                        .show()
+                    this.activity?.finish()
+                }
             }
         }
     }
