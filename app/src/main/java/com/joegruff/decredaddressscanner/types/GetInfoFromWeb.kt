@@ -2,7 +2,10 @@ package com.joegruff.decredaddressscanner.types
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import org.json.JSONObject
 import org.json.JSONTokener
 import java.io.BufferedReader
@@ -26,7 +29,12 @@ class GetInfoFromWeb(
 
     private val urlStr = UserSettings.get(ctx).url()
     private fun doInBackground() {
-        getTicketInfo()
+        try {
+            getTicketInfo()
+        } catch (e: Exception) {
+            // Most likely due to failing to retrieve an endpoint, which is expected depending on
+            // status.
+        }
         val url = URL(urlStr + "address/" + addr.address + "/totals")
         addr.updateBalanceFromWebJSON(ctx, getGetResp(url))
         if (addr.ticketStatus == TicketStatus.SPENDABLE.Name) {
@@ -89,8 +97,8 @@ class GetInfoFromWeb(
                 val net = netFromName(addr.network)
                 addr.ticketSpendable = t + (net.TicketMaturity * net.TargetTimePerBlock)
             } else {
-                // If not voted check if it was missed or expired and when that is spendable.
-                if (addr.checkTicketMissedWebJSON(webStatus) || addr.checkTicketExpired()) {
+                // If not voted check if it was missed, expired, or revoked and when that is spendable.
+                if (addr.checkTicketMissedWebJSON(webStatus) || addr.checkTicketExpired() || addr.checkTicketRevokedWebJSON(webStatus)) {
                     val token = JSONTokener(webStatus).nextValue()
                     if (token !is JSONObject) {
                         throw Exception("unknown JSON")

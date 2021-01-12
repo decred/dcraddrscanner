@@ -214,6 +214,19 @@ data class Address(
         return false
     }
 
+    fun checkTicketRevokedWebJSON(str: String): Boolean {
+        val token = JSONTokener(str).nextValue()
+        if (token !is JSONObject) {
+            throw Exception("unknown JSON")
+        }
+        val status = token.getString("status")
+        if (status == TicketStatus.REVOKED.Name) {
+            this.ticketStatus = status
+            return true
+        }
+        return false
+    }
+
     fun checkTicketExpired(): Boolean {
         val now = Date().time.toDouble() / 1000
         if (now < this.ticketExpiry) {
@@ -255,8 +268,9 @@ data class Address(
     }
 
     fun checkTicketMinedWebJSON(token: JSONObject): Boolean {
-        val block = token.optJSONObject("block") ?: return false
+        val block = token.getJSONObject("block")
         val minedTime = block.getInt("blocktime").toDouble()
+        if (minedTime == 0.0) return false
         val net = netFromName(this.network)
         this.ticketMaturity = minedTime + (net.TicketMaturity * net.TargetTimePerBlock)
         this.ticketExpiry = minedTime + (net.TicketExpiry * net.TargetTimePerBlock)
