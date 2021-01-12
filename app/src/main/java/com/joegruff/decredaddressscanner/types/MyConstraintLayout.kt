@@ -21,7 +21,6 @@ class MyConstraintLayout : RelativeLayout, AsyncObserver {
     constructor(context: Context) : super(context)
 
     var abbreviatedValues = false
-    var myAddress = ""
 
     @Volatile
     var processing = false

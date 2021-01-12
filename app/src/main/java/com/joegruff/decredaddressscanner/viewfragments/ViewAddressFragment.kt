@@ -8,6 +8,7 @@ import android.graphics.Color
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -37,18 +38,25 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
     }
 
     var address: Address = Address("placeholder")
+
+    @Volatile
     private var isInitiated = false
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        val addrStr = arguments?.getSerializable(INTENT_ADDRESS_DATA) as String
+        val ticketStr = arguments?.getSerializable(INTENT_TICKET_TXID_DATA) as String
+        context?.let { address = AddressBook.get(it).getAddress(addrStr, ticketStr) }
+        Log.d("loggering", "psasdf "+ addrStr + ticketStr)
+        super.onCreate(savedInstanceState)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val addrStr = arguments?.getSerializable(INTENT_ADDRESS_DATA) as String
-        val ticketStr = arguments?.getSerializable(INTENT_TICKET_TXID_DATA) as String
-        val v = inflater.inflate(R.layout.view_address_view, container, false)
-        context?.let { AddressBook.get(it).getAddress(addrStr, ticketStr) }
-        return v
+
+        return inflater.inflate(R.layout.view_address_view, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -64,22 +72,22 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
     }
 
     override fun onResume() {
-        address.delegates.addrFragment = this
+        address.delegates.updateIgnoreNull(null, this, null)
         if (address.isValid) {
-            context?.let{ address.updateIfFiveMinPast(it) }
+            context?.let { address.updateIfFiveMinPast(it) }
         }
         super.onResume()
     }
 
     override fun onPause() {
-        context?.let { AddressBook.get(it).updateAddress(address, false) }
+        context?.let { AddressBook.get(it).update(address) }
         super.onPause()
     }
 
     override fun processBegan() {}
 
     override fun processError(str: String) {
-        if (!isInitiated) {
+        if (synchronized(isInitiated) { !isInitiated }) {
             val addrButton =
                 this.activity?.findViewById<TextView>(R.id.view_address_view_address_button)
             if (str == NO_CONNECTION) {
@@ -99,8 +107,9 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
 
     override fun processFinished(addr: Address, ctx: Context) {
         if (address.isValid) {
-            if (!isInitiated) {
-                isInitiated = true
+            synchronized(isInitiated) {
+                if (!isInitiated) {
+                    isInitiated = true
                     this.activity?.runOnUiThread {
                         setupEditLabel()
                         setupQRCode()
@@ -108,6 +117,7 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
                         setupInfoView()
                         setupWatchStar()
                     }
+                }
             }
         }
     }
@@ -121,9 +131,9 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
         )
         swirlLayout?.setTicketStatus(address.ticketStatus)
         swirlLayout?.setOnClickListener {
-            context?.let{ address.update(it) }
+            context?.let { address.update(it) }
         }
-        this.address.delegates.swirl = swirlLayout
+        this.address.delegates.updateIgnoreNull(swirlLayout, null, null)
     }
 
     private fun setupWatchStar() {
@@ -146,7 +156,7 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
             if (addr.isBeingWatched) android.R.drawable.btn_star_big_on else android.R.drawable.btn_star_big_off
         val starButton =
             this.activity?.findViewById<Button>(R.id.view_address_view_address_star_button)
-        context?.let{ starButton?.background = ActivityCompat.getDrawable(it, id) }
+        context?.let { starButton?.background = ActivityCompat.getDrawable(it, id) }
     }
 
     private fun setupEditLabel() {

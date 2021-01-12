@@ -60,8 +60,9 @@ class QRFragment : Fragment(), OnRequestPermissionsResultCallback {
     }
 
     private fun requestCameraPermission() {
-        activity?.let {
-            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
+
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
+            activity?.let {
                 val allowed =
                     ContextCompat.checkSelfPermission(it, Manifest.permission.CAMERA)
                 if (allowed == PackageManager.PERMISSION_DENIED) {
@@ -81,9 +82,9 @@ class QRFragment : Fragment(), OnRequestPermissionsResultCallback {
                         .setCancelable(false)
                         .show()
                 }
-                startCamera()
             }
         }
+        startCamera()
     }
 
     override fun onRequestPermissionsResult(
@@ -104,7 +105,7 @@ class QRFragment : Fragment(), OnRequestPermissionsResultCallback {
                         Toast.LENGTH_SHORT
                     )
                         .show()
-                    this.activity?.finish()
+                    it.finish()
                 }
             }
         }

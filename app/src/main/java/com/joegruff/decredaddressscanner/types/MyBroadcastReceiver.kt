@@ -46,16 +46,15 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
             }
             createNotificationChannel(context)
 
-
             // Check for starred addresses and whether the current address is being displayed on screen.
             var numStarredAddresses = 0L
-            for (starredAddress in AddressBook.get(context).addresses.filter { it.isBeingWatched }
+            val addrs = AddressBook.get(context).addresses()
+            for (starredAddress in addrs.filter { it.isBeingWatched }
                 .filter { !it.balanceSwirlIsShown() }) {
-                starredAddress.delegates.other = this
+                starredAddress.delegates.updateIgnoreNull(null, null, this)
                 starredAddress.update(context)
                 numStarredAddresses += 1
             }
-
 
             // Give it five seconds to find changed addresses, report results as alert if something changed.
             Handler(Looper.getMainLooper()).postDelayed({

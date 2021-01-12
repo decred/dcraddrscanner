@@ -40,7 +40,6 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
     private lateinit var viewManager: LinearLayoutManager
     private lateinit var menuItems: MenuItems
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -53,7 +52,7 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
         setRepeatingAlarm(this, AlarmManager.INTERVAL_HALF_HOUR)
         viewManager = LinearLayoutManager(this)
 
-        viewAdapter = MyAdapter(this, AddressBook.get(this).addresses)
+        viewAdapter = MyAdapter(this, AddressBook.get(this).addresses())
 
         recyclerView = findViewById<RecyclerView>(R.id.recycle_view).apply {
             setHasFixedSize(true)
@@ -122,7 +121,7 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
             val ptr = findViewById<SwipeRefreshLayout>(R.id.pullToRefresh_layout)
             ptr.isRefreshing = false
         }, 1000)
-        AddressBook.get(this).updateBalances(true)
+        AddressBook.get(this).updateAddresses(true)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -181,11 +180,14 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
     }
 
     override fun onResume() {
-        AddressBook.get(this).updateBalances()
-        viewAdapter.haveTouchedAnAddress = false
+        AddressBook.get(this).updateAddresses()
+        synchronized(viewAdapter.haveTouchedAnAddress) {
+            viewAdapter.haveTouchedAnAddress = false
+        }
         viewAdapter.notifyDataSetChanged()
         super.onResume()
     }
+
 
     override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
         menuItems.prepareOptionsMenu(menu, this)
@@ -203,9 +205,10 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
     }
 
 
-    class MyAdapter(private val ctx: Context, private var myDataSet: ArrayList<Address>) :
+    class MyAdapter(private val ctx: Context, private var addresses: ArrayList<Address>) :
         RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
 
+        @Volatile
         var haveTouchedAnAddress = false
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
@@ -215,12 +218,12 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
         }
 
         override fun getItemCount(): Int {
-            return myDataSet.size
+            return addresses.size
         }
 
         override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-            myDataSet[position].delegates.swirl = holder.delegateHolder
-            val addr = myDataSet[position]
+            val addr = addresses[position]
+            addr.delegates.updateIgnoreNull(holder.delegateHolder, null, null)
             holder.delegateHolder.abbreviatedValues = true
             holder.delegateHolder.setUI(addr)
             var title = addr.title
@@ -229,28 +232,34 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
             }
             holder.textView.text = title
             holder.itemView.setOnClickListener {
-                if (!haveTouchedAnAddress) {
-                    haveTouchedAnAddress = true
-                    val intent = Intent(ctx, ViewAddressActivity::class.java)
-                    intent.putExtra(ViewAddressFragment.INTENT_ADDRESS_DATA, addr.address)
-                    intent.putExtra(ViewAddressFragment.INTENT_TICKET_TXID_DATA, addr.ticketTXID)
-                    ctx.startActivity(intent)
+                synchronized(haveTouchedAnAddress) {
+                    if (!haveTouchedAnAddress) {
+                        haveTouchedAnAddress = true
+                        val intent = Intent(ctx, ViewAddressActivity::class.java)
+                        intent.putExtra(ViewAddressFragment.INTENT_ADDRESS_DATA, addr.address)
+                        intent.putExtra(
+                            ViewAddressFragment.INTENT_TICKET_TXID_DATA,
+                            addr.ticketTXID
+                        )
+                        ctx.startActivity(intent)
+                    }
                 }
             }
         }
 
         fun onItemRemove(viewHolder: RecyclerView.ViewHolder, recyclerView: RecyclerView) {
             val adapterPosition = viewHolder.adapterPosition
-            val addr = myDataSet[adapterPosition]
+            val addr = addresses[adapterPosition]
+            val book = AddressBook.get(this.ctx)
             val snackbar = Snackbar
                 .make(recyclerView, R.string.main_view_deleted_address, Snackbar.LENGTH_LONG)
                 .setAction(R.string.main_view_undo_delete) {
-                    AddressBook.get(this.ctx).insert(addr, adapterPosition)
+                    book.insert(addr, adapterPosition)
                     notifyItemInserted(adapterPosition)
                     recyclerView.scrollToPosition(adapterPosition)
                 }
             snackbar.show()
-            AddressBook.get(this.ctx).delete(addr)
+            book.delete(addr)
             notifyItemRemoved(adapterPosition)
         }
 

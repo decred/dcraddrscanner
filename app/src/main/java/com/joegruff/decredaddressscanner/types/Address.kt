@@ -1,8 +1,6 @@
 package com.joegruff.decredaddressscanner.types
 
 import android.content.Context
-import android.util.JsonToken
-import android.util.Log
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Ignore
@@ -11,6 +9,7 @@ import org.json.JSONObject
 import org.json.JSONTokener
 import java.text.DecimalFormat
 import java.util.*
+import java.util.concurrent.locks.ReentrantLock
 import kotlin.math.pow
 
 const val AMOUNT = "dcr_unspent"
@@ -87,32 +86,73 @@ data class Address(
     @Volatile
     private var isUpdating = false
 
-    class DelegateListeners(){
-        var swirl: AsyncObserver? = null
-        var addrFragment: AsyncObserver? = null
+    class DelegateListeners : AsyncObserver {
+        private val lock = ReentrantLock()
+        private var swirl: AsyncObserver? = null
+        private var addrFragment: AsyncObserver? = null
+
         // other is either the broadcast receiver or a batch request.
-        var other: AsyncObserver? = null
+        private var other: AsyncObserver? = null
+        fun updateIgnoreNull(
+            swirl: AsyncObserver?,
+            addrFragment: AsyncObserver?,
+            other: AsyncObserver?
+        ) {
+            lock.lock()
+            swirl?.let { this.swirl = swirl }
+            addrFragment?.let { this.addrFragment = addrFragment }
+            other?.let { this.other = other }
+            lock.unlock()
+        }
+
+        fun swirl(): AsyncObserver? {
+            lock.lock()
+            val s = this.swirl
+            lock.unlock()
+            return s
+        }
+
+        override fun processFinished(addr: Address, ctx: Context) {
+            lock.lock()
+            swirl?.processFinished(addr, ctx)
+            addrFragment?.processFinished(addr, ctx)
+            other?.processFinished(addr, ctx)
+            lock.unlock()
+        }
+
+        override fun processBegan() {
+            lock.lock()
+            swirl?.processBegan()
+            addrFragment?.processBegan()
+            other?.processBegan()
+            lock.unlock()
+        }
+
+        override fun processError(str: String) {
+            lock.lock()
+            swirl?.processError(str)
+            addrFragment?.processError(str)
+            other?.processError(str)
+            lock.unlock()
+        }
     }
+
     @Ignore
     val delegates = DelegateListeners()
 
     fun processBegan() {
-        delegates.swirl?.processBegan()
-        delegates.other?.processBegan()
-        delegates.addrFragment?.processBegan()
+        delegates.processBegan()
     }
 
     fun balanceSwirlIsShown(): Boolean {
-        return delegates.swirl?.balanceSwirlIsShown() ?: false
+        return delegates.swirl()?.balanceSwirlIsShown() ?: false
     }
 
     fun processError(str: String) {
         synchronized(isUpdating) {
             isUpdating = false
         }
-        delegates.swirl?.processError(str)
-        delegates.other?.processError(str)
-        delegates.addrFragment?.processError(str)
+        delegates.processError(str)
     }
 
     fun update(ctx: Context) {
@@ -216,7 +256,6 @@ data class Address(
 
     fun checkTicketMinedWebJSON(token: JSONObject): Boolean {
         val block = token.optJSONObject("block") ?: return false
-        Log.d("loggering", "block "+block)
         val minedTime = block.getInt("blocktime").toDouble()
         val net = netFromName(this.network)
         this.ticketMaturity = minedTime + (net.TicketMaturity * net.TargetTimePerBlock)
@@ -244,13 +283,13 @@ data class Address(
                 amountOld = amount
                 amount = newAmount
                 timestampChange = timestampCheck
-                AddressBook.get(ctx).updateAddress(this)
+                AddressBook.get(ctx).update(this)
             }
             elapsedHrsSinceChange > 24 -> {
                 // Forget older changes.
                 timestampChange = timestampCheck
                 amountOld = amount
-                AddressBook.get(ctx).updateAddress(this)
+                AddressBook.get(ctx).update(this)
             }
         }
     }
@@ -259,15 +298,13 @@ data class Address(
         synchronized(isUpdating) {
             isUpdating = false
         }
-        delegates.swirl?.processFinished(this, ctx)
-        delegates.other?.processFinished(this, ctx)
-        delegates.addrFragment?.processFinished(this, ctx)
+        delegates.processFinished(this, ctx)
     }
 }
 
 fun newAddress(add: String, ticketTXID: String, delegate: AsyncObserver?, ctx: Context): Address {
     val a = Address(add)
-    a.delegates.other = delegate
+    a.delegates.updateIgnoreNull(null, null, delegate)
     a.ticketTXID = ticketTXID
     a.update(ctx)
     return a

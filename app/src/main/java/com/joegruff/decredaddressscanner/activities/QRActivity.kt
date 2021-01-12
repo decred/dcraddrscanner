@@ -9,7 +9,10 @@ import com.joegruff.decredaddressscanner.types.ReusableFragmentActivity
 class QRActivity : ReusableFragmentActivity() {
     private var frag: QRFragment? = null
     override fun createFragment(): Fragment {
-        return QRFragment.new()
+        QRFragment.new().let {
+            frag = it
+            return it
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
