@@ -37,6 +37,7 @@
     <string name="menu_set_explorer">Set Explorer</string>
     <string name="menu_dcrdata_mainnet">Dcrdata MainNet</string>
     <string name="menu_dcrdata_testnet">Dcrdata TestNet</string>
+    <string name="menu_cfilters">Use CFilters (experimental)</string>
     <string name="other">Other</string>
     <string name="menu_other_description">Enter an url.</string>
 </resources>

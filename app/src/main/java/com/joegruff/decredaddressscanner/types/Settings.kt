@@ -5,9 +5,11 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.coroutines.*
+import kotlin.coroutines.CoroutineContext
 
 const val SETTINGS_TABLE = "settings_table"
 const val URL_FIELD = "url"
+const val CFILTERS_FIELD = "cfilters"
 const val DEFAULT_USER = "default"
 
 const val dcrdataMainNet = "https://explorer.dcrdata.org/api/"
@@ -17,9 +19,10 @@ const val dcrdataTestNet = "https://testnet.dcrdata.org/api/"
 data class Settings(
     @PrimaryKey val user: String,
     @ColumnInfo(name = URL_FIELD) var url: String = dcrdataMainNet,
+    @ColumnInfo(name = CFILTERS_FIELD) var cFilters: Boolean = false,
 )
 
-class UserSettings(private val settingsDao: SettingsDao) {
+class UserSettings(private val settingsDao: SettingsDao) : CoroutineScope {
     companion object {
         @Volatile
         private var settings: UserSettings? = null
@@ -34,6 +37,9 @@ class UserSettings(private val settingsDao: SettingsDao) {
             }
         }
     }
+
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.IO + SupervisorJob()
 
     private suspend fun settings(): Settings {
         var setts = settingsDao.get(DEFAULT_USER)
@@ -56,7 +62,25 @@ class UserSettings(private val settingsDao: SettingsDao) {
             setts.url = str
             settingsDao.update(setts)
         }
-        GlobalScope.launch {
+        launch {
+            set(settings())
+        }
+    }
+
+    fun cFilters(): Boolean {
+        var cFilters: Boolean
+        runBlocking {
+            cFilters = settings().cFilters
+        }
+        return cFilters
+    }
+
+    fun setCFilters(cFilters: Boolean) {
+        suspend fun set(setts: Settings) {
+            setts.cFilters = cFilters
+            settingsDao.update(setts)
+        }
+        launch {
             set(settings())
         }
     }

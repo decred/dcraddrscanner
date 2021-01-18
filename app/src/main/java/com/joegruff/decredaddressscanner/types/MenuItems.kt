@@ -31,6 +31,8 @@ class MenuItems(private val act: AppCompatActivity) {
                     other.isChecked = true
                 }
             }
+            val cfilters: MenuItem = menu.findItem(R.id.menu_cfilters)
+            cfilters.isChecked = UserSettings.get(ctx).cFilters()
         }
     }
 
@@ -43,6 +45,7 @@ class MenuItems(private val act: AppCompatActivity) {
                 dcrdataTestNet
             )
             R.id.menu_dcrdata_other -> other(ctx)
+            R.id.menu_cfilters -> UserSettings.get(act.applicationContext).let { it.setCFilters(!it.cFilters()) }
             R.id.menu_about -> about()
             else -> return false
         }

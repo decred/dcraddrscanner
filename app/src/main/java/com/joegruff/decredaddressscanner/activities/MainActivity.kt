@@ -139,6 +139,7 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
                 val token = JSONArray(input)
                 waitForAddresses(token)
                 viewAdapter.notifyDataSetChanged()
+                return
             } catch (e: Exception) {
                 // Expected if not a json array.
             }
