@@ -29,6 +29,9 @@ const val TICKET_SPENDABLE = "ticket_spendable"
 const val NETWORK = "network"
 const val IS_VALID = "valid"
 
+// Blocks may be mined faster or slower. Add some wiggle room.
+const val wiggleFactor = 1.04
+
 enum class TicketStatus(
     val Name: String,
 ) {
@@ -272,8 +275,9 @@ data class Address(
         val minedTime = block.getInt("blocktime").toDouble()
         if (minedTime == 0.0) return false
         val net = netFromName(this.network)
-        this.ticketMaturity = minedTime + (net.TicketMaturity * net.TargetTimePerBlock)
-        this.ticketExpiry = minedTime + (net.TicketExpiry * net.TargetTimePerBlock)
+        this.ticketMaturity =
+            minedTime + (net.TicketMaturity * net.TargetTimePerBlock * wiggleFactor)
+        this.ticketExpiry = minedTime + (net.TicketExpiry * net.TargetTimePerBlock * wiggleFactor)
         this.ticketStatus = TicketStatus.IMMATURE.Name
         return true
     }

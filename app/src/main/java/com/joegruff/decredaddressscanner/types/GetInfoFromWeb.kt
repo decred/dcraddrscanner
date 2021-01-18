@@ -53,6 +53,8 @@ class GetInfoFromWeb(
 
     // Ticket status is incremented from unmined -> immature -> live -> voted/expired/missed ->
     // (maybe revoked) -> spendable -> spent
+    // TODO: Consider adding logic for a ticket that is originally mined but later becomes unmined
+    //  due to a reorg.
     private fun getTicketInfo() {
         // Nothing to do if this isn`t a stake commitment.
         if (addr.ticketTXID == "") return
@@ -95,10 +97,15 @@ class GetInfoFromWeb(
                 }
                 val t = blockDetails.getInt("time").toDouble()
                 val net = netFromName(addr.network)
-                addr.ticketSpendable = t + (net.TicketMaturity * net.TargetTimePerBlock)
+
+                addr.ticketSpendable =
+                    t + (net.TicketMaturity * net.TargetTimePerBlock * wiggleFactor)
             } else {
                 // If not voted check if it was missed, expired, or revoked and when that is spendable.
-                if (addr.checkTicketMissedWebJSON(webStatus) || addr.checkTicketExpired() || addr.checkTicketRevokedWebJSON(webStatus)) {
+                if (addr.checkTicketMissedWebJSON(webStatus) || addr.checkTicketExpired() || addr.checkTicketRevokedWebJSON(
+                        webStatus
+                    )
+                ) {
                     val token = JSONTokener(webStatus).nextValue()
                     if (token !is JSONObject) {
                         throw Exception("unknown JSON")
@@ -112,7 +119,8 @@ class GetInfoFromWeb(
                     val block = revDetails.getJSONObject("block")
                     val t = block.getInt("time").toDouble()
                     val net = netFromName(addr.network)
-                    addr.ticketSpendable = t + (net.TicketMaturity * net.TargetTimePerBlock)
+                    addr.ticketSpendable =
+                        t + (net.TicketMaturity * net.TargetTimePerBlock * wiggleFactor)
                 }
             }
         }

@@ -9,8 +9,6 @@ import android.graphics.*
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.*
 import android.widget.Button
 import android.widget.TextView
@@ -116,12 +114,17 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
         }
     }
 
+    private fun updateAddresses(force: Boolean) {
+            val addrs = AddressBook.get(this).addresses()
+            for (addr in addrs) {
+                if (force) addr.update(this) else addr.updateIfFiveMinPast(this)
+            }
+    }
+
     override fun onRefresh() {
-        Handler(Looper.getMainLooper()).postDelayed({
-            val ptr = findViewById<SwipeRefreshLayout>(R.id.pullToRefresh_layout)
-            ptr.isRefreshing = false
-        }, 1000)
-        AddressBook.get(this).updateAddresses(true)
+        val ptr = findViewById<SwipeRefreshLayout>(R.id.pullToRefresh_layout)
+        ptr.isRefreshing = false
+        updateAddresses(true)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -134,12 +137,8 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
             input = input.trim()
             try {
                 val token = JSONArray(input)
-                val ptr = findViewById<SwipeRefreshLayout>(R.id.pullToRefresh_layout)
-                ptr.isRefreshing = true
                 waitForAddresses(token)
                 viewAdapter.notifyDataSetChanged()
-                ptr.isRefreshing = false
-                return
             } catch (e: Exception) {
                 // Expected if not a json array.
             }
@@ -156,31 +155,30 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
 
     }
 
+    class Del(private val latch: CountDownLatch) : AsyncObserver {
+        override fun processFinished(addr: Address, ctx: Context) {
+            latch.countDown()
+        }
+
+        override fun processBegan() {}
+        override fun processError(str: String) {
+            latch.countDown()
+        }
+    }
+
     private fun waitForAddresses(token: JSONArray) {
         val n = token.length()
         val latch = CountDownLatch(n)
-
-        class Del : AsyncObserver {
-            override fun processFinished(addr: Address, ctx: Context) {
-                latch.countDown()
-            }
-
-            override fun processBegan() {}
-            override fun processError(str: String) {
-                latch.countDown()
-            }
-        }
-
         val book = AddressBook.get(this)
         for (i in 0 until n) {
-            val addr = book.getAddress("", token[i] as String, Del())
+            val addr = book.getAddress("", token[i] as String, Del(latch))
             addr.isBeingWatched = true
         }
         latch.await()
     }
 
     override fun onResume() {
-        AddressBook.get(this).updateAddresses()
+        updateAddresses(false)
         synchronized(viewAdapter.haveTouchedAnAddress) {
             viewAdapter.haveTouchedAnAddress = false
         }
@@ -223,9 +221,11 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
 
         override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
             val addr = addresses[position]
-            addr.delegates.updateIgnoreNull(holder.delegateHolder, null, null)
-            holder.delegateHolder.abbreviatedValues = true
-            holder.delegateHolder.setUI(addr)
+            synchronized(holder.delegateHolder) {
+                addr.delegates.updateIgnoreNull(holder.delegateHolder, null, null)
+                holder.delegateHolder.abbreviatedValues = true
+                holder.delegateHolder.setUI(addr)
+            }
             var title = addr.title
             if (title == "") {
                 title = addr.address
@@ -266,6 +266,7 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
 
         class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             val textView: TextView = itemView.findViewById(R.id.one_list_item_view_text_view)
+            @Volatile
             var delegateHolder: MyConstraintLayout =
                 itemView.findViewById(R.id.balance_swirl_layout)
         }

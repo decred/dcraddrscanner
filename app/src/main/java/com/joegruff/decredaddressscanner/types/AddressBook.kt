@@ -34,19 +34,12 @@ class AddressBook(private val addrDao: AddressDao, private val ctx: Context) {
         }
     }
 
-    fun updateAddresses(force: Boolean = false) {
-        addresses().forEach {
-            if (force) it.update(ctx) else it.updateIfFiveMinPast(ctx)
-        }
-    }
-
     // It is expected that addr is already an element in addresses.
     fun update(addr: Address) {
         runBlocking {
             addrDao.update(addr)
         }
     }
-
 
     fun insert(addr: Address, idx: Int = addresses().size) {
         addresses().add(idx, addr)
