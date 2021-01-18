@@ -132,9 +132,9 @@ class GetInfoFromWeb(
     }
 
     fun execute() {
+        addr.processBegan()
         launch {
             try {
-                addr.processBegan()
                 doInBackground()
                 addr.processFinished(ctx)
             } catch (e: Exception) {
@@ -143,7 +143,6 @@ class GetInfoFromWeb(
                         addr.processError(NO_CONNECTION)
                     else -> {
                         addr.processError(e.message ?: "unspecified error")
-                        e.printStackTrace()
                     }
                 }
             }

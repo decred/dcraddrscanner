@@ -115,10 +115,10 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
     }
 
     private fun updateAddresses(force: Boolean) {
-            val addrs = AddressBook.get(this).addresses()
-            for (addr in addrs) {
-                if (force) addr.update(this) else addr.updateIfFiveMinPast(this)
-            }
+        val addrs = AddressBook.get(this).addresses()
+        for (addr in addrs) {
+            if (force) addr.update(this) else addr.updateIfFiveMinPast(this)
+        }
     }
 
     override fun onRefresh() {
@@ -213,6 +213,7 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
             val mainView = LayoutInflater.from(parent.context)
                 .inflate(R.layout.one_list_item_view, parent, false)
+
             return MyViewHolder(mainView)
         }
 
@@ -234,19 +235,19 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
             holder.textView.text = title
             holder.itemView.setOnClickListener {
                 synchronized(haveTouchedAnAddress) {
-                    if (!haveTouchedAnAddress) {
-                        haveTouchedAnAddress = true
-                        val intent = Intent(ctx, ViewAddressActivity::class.java)
-                        intent.putExtra(ViewAddressFragment.INTENT_ADDRESS_DATA, addr.address)
-                        intent.putExtra(
-                            ViewAddressFragment.INTENT_TICKET_TXID_DATA,
-                            addr.ticketTXID
-                        )
-                        ctx.startActivity(intent)
-                    }
+                    if (haveTouchedAnAddress) return@setOnClickListener
+                    haveTouchedAnAddress = true
                 }
+                val intent = Intent(ctx, ViewAddressActivity::class.java)
+                intent.putExtra(ViewAddressFragment.INTENT_ADDRESS_DATA, addr.address)
+                intent.putExtra(
+                    ViewAddressFragment.INTENT_TICKET_TXID_DATA,
+                    addr.ticketTXID
+                )
+                ctx.startActivity(intent)
             }
         }
+
 
         fun onItemRemove(viewHolder: RecyclerView.ViewHolder, recyclerView: RecyclerView) {
             val adapterPosition = viewHolder.adapterPosition
@@ -290,7 +291,6 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
                 val top = child.bottom + params.bottomMargin
                 mDivider?.let {
                     val bottom = top + it.intrinsicHeight
-
                     it.setBounds(left, top, right, bottom)
                     it.draw(c)
                 }
@@ -367,7 +367,6 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
 
             super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
         }
-
 
         private fun clearCanvas(c: Canvas?, left: Float, top: Float, right: Float, bottom: Float) {
             c?.drawRect(left, top, right, bottom, clearPaint)
