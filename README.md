@@ -14,6 +14,7 @@ and ticket statuses on decred testnet3 and mainnet.
 
 ### Binaries (Android)
 
+https://github.com/JoeGruffins/dcraddrscanner/releases/
 
 ### Build from source
 
