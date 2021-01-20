@@ -9,7 +9,6 @@ import kotlin.coroutines.CoroutineContext
 
 const val SETTINGS_TABLE = "settings_table"
 const val URL_FIELD = "url"
-const val CFILTERS_FIELD = "cfilters"
 const val DEFAULT_USER = "default"
 
 const val dcrdataMainNet = "https://explorer.dcrdata.org/api/"
@@ -18,8 +17,7 @@ const val dcrdataTestNet = "https://testnet.dcrdata.org/api/"
 @Entity(tableName = SETTINGS_TABLE)
 data class Settings(
     @PrimaryKey val user: String,
-    @ColumnInfo(name = URL_FIELD) var url: String = dcrdataMainNet,
-    @ColumnInfo(name = CFILTERS_FIELD) var cFilters: Boolean = false,
+    @ColumnInfo(name = URL_FIELD) var url: String = dcrdataMainNet
 )
 
 class UserSettings(private val settingsDao: SettingsDao) : CoroutineScope {
@@ -60,24 +58,6 @@ class UserSettings(private val settingsDao: SettingsDao) : CoroutineScope {
     fun setUrl(str: String) {
         suspend fun set(setts: Settings) {
             setts.url = str
-            settingsDao.update(setts)
-        }
-        launch {
-            set(settings())
-        }
-    }
-
-    fun cFilters(): Boolean {
-        var cFilters: Boolean
-        runBlocking {
-            cFilters = settings().cFilters
-        }
-        return cFilters
-    }
-
-    fun setCFilters(cFilters: Boolean) {
-        suspend fun set(setts: Settings) {
-            setts.cFilters = cFilters
             settingsDao.update(setts)
         }
         launch {
