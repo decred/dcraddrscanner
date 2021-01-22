@@ -1,0 +1,6 @@
+This app stores Decred addresses and periodically (~ every 30 minutes) checks specified addresses for balance changes.
+
+You can star addresses to be notified when balances change.
+
+Input of addresses can be done by scanning QR codes or pasting from the clipboard.
+Addresses can be then be given aliases.
