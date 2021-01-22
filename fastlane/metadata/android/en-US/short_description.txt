@@ -1,0 +1,1 @@
+Scans Decred addresses for available funds and notifies of changes.
