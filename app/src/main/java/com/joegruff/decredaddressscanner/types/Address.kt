@@ -62,9 +62,6 @@ fun ticketStatusFromName(name: String): TicketStatus {
     }
 }
 
-
-// NOTE: Not sure if we need to worry about concurrency with separate fields. Only isUpdating is
-// specifically locked. Watch for problems.
 @Entity(tableName = ADDRESS_TABLE)
 data class Address(
     @PrimaryKey var address: String,
@@ -89,6 +86,10 @@ data class Address(
     @Volatile
     private var isUpdating = false
 
+    // When an address is updated, it informs up to three listeners. swirl is a MyConstraintLayout
+    // associated with this address. addFragment is a ViewAddressFragment associated with this
+    // address. other could be a counter created by MainActivity or a MyBroadcastReceiver. At any
+    // time any listener may be absent.
     class DelegateListeners : AsyncObserver {
         private val lock = ReentrantLock()
         private var swirl: AsyncObserver? = null
@@ -115,27 +116,27 @@ data class Address(
             return s
         }
 
-        override fun processFinished(addr: Address, ctx: Context) {
+        override fun processFinish(addr: Address, ctx: Context) {
             lock.lock()
-            swirl?.processFinished(addr, ctx)
-            addrFragment?.processFinished(addr, ctx)
-            other?.processFinished(addr, ctx)
+            swirl?.processFinish(addr, ctx)
+            addrFragment?.processFinish(addr, ctx)
+            other?.processFinish(addr, ctx)
             lock.unlock()
         }
 
-        override fun processBegan() {
+        override fun processBegin() {
             lock.lock()
-            swirl?.processBegan()
-            addrFragment?.processBegan()
-            other?.processBegan()
+            swirl?.processBegin()
+            addrFragment?.processBegin()
+            other?.processBegin()
             lock.unlock()
         }
 
-        override fun processError(str: String) {
+        override fun processError(err: String) {
             lock.lock()
-            swirl?.processError(str)
-            addrFragment?.processError(str)
-            other?.processError(str)
+            swirl?.processError(err)
+            addrFragment?.processError(err)
+            other?.processError(err)
             lock.unlock()
         }
     }
@@ -144,7 +145,7 @@ data class Address(
     val delegates = DelegateListeners()
 
     fun processBegan() {
-        delegates.processBegan()
+        delegates.processBegin()
     }
 
     fun balanceSwirlIsShown(): Boolean {
@@ -171,6 +172,44 @@ data class Address(
             update(ctx)
     }
 
+    // checkTicketLive works on an assumed live time so is not %100 accurate.
+    fun checkTicketLive(): Boolean {
+        val now = Date().time.toDouble() / 1000
+        if (now < this.ticketMaturity) {
+            return false
+        }
+        this.ticketStatus = TicketStatus.LIVE.Name
+        return true
+    }
+
+    // checkTicketExpired works on an assumed expired time so is not %100 accurate.
+    fun checkTicketExpired(): Boolean {
+        val now = Date().time.toDouble() / 1000
+        if (now < this.ticketExpiry) {
+            return false
+        }
+        this.ticketStatus = TicketStatus.EXPIRED.Name
+        return true
+    }
+
+    // checkTicketSpendable works on an assumed spendable time so is not %100 accurate.
+    fun checkTicketSpendable(): Boolean {
+        val now = Date().time.toDouble() / 1000
+        if (now < this.ticketSpendable) {
+            return false
+        }
+        this.ticketStatus = TicketStatus.SPENDABLE.Name
+        return true
+    }
+
+    fun checkTicketSpent(): Boolean {
+        if (this.ticketStatus != TicketStatus.SPENDABLE.Name || this.amount != 0.0) {
+            return false
+        }
+        this.ticketStatus = TicketStatus.SPENT.Name
+        return true
+    }
+    // Start of web specific methods.
 
     fun updateBalanceFromWebJSON(ctx: Context, str: String) {
         val token = JSONTokener(str).nextValue()
@@ -180,15 +219,6 @@ data class Address(
         if (token.getString(ADDRESS) != this.address) throw Exception("updating wrong address")
         this.updateBalance(ctx, token.getString(AMOUNT).toDouble())
         return
-    }
-
-    fun checkTicketLive(): Boolean {
-        val now = Date().time.toDouble() / 1000
-        if (now < this.ticketMaturity) {
-            return false
-        }
-        this.ticketStatus = TicketStatus.LIVE.Name
-        return true
     }
 
     fun checkTicketVotedWebJSON(str: String): Boolean {
@@ -230,32 +260,6 @@ data class Address(
         return false
     }
 
-    fun checkTicketExpired(): Boolean {
-        val now = Date().time.toDouble() / 1000
-        if (now < this.ticketExpiry) {
-            return false
-        }
-        this.ticketStatus = TicketStatus.EXPIRED.Name
-        return true
-    }
-
-    fun checkTicketSpendable(): Boolean {
-        val now = Date().time.toDouble() / 1000
-        if (now < this.ticketSpendable) {
-            return false
-        }
-        this.ticketStatus = TicketStatus.SPENDABLE.Name
-        return true
-    }
-
-
-    fun checkTicketSpent(): Boolean {
-        if (this.ticketStatus != TicketStatus.SPENDABLE.Name || this.amount != 0.0) {
-            return false
-        }
-        this.ticketStatus = TicketStatus.SPENT.Name
-        return true
-    }
 
     fun initTicketFromWebJSON(token: JSONObject) {
         if (token.getString("txid") != this.ticketTXID) throw Exception("initializing wrong address")
@@ -281,7 +285,10 @@ data class Address(
         this.ticketStatus = TicketStatus.IMMATURE.Name
         return true
     }
+    // End of web specific methods.
 
+    // updateBalance also inserts and updates addresses in the database. This should not be called
+    // on an invalid address.
     private fun updateBalance(ctx: Context, newAmount: Double) {
         timestampCheck = Date().time.toDouble()
         val elapsedHrsSinceChange =
@@ -316,18 +323,17 @@ data class Address(
         synchronized(isUpdating) {
             isUpdating = false
         }
-        delegates.processFinished(this, ctx)
+        delegates.processFinish(this, ctx)
     }
 }
 
 fun newAddress(add: String, ticketTXID: String, delegate: AsyncObserver?, ctx: Context): Address {
-    val a = Address(add)
+    val a = Address(add, ticketTXID = ticketTXID)
+    // delegate, if present, is a counter from MainActivity.
     a.delegates.updateIgnoreNull(null, null, delegate)
-    a.ticketTXID = ticketTXID
     a.update(ctx)
     return a
 }
-
 
 fun abbreviatedAmountFromString(amountString: String): String {
     var x = amountString.toDouble()

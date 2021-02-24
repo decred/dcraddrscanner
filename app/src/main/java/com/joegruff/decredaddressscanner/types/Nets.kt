@@ -5,7 +5,7 @@ val UNKNOWN_ADDRESS_TYPE = Exception("unknown address type")
 
 enum class Net(
     val Name: String,
-    val DefaultPort: String,
+    val DefaultPort: String, // Currently unused.
     val NetworkAddressPrefix: String,
     val PubKeyAddrID: String,
     val PubKeyHashAddrID: String,

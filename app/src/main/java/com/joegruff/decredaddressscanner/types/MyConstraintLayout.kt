@@ -24,12 +24,16 @@ class MyConstraintLayout : RelativeLayout, AsyncObserver, CoroutineScope {
 
     constructor(context: Context) : super(context)
 
+    // Because updating is asynchronous, coroutines in combination with "synchronized" is used to
+    // make sure no races happen. This also allows us to change UI elements without using the Main
+    // Looper, which causes some problems such as a silent panic and screen freeze.
     override val coroutineContext: CoroutineContext
         get() = MainScope().coroutineContext
 
     var abbreviatedValues = false
 
-    override fun processBegan() {
+    // processBegin makes the progress bar visible.
+    override fun processBegin() {
         launch {
             synchronized(this) {
                 val swirl = findViewById<ProgressBar>(R.id.balance_swirl_progress_bar)
@@ -38,7 +42,8 @@ class MyConstraintLayout : RelativeLayout, AsyncObserver, CoroutineScope {
         }
     }
 
-    override fun processFinished(addr: Address, ctx: Context) {
+    // processFinish stops the progress bar and sets fields.
+    override fun processFinish(addr: Address, ctx: Context) {
         setUI(addr)
     }
 
@@ -53,7 +58,8 @@ class MyConstraintLayout : RelativeLayout, AsyncObserver, CoroutineScope {
         }
     }
 
-    override fun processError(str: String) {
+    // processError stops the progress bar.
+    override fun processError(err: String) {
         launch {
             synchronized(this) {
                 val swirl = findViewById<ProgressBar>(R.id.balance_swirl_progress_bar)

@@ -19,6 +19,8 @@ import kotlin.coroutines.CoroutineContext
 
 const val NO_CONNECTION = "no_connection"
 
+// GetInfoFromWeb connects to dcrdata and pulls information about an address. If address has a txid
+// is it expected to be a ticket and ticket data and status is also pulled depending on current status.
 class GetInfoFromWeb(
     private val addr: Address,
     private val ctx: Context,
@@ -36,13 +38,13 @@ class GetInfoFromWeb(
             // status.
         }
         val url = URL(urlStr + "address/" + addr.address + "/totals")
-        addr.updateBalanceFromWebJSON(ctx, getGetResp(url))
+        addr.updateBalanceFromWebJSON(ctx, getResp(url))
         if (addr.ticketStatus == TicketStatus.SPENDABLE.Name) {
             addr.checkTicketSpent()
         }
     }
 
-    private fun getGetResp(url: URL): String {
+    private fun getResp(url: URL): String {
         val urlConnection = url.openConnection()
         urlConnection.connectTimeout = 5000
         val bufferedReader = BufferedReader(InputStreamReader(urlConnection.getInputStream()))
@@ -56,7 +58,7 @@ class GetInfoFromWeb(
     // TODO: Consider adding logic for a ticket that is originally mined but later becomes unmined
     //  due to a reorg.
     private fun getTicketInfo() {
-        // Nothing to do if this isn`t a stake commitment.
+        // Nothing to do if this isn`t a stake commitment address.
         if (addr.ticketTXID == "") return
         fun status(): TicketStatus = ticketStatusFromName(addr.ticketStatus)
         // Return if status has reached spendable.
@@ -64,24 +66,27 @@ class GetInfoFromWeb(
         if (s == TicketStatus.SPENDABLE || s == TicketStatus.SPENT) return
         if (addr.address == "" || s == TicketStatus.UNMINED || s == TicketStatus.UNKNOWN) {
             val txURL = URL(urlStr + "tx/" + addr.ticketTXID)
-            val txStr = getGetResp(txURL)
+            val txStr = getResp(txURL)
             val txToken = JSONTokener(txStr).nextValue()
             if (txToken !is JSONObject) {
                 throw Exception("unknown JSON")
             }
-            // If no address this is initiation.
+            // If no address this is initiation. Status will be set to "unmined".
             if (addr.address == "") {
                 addr.initTicketFromWebJSON(txToken)
             }
+            // Will return true and set status to "immature" when mined. Other wise returns false
+            // and this method returns here.
             if (!addr.checkTicketMinedWebJSON(txToken)) return
         }
         if (status() == TicketStatus.IMMATURE) {
+            // Returns false until mature. When mature returns true and sets status to "live".
             if (!addr.checkTicketLive()) return
         }
-        // Ticket is live.
-        if (status() == TicketStatus.LIVE || addr.ticketSpendable == 0.0) {
+        // This will run until we know when the voted/revoked ticket is spendable.
+        if (addr.ticketSpendable == 0.0) {
             val statusURL = URL(urlStr + "tx/" + addr.ticketTXID + "/tinfo")
-            val webStatus = getGetResp(statusURL)
+            val webStatus = getResp(statusURL)
             // Check if voted. If so populate ticketSpendable with a time.
             if (addr.checkTicketVotedWebJSON(webStatus)) {
                 val token = JSONTokener(webStatus).nextValue()
@@ -91,7 +96,7 @@ class GetInfoFromWeb(
                 val block = token.getJSONObject("lottery_block")
                 val height = block.getInt("height")
                 val blockURL = URL(urlStr + "block/" + height)
-                val blockDetails = JSONTokener(getGetResp(blockURL)).nextValue()
+                val blockDetails = JSONTokener(getResp(blockURL)).nextValue()
                 if (blockDetails !is JSONObject) {
                     throw Exception("unknown JSON")
                 }
@@ -112,7 +117,7 @@ class GetInfoFromWeb(
                     }
                     val revocation = token.getString("revocation")
                     val revURL = URL(urlStr + "tx/" + revocation)
-                    val revDetails = JSONTokener(getGetResp(revURL)).nextValue()
+                    val revDetails = JSONTokener(getResp(revURL)).nextValue()
                     if (revDetails !is JSONObject) {
                         throw Exception("unknown JSON")
                     }

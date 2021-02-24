@@ -1,8 +1,6 @@
 package com.joegruff.decredaddressscanner.viewfragments
 
 import android.Manifest
-import android.app.Activity.RESULT_OK
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -22,11 +20,6 @@ import com.journeyapps.barcodescanner.CaptureActivity
 const val INTENT_INPUT_DATA = "joe.decred.address.scanner.input"
 
 class QRFragment : Fragment(), OnRequestPermissionsResultCallback {
-    companion object {
-        fun new(): QRFragment {
-            return QRFragment()
-        }
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -43,20 +36,6 @@ class QRFragment : Fragment(), OnRequestPermissionsResultCallback {
             startCamera()
         }
         super.onViewCreated(view, savedInstanceState)
-    }
-
-    fun cameraCallback(requestCode: Int, resultCode: Int, intent: Intent?) {
-        if (requestCode == IntentIntegrator.REQUEST_CODE) {
-            val scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent)
-            if (scanResult.contents != null) {
-                val address = scanResult.contents
-                intent?.putExtra(INTENT_INPUT_DATA, address)
-                this.activity?.setResult(RESULT_OK, intent)
-                this.activity?.finish()
-            } else {
-                this.activity?.finish()
-            }
-        }
     }
 
     private fun requestCameraPermission() {

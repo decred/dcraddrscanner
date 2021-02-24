@@ -56,17 +56,21 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
                 numStarredAddresses += 1
             }
 
-            // Give it five seconds to find changed addresses, report results as alert if something changed.
+            // Give it about five seconds to find changed addresses, report results as alert if
+            // something changed.
             Handler(Looper.getMainLooper()).postDelayed({
                 val message: String
                 val size = changedAddressObjects.size
                 val myPendingIntent: PendingIntent?
 
                 when {
+                    // There is nothing to alert, return.
                     size < 1 -> {
                         return@postDelayed
                     }
-                    size < 2 -> {
+                    // There is one address to alert. Provide details and allow tapping the alert to
+                    // open a ViewAddressFragment.
+                    size == 1 -> {
                         val addr = changedAddressObjects[0]
                         var title = addr.title
                         if (title == "")
@@ -90,6 +94,8 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
                             getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT)
                         }
                     }
+                    // There are multiple addresses to alert. Provide generic information. Tapping
+                    // opens the main activity.
                     else -> {
                         val myNotificationIntent = Intent(context, MainActivity::class.java)
                         myNotificationIntent.flags =
@@ -140,11 +146,12 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
         }
     }
 
-    override fun processBegan() {}
+    override fun processBegin() {}
 
-    override fun processError(str: String) {}
+    // Ignoring errors.
+    override fun processError(err: String) {}
 
-    override fun processFinished(addr: Address, ctx: Context) {
+    override fun processFinish(addr: Address, ctx: Context) {
         // Catch all changed starred addresses.
         if (addr.amount != addr.amountOld && Date().time - addr.timestampChange < 1000 * 10)
             changedAddressObjects.add(addr)
