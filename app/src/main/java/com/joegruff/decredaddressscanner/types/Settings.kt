@@ -9,6 +9,8 @@ import kotlin.coroutines.CoroutineContext
 
 const val SETTINGS_TABLE = "settings_table"
 const val URL_FIELD = "url"
+
+// DEFAULT_USER is the only user.
 const val DEFAULT_USER = "default"
 
 const val dcrdataMainNet = "https://explorer.dcrdata.org/api/"

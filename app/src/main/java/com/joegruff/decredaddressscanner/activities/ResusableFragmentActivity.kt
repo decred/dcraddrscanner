@@ -1,4 +1,4 @@
-package com.joegruff.decredaddressscanner.types
+package com.joegruff.decredaddressscanner.activities
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment

@@ -53,11 +53,12 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-
         return inflater.inflate(R.layout.view_address_view, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        // Set up the view if the address is already known to be valid. Otherwise it will be set up
+        // upon address.update() completing.
         if (address.isValid) {
             setupEditLabel()
             setupQRCode()
@@ -78,17 +79,22 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
     }
 
     override fun onPause() {
-        context?.let { AddressBook.get(it).update(address) }
+        if (address.isValid) {
+            // Updates isBeingWatched and the title.
+            context?.let { AddressBook.get(it).update(address) }
+        }
         super.onPause()
     }
 
-    override fun processBegan() {}
+    override fun processBegin() {}
 
-    override fun processError(str: String) {
+    // processError will show an error in the form of UI changes if not isInitiated, or as a toast
+    // if already initiated.
+    override fun processError(err: String) {
         if (synchronized(isInitiated) { !isInitiated }) {
             val addrButton =
                 this.activity?.findViewById<TextView>(R.id.view_address_view_address_button)
-            if (str == NO_CONNECTION) {
+            if (err == NO_CONNECTION) {
                 addrButton?.setText(R.string.view_address_fragment_no_connection)
                 return
             }
@@ -97,13 +103,13 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
         this.activity?.runOnUiThread {
             Toast.makeText(
                 this.activity,
-                str,
+                err,
                 Toast.LENGTH_SHORT
             ).show()
         }
     }
 
-    override fun processFinished(addr: Address, ctx: Context) {
+    override fun processFinish(addr: Address, ctx: Context) {
         if (address.isValid) {
             synchronized(isInitiated) {
                 if (!isInitiated) {

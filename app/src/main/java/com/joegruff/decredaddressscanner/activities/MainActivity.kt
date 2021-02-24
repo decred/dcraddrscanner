@@ -33,6 +33,7 @@ import java.util.concurrent.CountDownLatch
 var RC_BARCODE_CAPTURE = 9001
 
 class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
+    // These lateinit variables must be created in onCreate.
     private lateinit var recyclerView: RecyclerView
     private lateinit var viewAdapter: MyAdapter
     private lateinit var viewManager: LinearLayoutManager
@@ -41,9 +42,12 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
-        this.menuItems = MenuItems(this)
+
+        menuItems = MenuItems(this)
+
         val ptr = findViewById<SwipeRefreshLayout>(R.id.pullToRefresh_layout)
         ptr.setOnRefreshListener(this)
 
@@ -78,6 +82,7 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
         itemTouchHelper.attachToRecyclerView(recyclerView)
         val fab: View = findViewById(R.id.fab)
 
+        // When the fab is clicked, allow pasting from clipboard or scanning.
         fab.setOnClickListener {
             val dialogView = BottomSheetDialog(this)
             dialogView.setContentView(R.layout.get_address_view)
@@ -93,12 +98,8 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
                 if (clipboard.primaryClip?.getItemAt(0) != null) {
                     val input = clipboard.primaryClip?.getItemAt(0)?.text.toString()
                     val intent = Intent(this, ViewAddressActivity::class.java)
-                    var addrStr = input
-                    var ticketTxid = ""
-                    if (input.length == 64) {
-                        addrStr = ""
-                        ticketTxid = input
-                    }
+                    // Clipboard input can be either an address or single txid.
+                    val (addrStr, ticketTxid) = fromInput(input)
                     intent.putExtra(ViewAddressFragment.INTENT_ADDRESS_DATA, addrStr)
                     intent.putExtra(ViewAddressFragment.INTENT_TICKET_TXID_DATA, ticketTxid)
                     this.startActivity(intent)
@@ -114,6 +115,17 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
         }
     }
 
+    // fromInput parses input into an address or txid depending on size.
+    private fun fromInput(input: String): Pair<String, String> {
+        var addrStr = input
+        var ticketTxid = ""
+        if (input.length == 64) {
+            addrStr = ""
+            ticketTxid = input
+        }
+        return Pair(addrStr, ticketTxid)
+    }
+
     private fun updateAddresses(force: Boolean) {
         val addrs = AddressBook.get(this).addresses()
         for (addr in addrs) {
@@ -127,15 +139,19 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
         updateAddresses(true)
     }
 
+    // onActivityResult expects to be returning from the QR activity with input data.
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == RC_BARCODE_CAPTURE && resultCode == Activity.RESULT_OK) {
             val intent = Intent(applicationContext, ViewAddressActivity::class.java)
+            // Input may be an address, txid, or a json array of txid.
             var input = data?.getStringExtra(INTENT_INPUT_DATA) ?: ""
             val splitInput = input.split(":")
             input = splitInput[splitInput.lastIndex]
             input = input.trim()
+            // If a json array, assume an array of txid.
             try {
+                // Throws if not a json array.
                 val token = JSONArray(input)
                 waitForAddresses(token)
                 viewAdapter.notifyDataSetChanged()
@@ -143,12 +159,8 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
             } catch (e: Exception) {
                 // Expected if not a json array.
             }
-            var addrStr = input
-            var ticketTxid = ""
-            if (input.length == 64) {
-                addrStr = ""
-                ticketTxid = input
-            }
+            // If a single address or txid, starts a new ViewAddressActivity.
+            val (addrStr, ticketTxid) = fromInput(input)
             intent.putExtra(ViewAddressFragment.INTENT_ADDRESS_DATA, addrStr)
             intent.putExtra(ViewAddressFragment.INTENT_TICKET_TXID_DATA, ticketTxid)
             this.startActivity(intent)
@@ -157,16 +169,18 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
     }
 
     class Del(private val latch: CountDownLatch) : AsyncObserver {
-        override fun processFinished(addr: Address, ctx: Context) {
+        override fun processFinish(addr: Address, ctx: Context) {
             latch.countDown()
         }
 
-        override fun processBegan() {}
-        override fun processError(str: String) {
+        override fun processBegin() {}
+        override fun processError(err: String) {
             latch.countDown()
         }
     }
 
+    // waitForAddresses adds a json array of assumed ticket txid to the address book. It blocks
+    // until all addresses have been fetched or all requests errored.
     private fun waitForAddresses(token: JSONArray) {
         val n = token.length()
         val latch = CountDownLatch(n)
@@ -207,6 +221,8 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
     class MyAdapter(private val ctx: Context, private var addresses: ArrayList<Address>) :
         RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
 
+        // haveTouchedAnAddress is an attempt to make sure addresses aren't touched in quick
+        // succession. It is only set to false upon initiation and resuming.
         @Volatile
         var haveTouchedAnAddress = false
 
@@ -268,6 +284,7 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
 
         class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             val textView: TextView = itemView.findViewById(R.id.one_list_item_view_text_view)
+
             @Volatile
             var delegateHolder: MyConstraintLayout =
                 itemView.findViewById(R.id.balance_swirl_layout)
