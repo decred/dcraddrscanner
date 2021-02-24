@@ -1,7 +1,7 @@
 Decred Address Scanner
 ====
 
-[![Blue Oak License](https://img.shields.io/badge/license-BlueOak-blue.svg)](https://blueoakcouncil.org/license/1.0.0)
+[![ISC License](https://img.shields.io/badge/license-ISC-blue.svg)](http://copyfree.org)
 
 ## Decred Address Scanner Overview
 
