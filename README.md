@@ -59,4 +59,4 @@ is used for this project.
 
 ## License
 
-Decred Address Scanner is licensed under the [Blue Oak License](https://blueoakcouncil.org/license/1.0.0).
+Decred Address Scanner is licensed under the [ISC License](http://copyfree.org).
