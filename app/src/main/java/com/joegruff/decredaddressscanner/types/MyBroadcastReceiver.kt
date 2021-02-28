@@ -88,6 +88,10 @@ class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
                             ViewAddressFragment.INTENT_ADDRESS_DATA,
                             addr.address
                         )
+                        myNotificationIntent.putExtra(
+                            ViewAddressFragment.INTENT_TICKET_TXID_DATA,
+                            addr.ticketTXID
+                        )
                         myNotificationIntent.flags = Intent.FLAG_ACTIVITY_MULTIPLE_TASK
                         myPendingIntent = TaskStackBuilder.create(context).run {
                             addNextIntentWithParentStack(myNotificationIntent)
