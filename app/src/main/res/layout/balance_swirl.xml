@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.joegruff.decredaddressscanner.types.MyConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/balance_swirl_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ProgressBar
+        android:id="@+id/balance_swirl_progress_bar"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:indeterminateOnly="true"
+        android:visibility="invisible" />
+
+    <TextView
+        android:id="@+id/balance_swirl_ticket_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/balance_swirl_balance"
+        android:gravity="center_horizontal"
+        android:includeFontPadding="false"
+        android:textAlignment="center"
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/balance_swirl_balance"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:gravity="center_horizontal"
+        android:includeFontPadding="false"
+        android:textAlignment="center"
+        android:textSize="18sp"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/balance_swirl_change"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/balance_swirl_balance"
+        android:gravity="center_horizontal"
+        android:includeFontPadding="false"
+        android:textAlignment="center"
+        android:textSize="12sp" />
+
+</com.joegruff.decredaddressscanner.types.MyConstraintLayout>

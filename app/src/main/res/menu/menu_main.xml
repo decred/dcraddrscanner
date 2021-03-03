@@ -1,0 +1,33 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.joegruff.decredaddressscanner.activities.MainActivity">
+    <item
+        android:id="@+id/menu_group_explorers"
+        android:orderInCategory="3"
+        android:title="@string/menu_set_explorer"
+        app:showAsAction="never">
+        <menu>
+            <item
+                android:id="@+id/menu_dcrdata_mainnet"
+                android:checkable="true"
+                android:orderInCategory="1"
+                android:title="@string/menu_dcrdata_mainnet" />
+            <item
+                android:id="@+id/menu_dcrdata_testnet"
+                android:checkable="true"
+                android:orderInCategory="2"
+                android:title="@string/menu_dcrdata_testnet" />
+            <item
+                android:id="@+id/menu_dcrdata_other"
+                android:checkable="true"
+                android:orderInCategory="3"
+                android:title="@string/other" />
+        </menu>
+    </item>
+    <item
+        android:id="@+id/menu_about"
+        android:orderInCategory="1"
+        android:title="@string/menu_about"
+        app:showAsAction="never" />
+</menu>
