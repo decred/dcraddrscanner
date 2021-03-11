@@ -1,4 +1,4 @@
-package com.joegruff.decredaddressscanner.types
+package com.decred.decredaddressscanner.types
 
 import android.content.Context
 import android.util.AttributeSet
@@ -7,7 +7,7 @@ import android.widget.ProgressBar
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.core.app.ActivityCompat
-import com.joegruff.decredaddressscanner.R
+import com.decred.decredaddressscanner.R
 import kotlinx.coroutines.*
 import java.text.DecimalFormat
 import kotlin.coroutines.CoroutineContext

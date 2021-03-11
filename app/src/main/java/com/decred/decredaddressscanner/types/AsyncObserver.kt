@@ -1,4 +1,4 @@
-package com.joegruff.decredaddressscanner.types
+package com.decred.decredaddressscanner.types
 
 import android.content.Context
 

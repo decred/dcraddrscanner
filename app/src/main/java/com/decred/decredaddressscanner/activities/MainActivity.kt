@@ -1,4 +1,4 @@
-package com.joegruff.decredaddressscanner.activities
+package com.decred.decredaddressscanner.activities
 
 import android.app.Activity
 import android.app.AlarmManager
@@ -23,10 +23,10 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.snackbar.Snackbar
-import com.joegruff.decredaddressscanner.R
-import com.joegruff.decredaddressscanner.types.*
-import com.joegruff.decredaddressscanner.viewfragments.INTENT_INPUT_DATA
-import com.joegruff.decredaddressscanner.viewfragments.ViewAddressFragment
+import com.decred.decredaddressscanner.R
+import com.decred.decredaddressscanner.types.*
+import com.decred.decredaddressscanner.viewfragments.INTENT_INPUT_DATA
+import com.decred.decredaddressscanner.viewfragments.ViewAddressFragment
 import org.json.JSONArray
 import java.util.concurrent.CountDownLatch
 

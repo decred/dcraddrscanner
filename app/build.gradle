@@ -9,7 +9,7 @@ android {
     buildToolsVersion "30.0.2"
 
     defaultConfig {
-        applicationId "com.joegruff.decredaddressscanner"
+        applicationId "com.decred.decredaddressscanner"
         minSdkVersion 16
         targetSdkVersion 30
         versionCode 7

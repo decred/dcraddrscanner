@@ -35,7 +35,7 @@ https://github.com/JoeGruffins/dcraddrscanner/releases/
 - **Clone the repo**
 
   ```
-  git clone https://github.com/joegruffins/dcraddrscanner.git
+  git clone https://github.com/decred/dcraddrscanner.git
   ```
 
 - **Android Studio**
@@ -54,7 +54,7 @@ https://decred.org/community/
 
 ## Issue Tracker
 
-The [integrated github issue tracker](https://github.com/joegruffins/dcraddrscanner/issues)
+The [integrated github issue tracker](https://github.com/decred/dcraddrscanner/issues)
 is used for this project.
 
 ## License
