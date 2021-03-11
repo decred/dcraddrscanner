@@ -1,4 +1,4 @@
-package com.joegruff.decredaddressscanner.types
+package com.decred.decredaddressscanner.types
 
 import android.app.*
 import android.content.BroadcastReceiver
@@ -10,10 +10,10 @@ import android.os.Looper
 import android.os.SystemClock
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import com.joegruff.decredaddressscanner.R
-import com.joegruff.decredaddressscanner.activities.MainActivity
-import com.joegruff.decredaddressscanner.activities.ViewAddressActivity
-import com.joegruff.decredaddressscanner.viewfragments.ViewAddressFragment
+import com.decred.decredaddressscanner.R
+import com.decred.decredaddressscanner.activities.MainActivity
+import com.decred.decredaddressscanner.activities.ViewAddressActivity
+import com.decred.decredaddressscanner.viewfragments.ViewAddressFragment
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -32,7 +32,7 @@ fun setRepeatingAlarm(ctx: Context, startInterval: Long) {
     )
 }
 
-const val CHANNEL_ID = "com.joegruff.decredaddressscanner.notification_channel"
+const val CHANNEL_ID = "com.decred.decredaddressscanner.notification_channel"
 const val NOTIFICATION_ID = 1337
 
 class MyBroadcastReceiver : AsyncObserver, BroadcastReceiver() {
