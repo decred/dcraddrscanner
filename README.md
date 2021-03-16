@@ -14,7 +14,7 @@ balances and ticket statuses on decred testnet3 and mainnet.
 
 ### Binaries (Android)
 
-https://github.com/JoeGruffins/dcraddrscanner/releases/
+https://github.com/decred/dcraddrscanner/releases/
 
 ### Build from source
 
