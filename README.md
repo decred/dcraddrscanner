@@ -12,6 +12,8 @@ balances and ticket statuses on decred testnet3 and mainnet.
 
 [google play](https://play.google.com/store/apps/details?id=com.joegruff.decredaddressscanner)
 
+[fdroid](https://f-droid.org/en/packages/com.decred.decredaddressscanner/)
+
 ### Binaries (Android)
 
 https://github.com/decred/dcraddrscanner/releases/
