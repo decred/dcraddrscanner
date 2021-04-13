@@ -40,4 +40,8 @@
     <string name="menu_cfilters">Use CFilters (experimental)</string>
     <string name="other">Other</string>
     <string name="menu_other_description">Enter an url.</string>
+    <string name="dcrdata_warning_alert_title">Warning!</string>
+    <string name="dcrdata_warning_alert_details">Ticket transaction IDs and/or addresses will be sent over the internet to dcrdata in order to fetch balances and statuses. A bad actor may be able to spy on you and link together parts of a transaction history. This is a privacy concern. Only continue if you accept the risks.</string>
+    <string name="dcrdata_warning_alert_ok">Continue</string>
+    <string name="dcrdata_warning_alert_stop">Stop</string>
 </resources>

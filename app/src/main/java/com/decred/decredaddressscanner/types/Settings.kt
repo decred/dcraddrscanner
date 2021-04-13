@@ -9,6 +9,7 @@ import kotlin.coroutines.CoroutineContext
 
 const val SETTINGS_TABLE = "settings_table"
 const val URL_FIELD = "url"
+const val DCRDATA_WARNING_ACCEPTED_FIELD = "dcrdata_warning_accepted"
 
 // DEFAULT_USER is the only user.
 const val DEFAULT_USER = "default"
@@ -19,7 +20,8 @@ const val dcrdataTestNet = "https://testnet.dcrdata.org/api/"
 @Entity(tableName = SETTINGS_TABLE)
 data class Settings(
     @PrimaryKey val user: String,
-    @ColumnInfo(name = URL_FIELD) var url: String = dcrdataMainNet
+    @ColumnInfo(name = URL_FIELD) var url: String = dcrdataMainNet,
+    @ColumnInfo(name = DCRDATA_WARNING_ACCEPTED_FIELD) var dcrdataWarningAccepted: Boolean = false
 )
 
 class UserSettings(private val settingsDao: SettingsDao) : CoroutineScope {
@@ -60,6 +62,24 @@ class UserSettings(private val settingsDao: SettingsDao) : CoroutineScope {
     fun setUrl(str: String) {
         suspend fun set(setts: Settings) {
             setts.url = str
+            settingsDao.update(setts)
+        }
+        launch {
+            set(settings())
+        }
+    }
+
+    fun dcrdataWarningAccepted(): Boolean {
+        var seen: Boolean
+        runBlocking {
+            seen = settings().dcrdataWarningAccepted
+        }
+        return seen
+    }
+
+    fun setDcrdataWarningSeen() {
+        suspend fun set(setts: Settings) {
+            setts.dcrdataWarningAccepted = true
             settingsDao.update(setts)
         }
         launch {

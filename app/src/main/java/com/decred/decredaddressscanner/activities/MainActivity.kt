@@ -13,6 +13,7 @@ import android.view.*
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat.getDrawable
@@ -82,8 +83,7 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
         itemTouchHelper.attachToRecyclerView(recyclerView)
         val fab: View = findViewById(R.id.fab)
 
-        // When the fab is clicked, allow pasting from clipboard or scanning.
-        fab.setOnClickListener {
+        fun showInputView() {
             val dialogView = BottomSheetDialog(this)
             dialogView.setContentView(R.layout.get_address_view)
             val qrButton = dialogView.findViewById<Button>(R.id.get_address_view_scan_button)
@@ -113,6 +113,28 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
             }
             dialogView.show()
         }
+
+        // When the fab is clicked, allow pasting from clipboard or scanning.
+        fab.setOnClickListener {
+            if (!UserSettings.get(this).dcrdataWarningAccepted()) {
+                val url = UserSettings.get(this).url()
+                if (url == dcrdataMainNet || url == dcrdataTestNet) {
+                    AlertDialog.Builder(this).setTitle(R.string.dcrdata_warning_alert_title)
+                        .setMessage(this.getString(R.string.dcrdata_warning_alert_details))
+                        .setPositiveButton(R.string.dcrdata_warning_alert_ok) { _, _ ->
+                            UserSettings.get(this).setDcrdataWarningSeen()
+                            showInputView()
+                        }
+                        .setNegativeButton(R.string.dcrdata_warning_alert_stop) { _, _ -> }
+                        .setCancelable(false)
+                        .show()
+                } else {
+                    showInputView()
+                }
+            } else {
+                showInputView()
+            }
+        }
     }
 
     // fromInput parses input into an address or txid depending on size.
@@ -141,7 +163,6 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
 
     // onActivityResult expects to be returning from the QR activity with input data.
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == RC_BARCODE_CAPTURE && resultCode == Activity.RESULT_OK) {
             val intent = Intent(applicationContext, ViewAddressActivity::class.java)
             // Input may be an address, txid, or a json array of txid.
@@ -154,7 +175,6 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
                 // Throws if not a json array.
                 val token = JSONArray(input)
                 waitForAddresses(token)
-                viewAdapter.notifyDataSetChanged()
                 return
             } catch (e: Exception) {
                 // Expected if not a json array.
@@ -165,7 +185,7 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
             intent.putExtra(ViewAddressFragment.INTENT_TICKET_TXID_DATA, ticketTxid)
             this.startActivity(intent)
         }
-
+        super.onActivityResult(requestCode, resultCode, data)
     }
 
     class Del(private val latch: CountDownLatch) : AsyncObserver {
