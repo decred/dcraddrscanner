@@ -4,9 +4,11 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 
 
-@Database(entities = [Address::class, Settings::class], version = 1, exportSchema = false)
+@Database(entities = [Address::class, Settings::class], version = 2, exportSchema = false)
 abstract class MyDatabase : RoomDatabase() {
     abstract fun addrDao(): AddressDao
     abstract fun settingsDao(): SettingsDao
@@ -24,9 +26,7 @@ abstract class MyDatabase : RoomDatabase() {
                     MyDatabase::class.java,
                     "dcraddrscannerdb"
                 )
-                    // Wipes and rebuilds instead of migrating if no Migration object.
-                    // TODO: Start migrating properly.
-                    .fallbackToDestructiveMigration()
+                    .addMigrations(MIGRATION_1_2)
                     .build()
                 mydb = instance
                 // return instance
@@ -35,3 +35,13 @@ abstract class MyDatabase : RoomDatabase() {
         }
     }
 }
+
+// Adds the dcrdata seen boolean to settings.
+val MIGRATION_1_2 = object : Migration(1, 2) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        database.execSQL("ALTER TABLE settings_table ADD COLUMN dcrdata_warning_accepted INTEGER NOT NULL DEFAULT 0;")
+    }
+}
+
+
+
