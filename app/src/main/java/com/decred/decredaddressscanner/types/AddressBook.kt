@@ -7,7 +7,7 @@ private var addresses: ArrayList<Address>? = null
 
 // AddressBook should always be called with the get method. It will create a new instance if none
 // exists or return an existing one.
-class AddressBook(private val addrDao: AddressDao, private val ctx: Context) {
+class AddressBook(private val addrDao: AddressDao) {
     companion object {
         @Volatile
         private var addrBook: AddressBook? = null
@@ -16,7 +16,7 @@ class AddressBook(private val addrDao: AddressDao, private val ctx: Context) {
         ): AddressBook {
             return addrBook ?: synchronized(this) {
                 val db = MyDatabase.get(ctx)
-                val instance = AddressBook(db.addrDao(), ctx)
+                val instance = AddressBook(db.addrDao())
                 addrBook = instance
                 instance
             }
@@ -65,6 +65,7 @@ class AddressBook(private val addrDao: AddressDao, private val ctx: Context) {
     // started. Whether or not the address is added to addresses depends upon the delegate's
     // processFinish (added) or processError (not added).
     fun getAddress(
+        ctx: Context,
         address: String,
         ticketTXID: String = "",
         delegate: AsyncObserver? = null

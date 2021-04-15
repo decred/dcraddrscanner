@@ -44,7 +44,7 @@ class ViewAddressFragment : Fragment(), AsyncObserver {
     override fun onCreate(savedInstanceState: Bundle?) {
         val addrStr = arguments?.getSerializable(INTENT_ADDRESS_DATA) as String
         val ticketStr = arguments?.getSerializable(INTENT_TICKET_TXID_DATA) as String
-        context?.let { address = AddressBook.get(it).getAddress(addrStr, ticketStr) }
+        context?.let { address = AddressBook.get(it).getAddress(it, addrStr, ticketStr) }
         super.onCreate(savedInstanceState)
     }
 
