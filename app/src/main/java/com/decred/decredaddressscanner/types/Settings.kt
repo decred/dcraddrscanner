@@ -77,7 +77,7 @@ class UserSettings(private val settingsDao: SettingsDao) : CoroutineScope {
         return seen
     }
 
-    fun setDcrdataWarningSeen() {
+    fun setDcrdataWarningAccepted() {
         suspend fun set(setts: Settings) {
             setts.dcrdataWarningAccepted = true
             settingsDao.update(setts)
