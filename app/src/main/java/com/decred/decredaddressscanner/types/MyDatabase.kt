@@ -36,7 +36,7 @@ abstract class MyDatabase : RoomDatabase() {
     }
 }
 
-// Adds the dcrdata seen boolean to settings.
+// Adds the dcrdata accepted boolean to settings.
 val MIGRATION_1_2 = object : Migration(1, 2) {
     override fun migrate(database: SupportSQLiteDatabase) {
         database.execSQL("ALTER TABLE settings_table ADD COLUMN dcrdata_warning_accepted INTEGER NOT NULL DEFAULT 0;")
