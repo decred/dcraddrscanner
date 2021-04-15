@@ -206,7 +206,7 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
         val latch = CountDownLatch(n)
         val book = AddressBook.get(this)
         for (i in 0 until n) {
-            val addr = book.getAddress("", token[i] as String, Del(latch))
+            val addr = book.getAddress(this, "", token[i] as String, Del(latch))
             addr.isBeingWatched = true
         }
         latch.await()
