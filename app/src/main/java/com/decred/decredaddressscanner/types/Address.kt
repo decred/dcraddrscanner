@@ -164,7 +164,7 @@ data class Address(
             if (isUpdating) return
             isUpdating = true
         }
-        GetInfoFromWeb(this, ctx).execute()
+        GetInfoFromWeb(this).execute(ctx)
     }
 
     fun updateIfFiveMinPast(ctx: Context) {
