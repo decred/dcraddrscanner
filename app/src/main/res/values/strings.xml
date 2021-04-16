@@ -41,7 +41,7 @@
     <string name="other">Other</string>
     <string name="menu_other_description">Enter an url.</string>
     <string name="dcrdata_warning_alert_title">Warning!</string>
-    <string name="dcrdata_warning_alert_details">Addresses and/or ticket transaction IDs will be sent over the Internet to %s in order to fetch balances and statuses. A bad actor may be able to spy on you and link together parts of a transaction history. This is a privacy concern. Only continue if you accept the risks.</string>
+    <string name="dcrdata_warning_alert_details">Addresses and/or ticket transaction IDs will be sent over the Internet to dcrdata.org in order to fetch balances and statuses. A bad actor may be able to spy on you and link together parts of your transaction history. This is a privacy concern. Only continue if you accept the risks.</string>
     <string name="dcrdata_warning_alert_ok">Continue</string>
     <string name="dcrdata_warning_alert_stop">Stop</string>
 </resources>

@@ -120,7 +120,7 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
                 val url = UserSettings.get(this).url()
                 if (url == dcrdataMainNet || url == dcrdataTestNet) {
                     AlertDialog.Builder(this).setTitle(R.string.dcrdata_warning_alert_title)
-                        .setMessage(this.getString(R.string.dcrdata_warning_alert_details, url))
+                        .setMessage(this.getString(R.string.dcrdata_warning_alert_details))
                         .setPositiveButton(R.string.dcrdata_warning_alert_ok) { _, _ ->
                             UserSettings.get(this).setDcrdataWarningAccepted()
                             showInputView()
