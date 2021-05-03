@@ -1,4 +1,4 @@
-package com.decred.decredaddressscanner.viewfragments
+package com.joegruff.decredaddressscanner.viewfragments
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -14,7 +14,7 @@ import androidx.core.app.ActivityCompat.OnRequestPermissionsResultCallback
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.google.zxing.integration.android.IntentIntegrator
-import com.decred.decredaddressscanner.R
+import com.joegruff.decredaddressscanner.R
 import com.journeyapps.barcodescanner.CaptureActivity
 
 const val INTENT_INPUT_DATA = "joe.decred.address.scanner.input"

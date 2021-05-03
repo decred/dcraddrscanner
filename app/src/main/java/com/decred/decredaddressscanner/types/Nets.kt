@@ -1,4 +1,4 @@
-package com.decred.decredaddressscanner.types
+package com.joegruff.decredaddressscanner.types
 
 val UNKNOWN_NETWORK = Exception("unknown network")
 val UNKNOWN_ADDRESS_TYPE = Exception("unknown address type")

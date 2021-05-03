@@ -1,11 +1,11 @@
-package com.decred.decredaddressscanner.activities
+package com.joegruff.decredaddressscanner.activities
 
 
 import android.content.Intent
 import androidx.fragment.app.Fragment
 import com.google.zxing.integration.android.IntentIntegrator
-import com.decred.decredaddressscanner.viewfragments.QRFragment
-import com.decred.decredaddressscanner.viewfragments.INTENT_INPUT_DATA
+import com.joegruff.decredaddressscanner.viewfragments.QRFragment
+import com.joegruff.decredaddressscanner.viewfragments.INTENT_INPUT_DATA
 
 class QRActivity : ReusableFragmentActivity() {
     override fun createFragment(): Fragment {

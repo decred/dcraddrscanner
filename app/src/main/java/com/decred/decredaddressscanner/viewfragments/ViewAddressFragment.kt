@@ -1,4 +1,4 @@
-package com.decred.decredaddressscanner.viewfragments
+package com.joegruff.decredaddressscanner.viewfragments
 
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -19,8 +19,8 @@ import com.google.zxing.BarcodeFormat
 import com.google.zxing.MultiFormatWriter
 import com.google.zxing.WriterException
 import com.google.zxing.common.BitMatrix
-import com.decred.decredaddressscanner.R
-import com.decred.decredaddressscanner.types.*
+import com.joegruff.decredaddressscanner.R
+import com.joegruff.decredaddressscanner.types.*
 
 class ViewAddressFragment : Fragment(), AsyncObserver {
     companion object {

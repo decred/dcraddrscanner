@@ -12,11 +12,11 @@ balances and ticket statuses on decred testnet3 and mainnet.
 
 [google play](https://play.google.com/store/apps/details?id=com.joegruff.decredaddressscanner)
 
-[fdroid](https://f-droid.org/en/packages/com.decred.decredaddressscanner/)
+[fdroid](https://f-droid.org/en/packages/com.joegruff.decredaddressscanner/)
 
 ### Binaries (Android)
 
-https://github.com/decred/dcraddrscanner/releases/
+https://github.com.joegruff/dcraddrscanner/releases/
 
 ### Build from source
 
@@ -37,7 +37,7 @@ https://github.com/decred/dcraddrscanner/releases/
 - **Clone the repo**
 
   ```
-  git clone https://github.com/decred/dcraddrscanner.git
+  git clone https://github.com.joegruff/dcraddrscanner.git
   ```
 
 - **Android Studio**
@@ -56,7 +56,7 @@ https://decred.org/community/
 
 ## Issue Tracker
 
-The [integrated github issue tracker](https://github.com/decred/dcraddrscanner/issues)
+The [integrated github issue tracker](https://github.com.joegruff/dcraddrscanner/issues)
 is used for this project.
 
 ## License

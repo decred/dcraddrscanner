@@ -1,4 +1,4 @@
-package com.decred.decredaddressscanner.types
+package com.joegruff.decredaddressscanner.types
 
 import androidx.room.*
 
