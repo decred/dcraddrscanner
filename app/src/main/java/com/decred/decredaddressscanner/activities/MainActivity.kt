@@ -22,23 +22,27 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.google.android.material.snackbar.Snackbar
 import com.decred.decredaddressscanner.R
 import com.decred.decredaddressscanner.types.*
 import com.decred.decredaddressscanner.viewfragments.INTENT_INPUT_DATA
 import com.decred.decredaddressscanner.viewfragments.ViewAddressFragment
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.*
 import org.json.JSONArray
-import java.util.concurrent.CountDownLatch
+import kotlin.coroutines.CoroutineContext
 
 var RC_BARCODE_CAPTURE = 9001
 
-class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
+class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity(), CoroutineScope {
     // These lateinit variables must be created in onCreate.
     private lateinit var recyclerView: RecyclerView
     private lateinit var viewAdapter: MyAdapter
     private lateinit var viewManager: LinearLayoutManager
     private lateinit var menuItems: MenuItems
+
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.IO + SupervisorJob()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -174,7 +178,7 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
             try {
                 // Throws if not a json array.
                 val token = JSONArray(input)
-                waitForAddresses(token)
+                getAddresses(token)
                 return
             } catch (e: Exception) {
                 // Expected if not a json array.
@@ -188,28 +192,27 @@ class MainActivity : SwipeRefreshLayout.OnRefreshListener, AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
     }
 
-    class Del(private val latch: CountDownLatch) : AsyncObserver {
-        override fun processFinish(addr: Address, ctx: Context) {
-            latch.countDown()
+    // getAddresses adds a json array of assumed ticket txid to the address book.
+    private fun getAddresses(token: JSONArray) {
+        class Del : AsyncObserver {
+            override fun processFinish(addr: Address, ctx: Context) {
+                runOnUiThread {
+                    viewAdapter.notifyDataSetChanged()
+                }
+            }
+
+            override fun processBegin() {}
+            override fun processError(err: String) {}
         }
 
-        override fun processBegin() {}
-        override fun processError(err: String) {
-            latch.countDown()
-        }
-    }
-
-    // waitForAddresses adds a json array of assumed ticket txid to the address book. It blocks
-    // until all addresses have been fetched or all requests errored.
-    private fun waitForAddresses(token: JSONArray) {
         val n = token.length()
-        val latch = CountDownLatch(n)
         val book = AddressBook.get(this)
-        for (i in 0 until n) {
-            val addr = book.getAddress(this, "", token[i] as String, Del(latch))
-            addr.isBeingWatched = true
+        launch {
+            for (i in 0 until n) {
+                val addr = book.getAddress(applicationContext, "", token[i] as String, Del())
+                addr.isBeingWatched = true
+            }
         }
-        latch.await()
     }
 
     override fun onResume() {
