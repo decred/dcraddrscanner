@@ -1,9 +1,9 @@
-package com.decred.decredaddressscanner.activities
+package com.joegruff.decredaddressscanner.activities
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
-import com.decred.decredaddressscanner.R
+import com.joegruff.decredaddressscanner.R
 
 
 abstract class ReusableFragmentActivity : FragmentActivity() {

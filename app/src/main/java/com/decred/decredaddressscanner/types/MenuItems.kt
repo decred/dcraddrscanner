@@ -1,4 +1,4 @@
-package com.decred.decredaddressscanner.types
+package com.joegruff.decredaddressscanner.types
 
 import android.content.Context
 import android.content.pm.PackageInfo
@@ -8,7 +8,7 @@ import android.view.MenuItem
 import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import com.decred.decredaddressscanner.R
+import com.joegruff.decredaddressscanner.R
 
 
 class MenuItems(private val act: AppCompatActivity) {

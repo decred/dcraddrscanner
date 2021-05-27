@@ -1,8 +1,8 @@
-package com.decred.decredaddressscanner.activities
+package com.joegruff.decredaddressscanner.activities
 
 
 import androidx.fragment.app.Fragment
-import com.decred.decredaddressscanner.viewfragments.ViewAddressFragment
+import com.joegruff.decredaddressscanner.viewfragments.ViewAddressFragment
 
 class ViewAddressActivity : ReusableFragmentActivity() {
     override fun createFragment(): Fragment {

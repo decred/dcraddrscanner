@@ -1,4 +1,4 @@
-package com.decred.decredaddressscanner.types
+package com.joegruff.decredaddressscanner.types
 
 import android.content.Context
 import kotlinx.coroutines.runBlocking
